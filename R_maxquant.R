@@ -73,19 +73,28 @@ for (f in intensity_names){
 }
 
 # 6. Log2 transform the data
-log_Phospho_data <- log2(as.matrix(result_df2[,intensity_cols]))
+result_df2[,intensity_cols] <- log2(as.matrix(result_df2[,intensity_cols]))
 
-# # check intensity_cols
-# typeof(result_df2[1,'Intensity.C1___1'])
-# intensity_cols
-# length(intensity_cols)
-# re_Phospho_data[1,intensity_cols]
 # 7. Filter based on the localization probability ( remove rows with <0.75 localization probability
 result_df3 <- result_df2 %>% filter(Localization.prob >= 0.75)
 dim(result_df3)
 
+# 8. Create new column for peptide sequence without scores and localisation probability
+# create a list of essential columns' names
+select_columns <- c("Proteins", "Protein.names","Gene.names",
+                    "Localization.prob","Phospho..STY..Probabilities",intensity_names)
+
+# select the required columns
+result_df4 <- result_df3 %>% select(select_columns)
+
+# use regex to extract peptide sequence from column "Phospho..STY..Probabilities"
+result_df4$Phospho..STY..Probabilities <- gsub("[^[A-Z]+","", result_df4$Phospho..STY..Probabilities)
+
+# rename the column name "Phospho..STY..Probabilities" to "peptide sequence"
+result_df4 <- result_df4 %>% dplyr::rename(peptide.sequence = Phospho..STY..Probabilities)
+
 # Write the data to a csv file
-write.csv(result_df3, paste0(selected_folder,"/",'test_phospho_sites.csv'),
+write.csv(result_df4, paste0(selected_folder,"/",'test_phospho_sites.csv'),
           row.names = FALSE)
 
 
