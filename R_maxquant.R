@@ -2,14 +2,16 @@
 library(tidyverse)
 library(plyr)
 library(rstudioapi)
-# Select the folder
-selected_folder <- selectDirectory(
-  caption = "Select Directory",
-  label = "Select",
-  path = getActiveProject()
-)
+library(DEP)
+library(SummarizedExperiment)
+# # Select the folder
+# selected_folder <- selectDirectory(
+#   caption = "Select Directory",
+#   label = "Select",
+#   path = getActiveProject()
+# )
 # Set the path
-setwd(selected_folder)
+setwd("/Users/hailey/Documents/UNITS/Thesis/MaxQuant/LFQ-Phospho")
 getwd()
 
 # 1. Load the Phospho(STY)site.txt file in R
@@ -21,84 +23,59 @@ exp_design <- read.delim("exp_design_p16_0022.txt")
 
 # 3. Remove Reverse sequences
 # 4. Remove potential contaminants
-re_Phospho_data <- Phospho_data %>% filter(Reverse != '+') %>% filter(Potential.contaminant != '+')
+# drop the two columns
+Phospho_data <- Phospho_data %>% filter(Reverse != '+') %>% filter(Potential.contaminant != '+') %>%
+  select(- 'Reverse',-'Potential.contaminant')
 
-# save col_names for using
-col_names <- colnames(re_Phospho_data)
-col_names
 # 5. Expand Site table
-intensity_cols <- grep("^Intensity.+___\\d", col_names)
-intensity_names <- colnames(re_Phospho_data[,intensity_cols])
+# get all intensity columns
+intensity <- grep("^Intensity.+|Intensity", colnames(Phospho_data)) 
+# get the required intensity columns
+intensity_cols <- grep("^Intensity.+___\\d", colnames(Phospho_data))
+intensity_names <- colnames(Phospho_data[,intensity_cols])
 intensity_names
+# get the intensity columns need to be dropped
+drop_cols <- setdiff(intensity, intensity_cols)
+# drop columns
+Phospho_data_new <- subset(Phospho_data, select = -drop_cols)
 
-# change zero value of intensities into NA
-for (f in intensity_names){
-  re_Phospho_data[f][re_Phospho_data[f] == 0] <-NA
-}
-
-# test
-new_df <- data.frame()
-expand_function <- function(a_row){
-  rows <- matrix(rep(a_row,each=length(intensity_names)),nrow=length(intensity_names),
-                 dimnames = list(intensity_names,col_names))
-  for (i in 1:length(intensity_names)){
-    for (j in 1:length(col_names)){
-      if ( colnames(rows)[j] %in% intensity_names &
-           row.names(rows)[i] != colnames(rows)[j]){
-        rows[row.names(rows)[i],colnames(rows)[j]] = NA
-      }
-    }
-  }
-  new_df <- rbind(new_df, rows)
-  return(new_df)
-}
-
-# Apply the function to insert value to the new dataFrame
-result <- apply(re_Phospho_data,1,expand_function)
-
-# unlist the result
-result_df1 <-plyr::ldply (result, data.frame)
-
-dim(result_df1)
-# remove rows if selected columns(intensity_cols) are all NA
-result_df2 <- result_df1[apply(result_df1[,intensity_names],1,function(x) any(!is.na(x))),]
-dim(result_df2)
-
-# change intensity back to numeric
-to_number <- function(x){
-  return(x %>% as.numeric())
-}
-for (f in intensity_names){
-  result_df2[f] <- lapply(result_df2[f],to_number)
-}
+# expand site table
+Phospho_data_ex <- Phospho_data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
+                                                        names_to = c('.value','Multiplicity'),
+                                                        names_pattern = '(.*)___(.)',
+                                                        values_drop_na = TRUE)
+# check the size of data
+dim(Phospho_data_new)
+dim(Phospho_data_ex)
 
 # 6. Log2 transform the data
-result_df2[,intensity_cols] <- log2(as.matrix(result_df2[,intensity_cols]))
+intensity_cols_new <- grep("^Intensity.", colnames(Phospho_data_ex))
+Phospho_data_ex[,intensity_cols_new] <- log2(as.matrix(Phospho_data_ex[,intensity_cols_new]))
+# change infinite value to 0
+Phospho_data_ex[mapply(is.infinite, Phospho_data_ex)] <- 0
 
 # 7. Filter based on the localization probability ( remove rows with <0.75 localization probability
-result_df3 <- result_df2 %>% filter(Localization.prob >= 0.75)
-dim(result_df3)
+Phospho_data_ex <- Phospho_data_ex %>% filter(Localization.prob >= 0.75)
+dim(Phospho_data_ex)
 
 # 8. Create new column for peptide sequence without scores and localisation probability
-# create a list of essential columns' names
-select_columns <- c("Proteins", "Protein.names","Gene.names",
-                    "Localization.prob","Phospho..STY..Probabilities",intensity_names)
-
-# select the required columns
-result_df4 <- result_df3 %>% select(select_columns)
-
 # use regex to extract peptide sequence from column "Phospho..STY..Probabilities"
-result_df4$Phospho..STY..Probabilities <- gsub("[^[A-Z]+","", result_df4$Phospho..STY..Probabilities)
+peptide.sequence <- Phospho_data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
+Phospho_data_pre <- dplyr::mutate(Phospho_data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
 
-# rename the column name "Phospho..STY..Probabilities" to "peptide sequence"
-result_df4 <- result_df4 %>% dplyr::rename(peptide.sequence = Phospho..STY..Probabilities)
+# # Write the data to a csv file
+# write.csv(Phospho_data_pre, paste0(selected_folder,"/",'test_phospho_sites.csv'),
+#           row.names = FALSE)
 
-# Write the data to a csv file
-write.csv(result_df4, paste0(selected_folder,"/",'test_phospho_sites.csv'),
-          row.names = FALSE)
+# 9. Convert the data into SummarisedExperiment object.
+Phospho_data_pre <- Phospho_data_pre %>% 
+  mutate(name = paste(Proteins,Positions.within.proteins,Multiplicity, sep = '_'))
+Phospho_data_pre <- Phospho_data_pre %>% 
+  mutate(ID = paste(id,Multiplicity, sep = '_'))
 
+Phospho_data_unique_names <- make_unique(Phospho_data_pre, 'name','ID', delim = ";")
 
-# # Install bionic packages
-# library(BiocManager)
-# BiocManager::install('DEP',force = TRUE)
-# library(DEP)
+intensity_ints <- grep("^Intensity.", colnames(Phospho_data_unique_names))
+Phospho_data_se <- make_se(Phospho_data_unique_names, intensity_ints, exp_design)
+
+# plot_frequency(Phospho_data_se)
