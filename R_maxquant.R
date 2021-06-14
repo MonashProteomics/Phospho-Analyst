@@ -4,6 +4,10 @@ library(plyr)
 library(rstudioapi)
 library(DEP)
 library(SummarizedExperiment)
+library(msImpute)
+library(reticulate)
+library(limma)
+
 # # Select the folder
 # selected_folder <- selectDirectory(
 #   caption = "Select Directory",
@@ -14,68 +18,53 @@ library(SummarizedExperiment)
 setwd("/Users/hailey/Documents/UNITS/Thesis/MaxQuant/LFQ-Phospho")
 getwd()
 
-# 1. Load the Phospho(STY)site.txt file in R
-list.files()
+# Load the Phospho(STY)site.txt and experimental design file in R
 Phospho_data <- read.delim("Phospho (STY)Sites.txt")
-
-# 2. Load experimental design file
 exp_design <- read.delim("exp_design_p16_0022.txt")
 
-# 3. Remove Reverse sequences
-# 4. Remove potential contaminants
-# drop the two columns
-Phospho_data <- Phospho_data %>% filter(Reverse != '+') %>% filter(Potential.contaminant != '+') %>%
-  select(- 'Reverse',-'Potential.contaminant')
+# Apply the pre-processing function
+result_list <-pre_precessing(Phospho_data, exp_design)
 
-# 5. Expand Site table
-# get all intensity columns
-intensity <- grep("^Intensity.+|Intensity", colnames(Phospho_data)) 
-# get the required intensity columns
-intensity_cols <- grep("^Intensity.+___\\d", colnames(Phospho_data))
-intensity_names <- colnames(Phospho_data[,intensity_cols])
-intensity_names
-# get the intensity columns need to be dropped
-drop_cols <- setdiff(intensity, intensity_cols)
-# drop columns
-Phospho_data_new <- subset(Phospho_data, select = -drop_cols)
+# get required se for visualization
+Phospho_data_filter <- result_list$data_filter
+Phospho_data_norm <- result_list$data_norm
+Phospho_diff_all <- result_list$diff_all
+Phospho_diff_all_1 <- result_list$diff_all_1
 
-# expand site table
-Phospho_data_ex <- Phospho_data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
-                                                        names_to = c('.value','Multiplicity'),
-                                                        names_pattern = '(.*)___(.)',
-                                                        values_drop_na = TRUE)
-# check the size of data
-dim(Phospho_data_new)
-dim(Phospho_data_ex)
+# QC plots
+# Plot a barplot of the number of identified proteins per samples
+plot_numbers(Phospho_data_norm)
+# Plot a barplot of the protein identification overlap between samples
+plot_coverage(Phospho_data_norm)
 
-# 6. Log2 transform the data
-intensity_cols_new <- grep("^Intensity.", colnames(Phospho_data_ex))
-Phospho_data_ex[,intensity_cols_new] <- log2(as.matrix(Phospho_data_ex[,intensity_cols_new]))
-# change infinite value to 0
-Phospho_data_ex[mapply(is.infinite, Phospho_data_ex)] <- 0
+# normalization plot before and after
+plot_normalization(Phospho_data_filter,
+                   Phospho_data_norm)
+# check missing value
+plot_missval(Phospho_data_filter)
+# with and without missing values density
+plot_detect(Phospho_data_norm)
 
-# 7. Filter based on the localization probability ( remove rows with <0.75 localization probability
-Phospho_data_ex <- Phospho_data_ex %>% filter(Localization.prob >= 0.75)
-dim(Phospho_data_ex)
+# befor and after imputation
+plot_imputation(Phospho_data_norm,Phospho_diff_all)
 
-# 8. Create new column for peptide sequence without scores and localisation probability
-# use regex to extract peptide sequence from column "Phospho..STY..Probabilities"
-peptide.sequence <- Phospho_data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
-Phospho_data_pre <- dplyr::mutate(Phospho_data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
+# histogram
+# plot_p_hist(dep)
+plot_p_hist(Phospho_diff_all)
+plot_p_hist(Phospho_diff_all_1) 
 
-# # Write the data to a csv file
-# write.csv(Phospho_data_pre, paste0(selected_folder,"/",'test_phospho_sites.csv'),
-#           row.names = FALSE)
+# correlation
+# plot_cor(dep, significant = FALSE)
+plot_cor(Phospho_diff_all, significant = FALSE)
+plot_cor(Phospho_diff_all_1, significant = FALSE)
 
-# 9. Convert the data into SummarisedExperiment object.
-Phospho_data_pre <- Phospho_data_pre %>% 
-  mutate(name = paste(Proteins,Positions.within.proteins,Multiplicity, sep = '_'))
-Phospho_data_pre <- Phospho_data_pre %>% 
-  mutate(ID = paste(id,Multiplicity, sep = '_'))
+# coefficient of variation (CV)
+plot_cvs(Phospho_diff_all)
 
-Phospho_data_unique_names <- make_unique(Phospho_data_pre, 'name','ID', delim = ";")
-
-intensity_ints <- grep("^Intensity.", colnames(Phospho_data_unique_names))
-Phospho_data_se <- make_se(Phospho_data_unique_names, intensity_ints, exp_design)
-
-# plot_frequency(Phospho_data_se)
+# 14. PCA plot
+pca_plot <- DEP::plot_pca(Phospho_diff_all, point_size = 4, indicate = "condition") 
+pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
+                                    size = 4,
+                                    box.padding = unit(0.1, 'lines'),
+                                    point.padding = unit(0.1, 'lines'),
+                                    segment.size = 0.5)
