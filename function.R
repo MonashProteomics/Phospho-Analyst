@@ -100,12 +100,12 @@ pre_precessing <- function(maxquant_data,expdesign){
   
   # Differential enrichment test, type of contrasts will be tested
   diff_all <-test_limma(data_impute,type='all')
-  diff_all_1 <-test_diff(data_impute,type='all')
-  # dep <- add_rejections(diff_all) # Mark significant proteins
+#  diff_all <-test_diff(data_impute,type='all')
+  dep <- add_rejections(diff_all) # Mark significant peptide sequences
   
   # result list
-  result_list <- list('data_filter' = data_filter,'data_norm' = data_norm, 
-                      'diff_all' = diff_all, 'diff_all_1' = diff_all_1)
+  result_list <- list('data_se' = data_se, 'data_filter' = data_filter,'data_norm' = data_norm, 
+                      'data_impute' = data_impute,'diff_all' = diff_all, 'dep' = dep)
   return(result_list)
 }
 
