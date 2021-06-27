@@ -2,7 +2,7 @@
 ui <- function(request){shinyUI(
   dashboardPage(
     skin = "blue",
-    dashboardHeader(title = "LFQ-Analyst"),
+    dashboardHeader(title = "Phospho-Analyst"),
     # disable = TRUE),# Disable title bar
     dashboardSidebar(
       useShinyalert(),
@@ -12,7 +12,7 @@ ui <- function(request){shinyUI(
         convertMenuItem(menuItem("Analysis",  tabName="analysis", icon=icon("flask"),
                  #menuItem("Input Files", tabName="file", icon=icon("file"), #selected = TRUE,
                           fileInput('file1',
-                                    'Upload MaxQuant ProteinGroups.txt',
+                                    'Upload MaxQuant Phospho STY.txt',
                                     accept=c('text/csv',
                                              'text/comma-separated-values,text/plain',
                                              '.csv')),
@@ -55,7 +55,7 @@ ui <- function(request){shinyUI(
                tags$hr(),
                actionButton("analyze", "Start Analysis"),
                tags$hr(),
-               p(a("Example LFQ data", target= "_blank",
+               p(a("Example Phosphoproteomics data", target= "_blank",
                    href="data/proteinGroups_example.txt", 
                    download="proteinGroups_example.txt")),
                p(a("Example Experimental Design file", target= "_blank",
@@ -96,20 +96,20 @@ ui <- function(request){shinyUI(
              fluidRow( 
                box(
                 title = "Overview",
-                  h3("LFQ-Analyst: An easy-to-use interactive web-platform to analyze and visualize proteomics data 
+                  h3("Phospho-Analyst: An easy-to-use interactive web-platform to analyze and visualize phosphoproteomics data 
                      preprocessed with MaxQuant."),
-                p("LFQ-Analyst is an easy-to-use, interactive web application developed to perform 
+                p("Phospho-Analyst is an easy-to-use, interactive web application developed to perform 
                   differential expression analysis with “one click” and to visualize label-free quantitative proteomic 
-                  datasets preprocessed with MaxQuant.  LFQ-Analyst provides a wealth of user-analytic features 
+                  datasets preprocessed with MaxQuant.  Phospho-Analyst provides a wealth of user-analytic features 
                   and offers numerous publication-quality result output graphics and tables to facilitate statistical 
                   and exploratory analysis of label-free quantitative datasets. "), 
                 br(),
-                HTML('<center><img src="./LFQ_analyst.svg" width="600px"></center>'),
+                HTML('<center><img src="./Phospho_Analyst.svg" width="600px"></center>'),
                 br(),
                 h4("Sidebar tabs"),
                 tags$ul(
                 tags$li(tags$b("Analysis: "),"perform your own analysis"), 
-                tags$li(tags$b("Demo: "),"familiarise yourself with LFQ-Analyst by browsing through pre-analysed results"), 
+                tags$li(tags$b("Demo: "),"familiarise yourself with Phospho-Analyst by browsing through pre-analysed results"), 
                 tags$li(tags$b("User Guide: "), "download an in-depth manual") 
                 ),
                 width = 12,
@@ -351,25 +351,25 @@ ui <- function(request){shinyUI(
               fluidRow( 
                box(
                    title = "User Guide",
-                   h3("LFQ-Analyst: Manual"),
+                   h3("Phospho-Analyst: Manual"),
 #                    div(p(HTML(paste0('A detail online user manual can be accessed ',
-# 			a(href = 'https://monashbioinformaticsplatform.github.io/LFQ-Analyst/', 
+# 			a(href = 'https://monashbioinformaticsplatform.github.io/Phospho-Analyst/', 
 #                                       target='_blank', 'here'))))),
 			   div(p(HTML(paste0("A detailed user manual can be accessed",
-			                            a(href = './LFQ-Analyst_manual.pdf', 
+			                            a(href = './Phospho-Analyst_manual.pdf', 
 			                              target='_blank', tags$b("here.")))))),  
 			h4("Contact Us"),
-			p("For any feedback or question regarding LFQ-Analyst, please contact the 
+			p("For any feedback or question regarding Phospho-Analyst, please contact the 
 			  Monash Proteomics and Metabolomics Facility:"),
       tags$ul(
 			tags$li("Anup Shah: anup.shah(at)monash.edu"),
 			tags$li("Ralf Schittenhelm: ralf.schittenhelm(at)monash.edu")
       ),
 			
-			h4("How to Cite LFQ-Analyst?"),
+			h4("How to Cite Phospho-Analyst?"),
 
       div(p(HTML(paste0("Please Cite: Shah AD, Goode RJA, Huang C, Powell DR, Schittenhelm RB. 
-		LFQ-Analyst: An easy-to-use interactive web-platform to analyze and 
+		Phospho-Analyst: An easy-to-use interactive web-platform to analyze and 
 		visualize proteomics data preprocessed with MaxQuant. DOI:",
 			                            a(href = 'https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00496', 
 			                              target='_blank', tags$b("0.1021/acs.jproteome.9b00496")))))),
@@ -379,15 +379,6 @@ ui <- function(request){shinyUI(
 			
       tags$ul(
 
-      tags$li("24-02-2021: Correlation plot now use all protein expression data"),
-      tags$li("25-11-2020: LFQ-Analyst being accessed by 2000 users worldwide"),
-			tags$li("07-04-2020: LFQ-Analyst being accessed by 1000 users worldwide"),
-      tags$li("03-01-2020: LFQ-Analyst manuscript published in volume 19 of JPR"),
-      tags$li("28-10-2019: LFQ-Analyst paper published online in Journal of Proteome Research (JPR)"),
-      tags$li("02-10-2019: Svg figures download feature added"),
-      tags$li("09-09-2019: Paired test support added"),
-      tags$li("09-09-2019: Option to include single peptide observations in the analysis"),
-      tags$li("19-02-2019: LFQ-Analyst made public")
       ),   
                 width = 12,
                 solidHeader = TRUE,
