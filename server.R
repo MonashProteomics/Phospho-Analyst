@@ -505,11 +505,13 @@ server <- function(input, output, session) {
    })
    
    numbers_input <- reactive({
-     plot_numbers(normalised_data())
+     plot_numbers(normalised_data()) +
+       labs(title= "Phosphosites per sample", y = "Number of phosphosites")
    })
    
    coverage_input <- reactive({
-     plot_coverage(normalised_data())
+     plot_coverage(normalised_data())+
+       labs(title= "Phosphosites per sample", y = "Number of phosphosites")
    })
    
    correlation_input<-reactive({
