@@ -173,7 +173,7 @@ server <- function(input, output, session) {
                  fill= TRUE, # to fill any missing data
                  sep = "\t"
       )
-      validate(maxquant_input_test(temp_data))
+      #validate(maxquant_input_test(temp_data))
       return(temp_data)
     })
    
@@ -206,37 +206,7 @@ server <- function(input, output, session) {
     })
    
     
-### Load data from Rdata
-  # observeEvent(input$load_data,{
-      # example_data<-reactive({
-      #   load("data/example_data.RData", envir = .GlobalEnv)
-      # })
-      # maxquant_data<-reactive({example_data[1]})
-      # exp_design<-reactive({example_data[2]})
-   #  env<-reactive({
-   #    LoadToEnvironment("data/example_data.RData", env = globalenv())
-   #  })
-   # 
-   #   observeEvent(input$load_data,{
-   # # message(env()[["exp_design"]])
-   #     maxquant_data_example<-reactive({
-   #     env()[["maxquant_output"]]
-   #   })
-   #   })
-   #   observeEvent(input$load_data,{
-   #     exp_design_example<-reactive({
-   #     env()[["exp_design"]]
-   #   })
-   #  })
-   # }) ## leave this commented
-   #  
-   #  maxquant_data<-eventReactive(input$load_data,{
-   #    env()[['maxquant_output']]
-   #  })
-   # 
-   # exp_design<-eventReactive(input$load_data,{
-   #    env()[['exp_design']]
-   #  })
+
    
    
 ### Reactive components
@@ -252,29 +222,51 @@ server <- function(input, output, session) {
      
      
      message(exp_design())
-     if(grepl('+',maxquant_data()$Reverse)){
-     filtered_data<-dplyr::filter(maxquant_data(),Reverse!="+")
-     }
-     else{filtered_data<-maxquant_data()}
-     if(grepl('+',filtered_data$Potential.contaminant)){
-       filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
-     }
-     if(grepl('+',filtered_data$Only.identified.by.site)){
-       filtered_data<-dplyr::filter(filtered_data,Only.identified.by.site!="+") 
-     }
-     if(input$single_peptide==TRUE){
-       filtered_data <-filtered_data
-     }
-     else{filtered_data<-dplyr::filter(filtered_data,Razor...unique.peptides>=2)}
-
-     filtered_data<-ids_test(filtered_data)
      
-     data_unique<- DEP::make_unique(filtered_data,"Gene.names","Protein.IDs",delim=";")
-     lfq_columns<-grep("LFQ.", colnames(data_unique))
+     filtered_data <- maxquant_data() %>% dplyr::filter(Reverse != '+') %>% 
+       dplyr::filter(Potential.contaminant != '+') %>%
+       dplyr::select(- `Reverse`,-`Potential.contaminant`)
+     
+     # 5. Expand Site table
+     # get all intensity columns
+     intensity <- grep("^Intensity.+|Intensity", colnames(filtered_data)) 
+     # get the required intensity columns
+     intensity_cols <- grep("^Intensity.+___\\d", colnames(filtered_data))
+     intensity_names <- colnames( filtered_data[,intensity_cols])
+     intensity_names
+     # get the intensity columns need to be dropped
+     drop_cols <- setdiff(intensity, intensity_cols)
+     # drop columns
+     data_new <- subset(filtered_data, select = -drop_cols)
+     
+     # expand site table
+     data_ex <- data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
+                                                 names_to = c('.value','Multiplicity'),
+                                                 names_pattern = '(.*)___(.)',
+                                                 values_drop_na = TRUE)
+     
+     data_ex <- data_ex %>% filter(Localization.prob >= 0.75)
+     peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
+     data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
+     
+     # 9. Convert the data into SummarisedExperiment object.
+     data_pre <- data_pre %>% 
+       mutate(name = paste(Proteins,Positions.within.proteins,Multiplicity, sep = '_'))
+     data_pre <- data_pre %>% 
+       mutate(ID = paste(id,Multiplicity, sep = '_'))
+     
+     data_unique_names <- make_unique(data_pre, 'name','ID', delim = ";")
+     
+     intensity_ints <- grep("^Intensity.", colnames(data_unique_names))
+     
+     #test_match_lfq_column_design(data_unique,intensity_ints, exp_design())
+     data_se <- make_se(data_unique_names, intensity_ints, exp_design())
+     
+  
      
      ## Check for matching columns in maxquant and experiment design file
-     test_match_lfq_column_design(data_unique,lfq_columns, exp_design())
-     data_se<-DEP:::make_se(data_unique,lfq_columns,exp_design())
+    
+
   
      # Check number of replicates
      if(max(exp_design()$replicate)<3){
@@ -305,7 +297,7 @@ server <- function(input, output, session) {
    })
    
    imputed_data<-reactive({
-     DEP::impute(processed_data(),input$imputation)
+     DEP::impute(normalised_data(),input$imputation)
    })
    
    imputed_table<-reactive({
