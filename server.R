@@ -251,7 +251,7 @@ server <- function(input, output, session) {
      
      # 9. Convert the data into SummarisedExperiment object.
      data_pre <- data_pre %>% 
-       mutate(name = paste(Proteins,Positions.within.proteins,Multiplicity, sep = '_'))
+       mutate(name = paste(Gene.names,Positions.within.proteins, sep = '_'))
      data_pre <- data_pre %>% 
        mutate(ID = paste(id,Multiplicity, sep = '_'))
      
