@@ -1,7 +1,7 @@
 ## New function for volcano plot
 #library(dplyr)
 plot_volcano_new <- function(dep, contrast, label_size = 3,
-                         add_names = TRUE, adjusted = FALSE, plot = TRUE) {
+                             add_names = TRUE, adjusted = FALSE, plot = TRUE) {
   # Show error if inputs are not the required classes
   if(is.integer(label_size)) label_size <- as.numeric(label_size)
   assertthat::assert_that(inherits(dep, "SummarizedExperiment"),
@@ -67,10 +67,10 @@ plot_volcano_new <- function(dep, contrast, label_size = 3,
   signif <- grep(paste("^",contrast, "_significant", sep = ""),
                  colnames(row_data))
   df_tmp <- data.frame(diff = row_data[, diff],
-                   p_values = -log10(row_data[, p_values]),
-                   signif = row_data[, signif],
-                   name = row_data$name)
-   df<- df_tmp %>% data.frame() %>% filter(!is.na(signif)) %>%
+                       p_values = -log10(row_data[, p_values]),
+                       signif = row_data[, signif],
+                       name = row_data$name)
+  df<- df_tmp %>% data.frame() %>% filter(!is.na(signif)) %>%
     arrange(signif)
   
   name1 <- gsub("_vs_.*", "", contrast)
@@ -106,8 +106,8 @@ plot_volcano_new <- function(dep, contrast, label_size = 3,
     p <- p + labs(y = expression(-log[10]~"P-value"))
   }
   if(plot) {
-   # return(list(p, df))
-   # return(df)
+    # return(list(p, df))
+    # return(df)
     return(p)
   } else {
     df <- df %>%
@@ -186,7 +186,7 @@ get_volcano_df <- function(dep, contrast, adjusted = FALSE) {
   df<- df_tmp %>% data.frame() %>% filter(!is.na(signif)) %>%
     arrange(signif)
   
- return(df)
+  return(df)
 }
 
 ### Function to plot intensities of individual proteins
@@ -227,7 +227,7 @@ plot_protein<-function(dep, protein, type){
       scale_color_brewer(palette = "Dark2")+
       theme_DEP1()+
       theme(axis.title.x = element_blank())
-    }
+  }
   
   if(type=="boxplot"){
     p<-ggplot(df_reps, aes(condition, val))+

@@ -1,8 +1,8 @@
 
 matrixplot_modify<-function(data, mapping, pts=list(), smt=list(), ...){
-    ggplot(data = data, mapping = mapping, ...) + 
-        do.call(geom_point, pts) +
-        do.call(geom_smooth, smt) 
+  ggplot(data = data, mapping = mapping, ...) + 
+    do.call(geom_point, pts) +
+    do.call(geom_smooth, smt) 
 }
 
 
@@ -56,7 +56,7 @@ LFQ_wrapper<-function(maxquant_data,expdesign){
   ## i.e. random values drawn from normal distribution of 1.8 SD apart with the width of 0.3
   data_imp_man<-DEP:::impute(data_filter,fun="man",shift=1.8,scale=0.3)
   
-
+  
   ######============= DIFFERENTIAL EXPRESSION ANALYSIS ============###########
   
   ## This test uses protein-wise linear model with emperical Bayes statistics (used in R package limma)
@@ -89,13 +89,13 @@ LFQ_wrapper<-function(maxquant_data,expdesign){
   param<- data.frame(alpha, lfc)
   dep<-DEP:::add_rejections(data_diff_all_contrasts,alpha = 0.05,lfc = log2(1))
   
-
+  
   ## Plot multiple scatterplots
   ## First get the LFQ expression data
   ## Use ggpairs function from GGally library to generate multiple matrix plots
   paired_data<-as.data.frame(assay(dep))
   
-
+  
   
   
   ######=============== ENRICHMENT ANALYSIS ============== ##########
@@ -103,19 +103,19 @@ LFQ_wrapper<-function(maxquant_data,expdesign){
   ## Need to specify the databases to perform enrichment test
   
   ## Gene Ontology Enrichment
- # gsea_results_GO <- test_gsea(dep)
+  # gsea_results_GO <- test_gsea(dep)
   
   
   ## KEGG enrichment
- # results_kegg<- test_gsea(dep,databases = c("KEGG_2016"))
+  # results_kegg<- test_gsea(dep,databases = c("KEGG_2016"))
   
   
   ####=============== Write Results ===========#######
   data_result<-get_results(dep)
   # write.csv(data_result,"LFQ_results.csv",row.names = FALSE)
   
- save.image (file="data/lfq_results.RData")
-return(dep)
+  save.image (file="data/lfq_results.RData")
+  return(dep)
   
 }
 
@@ -136,8 +136,8 @@ plot_cvs<-function(se) {
   ## backtransform data
   untransformed_intensity<- 2^(assay(se))
   exp_design<-colData(se)
-
-### merge untransformed to exp design and calculate cvs
+  
+  ### merge untransformed to exp design and calculate cvs
   
   cvs_group<- untransformed_intensity %>% data.frame() %>%
     tibble::rownames_to_column() %>%
@@ -148,20 +148,20 @@ plot_cvs<-function(se) {
     dplyr::group_by(condition)%>%
     dplyr::mutate(condition_median=median(cvs))
   
-p1 <-  ggplot(cvs_group, aes(cvs, color=condition, fill=condition)) +
+  p1 <-  ggplot(cvs_group, aes(cvs, color=condition, fill=condition)) +
     geom_histogram(alpha=.5, bins= 20, show.legend = FALSE) +
     facet_wrap(~condition) +
     geom_vline(aes(xintercept=condition_median, group=condition),color='grey40',
-             linetype="dashed") +
+               linetype="dashed") +
     labs(title= 'Sample Coefficient of Variation', x="Coefficient of Variation", y="Count") +
     theme_DEP2() +
     theme(plot.title = element_text(hjust = 0.5,face = "bold")) 
-
-p1 +geom_text(aes(x=max(cvs_group$cvs)-0.6,
-                  y=max(ggplot_build(p1)$data[[1]]$ymax*1.1), 
-                  label=paste0("Median =",round(condition_median,2)*100,"%",by="")),
-              show.legend = FALSE, size=4)
-
+  
+  p1 +geom_text(aes(x=max(cvs_group$cvs)-0.6,
+                    y=max(ggplot_build(p1)$data[[1]]$ymax*1.1), 
+                    label=paste0("Median =",round(condition_median,2)*100,"%",by="")),
+                show.legend = FALSE, size=4)
+  
 }
 
 
@@ -411,8 +411,8 @@ get_annotation <- function(dep, indicate) {
   
   # HeatmapAnnotation object
   ComplexHeatmap::HeatmapAnnotation(df = anno,
-                    col = anno_col,
-                    show_annotation_name = TRUE)
+                                    col = anno_col,
+                                    show_annotation_name = TRUE)
 }
 
 
@@ -597,6 +597,79 @@ test_limma <- function(se, type = c("control", "all", "manual"),
   #return(table)
 }
 
+get_results_phospho <- function(dep) {
+  # Show error if inputs are not the required classes
+  assertthat::assert_that(inherits(dep, "SummarizedExperiment"))
+  
+  row_data <- rowData(dep)
+  # Show error if inputs do not contain required columns
+  if(any(!c("name", "ID") %in% colnames(row_data))) {
+    stop("'name' and/or 'ID' columns are not present in '",
+         deparse(substitute(dep)),
+         "'\nRun make_unique() and make_se() to obtain the required columns",
+         call. = FALSE)
+  }
+  if(length(grep("_p.adj|_diff", colnames(row_data))) < 1) {
+    stop("'[contrast]_diff' and/or '[contrast]_p.adj' columns are not present in '",
+         deparse(substitute(dep)),
+         "'\nRun test_diff() to obtain the required columns",
+         call. = FALSE)
+  }
+  
+  # Obtain average protein-centered enrichment values per condition
+  row_data$mean <- rowMeans(assay(dep), na.rm = TRUE)
+  centered <- assay(dep) - row_data$mean
+  centered <- data.frame(centered) %>%
+    tibble::rownames_to_column() %>%
+    tidyr::gather(ID, val, -rowname) %>%
+    dplyr::left_join(., data.frame(colData(dep)), by = "ID")
+  centered <- dplyr::group_by(centered, rowname, condition) %>%
+    dplyr::summarize(val = mean(val, na.rm = TRUE)) %>%
+    dplyr::mutate(val = signif(val, digits = 3)) %>%
+    tidyr::spread(condition, val)
+  colnames(centered)[2:ncol(centered)] <-
+    paste(colnames(centered)[2:ncol(centered)], "_centered", sep = "")
+  
+  # Obtain average enrichments of conditions versus the control condition
+  ratio <- as.data.frame(row_data) %>%
+    #tibble::column_to_rownames("name") %>%
+    dplyr::select(dplyr::ends_with("diff")) %>%
+    signif(., digits = 3) %>%
+    tibble::rownames_to_column()
+  colnames(ratio)[2:ncol(ratio)] <-
+    gsub("_diff", "_log2 fold change", colnames(ratio)[2:ncol(ratio)])
+  # df <- left_join(ratio, centered, by = "rowname")
+  
+  # Select the adjusted p-values and significance columns
+  pval <- as.data.frame(row_data) %>%
+    #tibble::column_to_rownames("name") %>%
+    dplyr::select(dplyr::ends_with("p.val"),
+                  dplyr::ends_with("p.adj"),
+                  dplyr::ends_with("significant")) %>%
+    tibble::rownames_to_column()
+  pval[, grep("p.adj", colnames(pval))] <-
+    pval[, grep("p.adj", colnames(pval))] %>%
+    signif(digits = 3)
+  pval[, grep("p.val", colnames(pval))] <-
+    pval[, grep("p.val", colnames(pval))] %>%
+    signif(digits = 3)
+  
+  # Join into a results table
+  ids <- as.data.frame(row_data) %>% dplyr::select(name, ID)
+  table<-dplyr::left_join(ids,ratio, by=c("name"="rowname"))
+  table <- dplyr::left_join(table, pval, by = c("name" = "rowname"))
+  # table <- dplyr::left_join(table, centered, by = c("name" = "rowname")) %>%
+  #   dplyr::arrange(desc(significant))
+  table<-as.data.frame(row_data) %>% 
+    dplyr::select(name, imputed, num_NAs, Protein.names) %>%
+    dplyr::left_join(table, ., by = "name")
+  table<-table %>% dplyr::arrange(desc(significant))
+  colnames(table)[1]<-c("Phopshosite")
+  colnames(table)[2]<-c("Phosphosite ID")
+  # table$Gene_name<-table$name
+  return(table)
+}
+
 get_results_proteins <- function(dep) {
   # Show error if inputs are not the required classes
   assertthat::assert_that(inherits(dep, "SummarizedExperiment"))
@@ -638,7 +711,7 @@ get_results_proteins <- function(dep) {
     tibble::rownames_to_column()
   colnames(ratio)[2:ncol(ratio)] <-
     gsub("_diff", "_log2 fold change", colnames(ratio)[2:ncol(ratio)])
- # df <- left_join(ratio, centered, by = "rowname")
+  # df <- left_join(ratio, centered, by = "rowname")
   
   # Select the adjusted p-values and significance columns
   pval <- as.data.frame(row_data) %>%
@@ -646,7 +719,7 @@ get_results_proteins <- function(dep) {
     dplyr::select(dplyr::ends_with("p.val"),
                   dplyr::ends_with("p.adj"),
                   dplyr::ends_with("significant")) %>%
-   tibble::rownames_to_column()
+    tibble::rownames_to_column()
   pval[, grep("p.adj", colnames(pval))] <-
     pval[, grep("p.adj", colnames(pval))] %>%
     signif(digits = 3)
@@ -660,18 +733,17 @@ get_results_proteins <- function(dep) {
   table <- dplyr::left_join(table, pval, by = c("name" = "rowname"))
   # table <- dplyr::left_join(table, centered, by = c("name" = "rowname")) %>%
   #   dplyr::arrange(desc(significant))
-   table<-as.data.frame(row_data) %>% 
+  table<-as.data.frame(row_data) %>% 
     dplyr::select(name, imputed, num_NAs, Protein.names) %>%
     dplyr::left_join(table, ., by = "name")
   table<-table %>% dplyr::arrange(desc(significant))
-  colnames(table)[1]<-c("Phopshosite")
-  colnames(table)[2]<-c("Phosphosite ID")
+  colnames(table)[1]<-c("Gene Name")
+  colnames(table)[2]<-c("Protein ID")
   # table$Gene_name<-table$name
   return(table)
 }
 
-                                  
-                                  
+
 #######################################################
 ## Plot Enrichment Results
 #######################################################
@@ -696,7 +768,7 @@ plot_enrichment <- function(gsea_results, number = 10, alpha = 0.05,
     stop("'", deparse(substitute(gsea_results)),
          "' does not contain the required columns",
          "\nMake sure that HGNC gene symbols are present",
-	"\n in your 'Gene Names' column of Results table",
+         "\n in your 'Gene Names' column of Results table",
          call. = FALSE)
   }
   
@@ -763,7 +835,7 @@ plot_enrichment <- function(gsea_results, number = 10, alpha = 0.05,
   
   # Plot top enriched gene sets
   p<-ggplot(subset, aes(Term,
-                     y=-log10(`Adjusted.P.value`))) +
+                        y=-log10(`Adjusted.P.value`))) +
     geom_col(aes(fill = log_odds )) +
     facet_wrap(~contrast, nrow = nrow) +
     coord_flip() +
@@ -774,7 +846,7 @@ plot_enrichment <- function(gsea_results, number = 10, alpha = 0.05,
           legend.text = element_text(size = 9)) +
     scale_fill_distiller(palette="Spectral")
 }
-                                  
+
 #### ==== get prefix function 
 
 get_prefix <- function(words) {
@@ -816,3 +888,4 @@ delete_prefix <- function(words) {
   # Delete prefix from words
   gsub(paste0("^", prefix), "", words)
 }
+
