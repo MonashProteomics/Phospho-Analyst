@@ -56,7 +56,7 @@ ui <- function(request){
                                             
                                             radioButtons("imputation",
                                                          p("Imputation type", style = 'color:#2E3440'),
-                                                         choices = c("Perseus-type"="man", MSnbase::imputeMethods())[1:9],
+                                                         choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],
                                                          selected = "man"),
                                             
                                             radioButtons("fdr_correction",
