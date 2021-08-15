@@ -405,9 +405,9 @@ server <- function(input, output,session){
         proteins_selected<-data_result()[c(input$contents_rows_selected),]## get all rows selected
       }
       else if(!is.null(input$protein_brush)){
-        proteins_selected<-data_result()[data_result()[["Gene Name"]] %in% protein_name_brush(), ] 
+        proteins_selected<-data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ] 
       }
-      
+      print(proteins_selected)
       ## convert contrast to x and padj to y
       diff_proteins <- grep(paste(input$volcano_cntrst, "_log2", sep = ""),
                             colnames(proteins_selected))
@@ -422,8 +422,8 @@ server <- function(input, output,session){
       
       df_protein <- data.frame(x = proteins_selected[, diff_proteins],
                                y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
-                               name = proteins_selected$`Phosphosite`)
-      #print(df_protein)
+                               name = proteins_selected$Phosphosite)
+      print(df_protein)
       p<-plot_volcano_new(dep(),
                           input$volcano_cntrst,
                           input$fontsize,
@@ -627,13 +627,13 @@ server <- function(input, output,session){
   
   observeEvent(input$protein_brush,{
     output$contents <- DT::renderDataTable({
-      df<- data_result()[data_result()[["Gene Name"]] %in% protein_name_brush(), ]
+      df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ]
       return(df)
     },
     options = list(scrollX= TRUE)
     )
     
-    proteins_selected<-data_result()[data_result()[["Gene Name"]] %in% protein_name_brush(), ] ## get all rows selected
+    proteins_selected<-data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ] ## get all rows selected
     ## convert contrast to x and padj to y
     diff_proteins <- grep(paste(input$volcano_cntrst, "_log2", sep = ""),
                           colnames(proteins_selected))
@@ -647,7 +647,7 @@ server <- function(input, output,session){
     }
     df_protein <- data.frame(x = proteins_selected[, diff_proteins],
                              y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
-                             name = proteins_selected$`Gene Name`)
+                             name = proteins_selected$Phosphosite)
     #print(df_protein)
     
     p<-plot_volcano_new(dep(),
@@ -685,21 +685,14 @@ server <- function(input, output,session){
       df<- data_result()
       return(df)
     },
-    options = list(scrollX = TRUE,
-                   autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
-    )
-  })
-  
-  observeEvent(input$protein_click,{
-    output$contents <- DT::renderDataTable({
-      df<- data_result()[data_result()[["Gene Name"]] %in% protein_name_click(), ]
-      return(df)
-    },
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1))))
     )
+    
+    output$volcano <- renderPlot({
+      volcano_input()
+    })
   })
   
   ## Render Result Plots
@@ -1570,6 +1563,10 @@ server <- function(input, output,session){
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1))))
     )
+    
+    output$volcano_pr <- renderPlot({
+      volcano_input_pr()
+    })
   })
   
   observeEvent(input$protein_click_pr,{

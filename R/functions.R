@@ -664,7 +664,7 @@ get_results_phospho <- function(dep) {
     dplyr::select(name, imputed, num_NAs, Protein.names) %>%
     dplyr::left_join(table, ., by = "name")
   table<-table %>% dplyr::arrange(desc(significant))
-  colnames(table)[1]<-c("Phopshosite")
+  colnames(table)[1]<-c("Phosphosite")
   colnames(table)[2]<-c("Phosphosite ID")
   # table$Gene_name<-table$name
   return(table)

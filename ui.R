@@ -441,8 +441,8 @@ ui <- function(request){
                                                                              # hover = "protein_hover"),
                                                                              #),
                                                                              # click = "protein_click"),
-                                                                             brush = "protein_brush",
-                                                                             click = "protein_click"),
+                                                                             brush = "protein_brush_pr",
+                                                                             click = "protein_click_pr"),
                                                                   downloadButton('downloadVolcano_pr', 'Save Highlighted Plot'),
                                                                   actionButton("resetPlot_pr", "Clear Selection")
                                                                   #)),
