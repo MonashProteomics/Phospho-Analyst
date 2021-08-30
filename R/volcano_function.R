@@ -1,14 +1,14 @@
 ## New function for volcano plot
 #library(dplyr)
-plot_volcano_new <- function(dep, contrast, label_size = 3,
+plot_volcano_new <- function(dep, contrast, apply_anova = FALSE,
                              add_names = TRUE, adjusted = FALSE, plot = TRUE) {
   # Show error if inputs are not the required classes
-  if(is.integer(label_size)) label_size <- as.numeric(label_size)
+  # if(is.integer(label_size)) label_size <- as.numeric(label_size)
   assertthat::assert_that(inherits(dep, "SummarizedExperiment"),
                           is.character(contrast),
                           length(contrast) == 1,
-                          is.numeric(label_size),
-                          length(label_size) == 1,
+                          is.logical(apply_anova),
+                          length(apply_anova) == 1,
                           is.logical(add_names),
                           length(add_names) == 1,
                           is.logical(adjusted),
@@ -57,12 +57,17 @@ plot_volcano_new <- function(dep, contrast, label_size = 3,
   # Generate a data.frame containing all info for the volcano plot
   diff <- grep(paste("^",contrast,"_diff", sep = ""),
                colnames(row_data))
-  if(adjusted) {
-    p_values <- grep(paste("^",contrast, "_p.adj", sep = ""),
-                     colnames(row_data))
+  
+  if(apply_anova){
+    p_values <- grep("anova_p.val", colnames(row_data))
   } else {
-    p_values <- grep(paste("^",contrast, "_p.val", sep = ""),
-                     colnames(row_data))
+    if(adjusted) {
+      p_values <- grep(paste("^",contrast, "_p.adj", sep = ""),
+                       colnames(row_data))
+    } else {
+      p_values <- grep(paste("^",contrast, "_p.val", sep = ""),
+                       colnames(row_data))
+    }
   }
   signif <- grep(paste("^",contrast, "_significant", sep = ""),
                  colnames(row_data))
@@ -95,13 +100,18 @@ plot_volcano_new <- function(dep, contrast, label_size = 3,
   if (add_names) {
     p <- p + ggrepel::geom_text_repel(data = filter(df, signif),
                                       aes(label = name),
-                                      size = label_size,
+                                      size = 4,
                                       box.padding = unit(0.1, 'lines'),
                                       point.padding = unit(0.1, 'lines'),
                                       segment.size = 0.5)
   }
   if(adjusted) {
     p <- p + labs(y = expression(-log[10]~"Adjusted p-value"))
+  } else {
+    p <- p + labs(y = expression(-log[10]~"P-value"))
+  }
+  if(apply_anova) {
+    p <- p + labs(y = expression(-log[10]~"ANOVA p-value"))
   } else {
     p <- p + labs(y = expression(-log[10]~"P-value"))
   }
@@ -123,11 +133,13 @@ plot_volcano_new <- function(dep, contrast, label_size = 3,
 
 
 #####====== get_volcano_df =======#######
-get_volcano_df <- function(dep, contrast, adjusted = FALSE) {
+get_volcano_df <- function(dep, contrast, apply_anova = FALSE, adjusted = FALSE) {
   # Show error if inputs are not the required classes
   assertthat::assert_that(inherits(dep, "SummarizedExperiment"),
                           is.character(contrast),
-                          length(contrast) == 1)
+                          length(contrast) == 1,
+                          is.logical(apply_anova),
+                          length(apply_anova) == 1)
   
   row_data <- rowData(dep, use.names = FALSE)
   
@@ -170,13 +182,19 @@ get_volcano_df <- function(dep, contrast, adjusted = FALSE) {
   # Generate a data.frame containing all info for the volcano plot
   diff <- grep(paste(contrast, "_diff", sep = ""),
                colnames(row_data))
-  if(adjusted) {
-    p_values <- grep(paste(contrast, "_p.adj", sep = ""),
-                     colnames(row_data))
+  if(apply_anova){
+    p_values <- grep("anova_p.val", colnames(row_data))
   } else {
-    p_values <- grep(paste(contrast, "_p.val", sep = ""),
-                     colnames(row_data))
+    if(adjusted) {
+      p_values <- grep(paste(contrast, "_p.adj", sep = ""),
+                       colnames(row_data))
+    } else {
+      p_values <- grep(paste(contrast, "_p.val", sep = ""),
+                       colnames(row_data))
+    }
   }
+  
+  
   signif <- grep(paste(contrast, "_significant", sep = ""),
                  colnames(row_data))
   df_tmp <- data.frame(diff = row_data[, diff],
@@ -204,9 +222,9 @@ plot_protein<-function(dep, protein, type){
   
   df_CI<- df_reps %>%
     group_by(condition, rowname) %>%
-    summarize(mean = mean(val, na.rm = TRUE),
-              sd = sd(val, na.rm = TRUE),
-              n = n()) %>%
+    dplyr::summarize(mean = mean(val, na.rm = TRUE),
+                     sd = sd(val, na.rm = TRUE),
+                     n = n()) %>%
     mutate(error = qnorm(0.975) * sd / sqrt(n),
            CI.L = mean - error,
            CI.R = mean + error) %>%
@@ -274,8 +292,9 @@ plot_protein<-function(dep, protein, type){
   return(p)
 }
 
-plot_volcano_mod <- function(dep, contrast, label_size = 3,
-                             add_names = TRUE, adjusted = FALSE, plot = TRUE) {
+# anova volcano
+plot_volcano_anova <- function(dep, contrast,label_size = 3,
+                               add_names = TRUE, adjusted = FALSE, plot = TRUE) {
   # Show error if inputs are not the required classes
   if(is.integer(label_size)) label_size <- as.numeric(label_size)
   assertthat::assert_that(inherits(dep, "SummarizedExperiment"),
@@ -289,9 +308,9 @@ plot_volcano_mod <- function(dep, contrast, label_size = 3,
                           length(adjusted) == 1,
                           is.logical(plot),
                           length(plot) == 1)
-  
+
   row_data <- rowData(dep, use.names = FALSE)
-  
+
   # Show error if inputs do not contain required columns
   if(any(!c("name", "ID") %in% colnames(row_data))) {
     stop(paste0("'name' and/or 'ID' columns are not present in '",
@@ -311,9 +330,9 @@ plot_volcano_mod <- function(dep, contrast, label_size = 3,
                 "'.\nRun add_rejections() to obtain the required columns."),
          call. = FALSE)
   }
-  
+
   # Show error if an unvalid contrast is given
-  if (length(grep(paste("^",contrast, "_diff", sep = ""),
+  if (length(grep(paste("^",contrast,"_diff", sep = ""),
                   colnames(row_data))) == 0) {
     valid_cntrsts <- row_data %>%
       data.frame() %>%
@@ -327,33 +346,39 @@ plot_volcano_mod <- function(dep, contrast, label_size = 3,
          valid_cntrsts_msg,
          call. = FALSE)
   }
-  
+
   # Generate a data.frame containing all info for the volcano plot
-  diff <- grep(paste("^",contrast, "_diff", sep = ""),
+  diff <- grep(paste("^",contrast,"_diff", sep = ""),
                colnames(row_data))
-  if(adjusted) {
-    p_values <- grep(paste("^",contrast, "_p.adj", sep = ""),
-                     colnames(row_data))
-  } else {
-    p_values <- grep(paste("^", contrast, "_p.val", sep = ""),
-                     colnames(row_data))
-  }
+  # if(adjusted) {
+  #   p_values <- grep(paste("^",contrast, "_p.adj", sep = ""),
+  #                    colnames(row_data))
+  # } else {
+  #   p_values <- grep(paste("^",contrast, "_p.val", sep = ""),
+  #                    colnames(row_data))
+  # }
+  p_values <- grep("anova_p.val", colnames(row_data))
+    
+    
+    
+    row_data$anova_p.val
+
   signif <- grep(paste("^",contrast, "_significant", sep = ""),
                  colnames(row_data))
-  df <- data.frame(x = row_data[, diff],
-                   y = -log10(row_data[, p_values]),
-                   significant = row_data[, signif],
-                   name = row_data$name) %>%
-    filter(!is.na(significant)) %>%
-    arrange(significant)
-  
+  df_tmp <- data.frame(diff = row_data[, diff],
+                       p_values = -log10(row_data[, p_values]),
+                       signif = row_data[, signif],
+                       name = row_data$name)
+  df<- df_tmp %>% data.frame() %>% filter(!is.na(signif)) %>%
+    arrange(signif)
+
   name1 <- gsub("_vs_.*", "", contrast)
   name2 <- gsub(".*_vs_", "", contrast)
-  
+  #return(df)
   # Plot volcano with or without labels
-  p <- ggplot(df, aes(x, y)) +
+  p <- ggplot(df, aes(diff, p_values)) +
     geom_vline(xintercept = 0) +
-    geom_point(aes(col = significant)) +
+    geom_point(aes(col = signif)) +
     geom_text(data = data.frame(), aes(x = c(Inf, -Inf),
                                        y = c(-Inf, -Inf),
                                        hjust = c(1, 0),
@@ -367,7 +392,7 @@ plot_volcano_mod <- function(dep, contrast, label_size = 3,
     theme(legend.position = "none") +
     scale_color_manual(values = c("TRUE" = "black", "FALSE" = "grey"))
   if (add_names) {
-    p <- p + ggrepel::geom_text_repel(data = filter(df, significant),
+    p <- p + ggrepel::geom_text_repel(data = filter(df, signif),
                                       aes(label = name),
                                       size = label_size,
                                       box.padding = unit(0.1, 'lines'),
@@ -380,10 +405,12 @@ plot_volcano_mod <- function(dep, contrast, label_size = 3,
     p <- p + labs(y = expression(-log[10]~"P-value"))
   }
   if(plot) {
+    # return(list(p, df))
+    # return(df)
     return(p)
   } else {
     df <- df %>%
-      select(name, x, y, significant) %>%
+      select(name, diff, p_value, signif) %>%
       arrange(desc(x))
     colnames(df)[c(1,2,3)] <- c("protein", "log2_fold_change", "p_value_-log10")
     if(adjusted) {
@@ -392,4 +419,3 @@ plot_volcano_mod <- function(dep, contrast, label_size = 3,
     return(df)
   }
 }
-

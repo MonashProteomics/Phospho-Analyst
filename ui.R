@@ -211,20 +211,24 @@ ui <- function(request){
                                                        width = 12,
                                                        tabPanel(title = "Volcano plot",
                                                                 fluidRow(
-                                                                  box(uiOutput("volcano_cntrst"), width = 5),
-                                                                  box(numericInput("fontsize",
-                                                                                   "Font size",
-                                                                                   min = 0, max = 8, value = 4),
-                                                                      width = 3),
-                                                                  box(checkboxInput("check_names",
-                                                                                    "Display names",
-                                                                                    value = FALSE),
-                                                                      checkboxInput("p_adj",
-                                                                                    "Adjusted p values",
-                                                                                    value = FALSE),
-                                                                      width = 4),
+                                                                  box(width = 12,
+                                                                    column(8,uiOutput("volcano_cntrst")),
+                                                                    
+                                                                    column(4,
+                                                                           prettyCheckbox("check_anova",
+                                                                                          "Apply ANOVA",
+                                                                                          value = FALSE),
+                                                                           prettyCheckbox("check_names",
+                                                                                          "Display names",
+                                                                                          value = FALSE),
+                                                                           prettyCheckbox("p_adj",
+                                                                                          "Adjusted p values",
+                                                                                          value = FALSE)
+                                                                           )
+                                                                  ),
                                                                   tags$p("Select phosphosite from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of phosphosite in Table")
+                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                                         for more than two groups.")
                                                                   #Add text line
                                                                   # tags$p("OR"),
                                                                   #  tags$p("Drag the mouse on plot to show expression of proteins in Table") 
@@ -417,20 +421,24 @@ ui <- function(request){
                                                        width = 12,
                                                        tabPanel(title = "Volcano plot",
                                                                 fluidRow(
-                                                                  box(uiOutput("volcano_cntrst_pr"), width = 5),
-                                                                  box(numericInput("fontsize_pr",
-                                                                                   "Font size",
-                                                                                   min = 0, max = 8, value = 4),
-                                                                      width = 3),
-                                                                  box(checkboxInput("check_names_pr",
-                                                                                    "Display names",
-                                                                                    value = FALSE),
-                                                                      checkboxInput("p_adj_pr",
-                                                                                    "Adjusted p values",
-                                                                                    value = FALSE),
-                                                                      width = 4),
-                                                                  tags$p("Select protein from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of protein in Table")
+                                                                  box(width = 12,
+                                                                      column(8,uiOutput("volcano_cntrst_pr")),
+                                                                      
+                                                                      column(4,
+                                                                             prettyCheckbox("check_anova_pr",
+                                                                                            "Apply ANOVA",
+                                                                                            value = FALSE),
+                                                                             prettyCheckbox("check_names_pr",
+                                                                                            "Display names",
+                                                                                            value = FALSE),
+                                                                             prettyCheckbox("p_adj_pr",
+                                                                                            "Adjusted p values",
+                                                                                            value = FALSE)
+                                                                      )
+                                                                  ),
+                                                                  tags$p("Select phosphosite from Results Table to highlight on the plot OR 
+                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                                         for more than two groups.")
                                                                   #Add text line
                                                                   # tags$p("OR"),
                                                                   #  tags$p("Drag the mouse on plot to show expression of proteins in Table") 
@@ -574,13 +582,22 @@ ui <- function(request){
                                                               title = 'Volcano plot', 
                                                               status = "primary",
                                                               solidHeader = TRUE,
+                                                              column(12,
+                                                                column(6,uiOutput("volcano_comp")),
+                                                                column(6,
+                                                                       br(),
+                                                                       br(),
+                                                                       prettyCheckbox("check_anova_comp",
+                                                                                        "Apply ANOVA",
+                                                                                        value = FALSE)),
+                                                              ),
                                                               box(width = 6,'Unnormalized Phospho volcano',
                                                                   plotOutput('volcano_phospho')),
                                                               box(width = 6,'Normalized Phospho volcano by protein',
                                                                   plotOutput('volcano_phospho_2'))
                                                               
                                                           )
-                                                 ),
+                                                 ), # fluid colsed
                                                  fluidRow(width = 12,
                                                           box(width = 12,
                                                               title = 'Whole experiment-level comparison',
