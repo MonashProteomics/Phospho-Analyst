@@ -34,7 +34,7 @@ server <- function(input, output,session){
                 appear on the screen", type="info",
                closeOnClickOutside = TRUE,
                closeOnEsc = TRUE,
-               timer = 10000) # timer in miliseconds (10 sec)
+               timer = 25000) # timer in miliseconds (10 sec)
   })
   
   observe({
@@ -277,17 +277,12 @@ server <- function(input, output,session){
     return(as.data.frame(temp1))
   })
   
-  normalised_data<-reactive({
-    print(dim(assay(processed_data())))
-    # cat('Number of non-numeric Score.diff:',count(is.numeric(rowData(processed_data())$Score.diff) == FALSE),'\n') # test
-    # cat('Non-numeric index:',which(is.na(as.numeric(rowData(processed_data())$Score.diff))),'\n')  # test
-    
-    normalize_vsn(processed_data())
+  imputed_data<-reactive({
+    DEP::impute(processed_data(),input$imputation)
   })
   
-  imputed_data<-reactive({
-    
-    DEP::impute(normalised_data(),input$imputation)
+  normalised_data<-reactive({
+    normalize_vsn(imputed_data())
   })
   
   imputed_table<-reactive({
@@ -321,7 +316,7 @@ server <- function(input, output,session){
       
     }
     else if(length(unique(exp_design_input()$condition)) >= 3){
-      anova_dep <- diff_all_rej
+      anova_dep <- diff_all
       # get assay data
       intensity <- assay(anova_dep)
       exp_design <- exp_design_input()
@@ -338,14 +333,23 @@ server <- function(input, output,session){
       # apply anova function
       anova<-data_experiment %>%
         group_by(`uid`) %>%
-        do(anova_function(.))  %>% dplyr::select(p.value) %>%
+        do(anova_function(.)) %>% dplyr::select(p.value) %>%
         ungroup()
       
       colnames(anova)<-c("name", "anova_p.val")
       
-      # add anova value to row data
+      # add anova p.value to row data
       rowData(anova_dep) <- merge(rowData(anova_dep), anova, by = 'name', sort = FALSE)
-      return(anova_dep)
+      anova_dep_rej <- DEP::add_rejections(anova_dep,alpha = input$p, lfc= input$lfc)
+      
+      # calculate adjusted anova p.value to data
+      anova_adj <-anova
+      anova_adj$anova_p.adj <- p.adjust(anova_adj$anova_p.val,method = input$fdr_correction)
+      anova_adj <- anova_adj %>% select(-anova_p.val)
+      
+      # add adjusted anova p.value to row data
+      rowData(anova_dep_rej) <- merge(rowData(anova_dep_rej), anova_adj, by = 'name', sort = FALSE)
+      return(anova_dep_rej)
     }
     
   })
@@ -639,6 +643,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents <- DT::renderDataTable({
+    withProgress(message = 'Result table calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
     df<- data_result()
     return(df)
   },
@@ -696,6 +707,7 @@ server <- function(input, output,session){
   
   observeEvent(input$protein_brush,{
     output$contents <- DT::renderDataTable({
+      
       df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ]
       return(df)
     },
@@ -1164,51 +1176,6 @@ server <- function(input, output,session){
     }
   })
   
-  
-  dep_pr<-reactive({
-    if(input$fdr_correction=="BH"){
-      diff_all<-test_limma(imputed_data_pr(),type='all', paired = input$paired)
-      diff_all_rej <- add_rejections(diff_all,alpha = input$p, lfc= input$lfc)
-    }
-    else{
-      diff_all<-test_diff(imputed_data_pr(),type='all')
-      diff_all_rej <- add_rejections(diff_all,alpha = input$p, lfc= input$lfc)
-    }
-    
-    if(length(unique(exp_design_input()$condition)) <= 2){
-      return(diff_all_rej)
-      
-    }
-    else if(length(unique(exp_design_input()$condition)) >= 3){
-      anova_dep <- diff_all_rej
-      # get assay data
-      intensity <- assay(anova_dep)
-      exp_design <- exp_design_input()
-      exp_design_rename<-exp_design
-      exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
-      
-      # reshape intensity columns
-      data_reshape<-reshape2::melt(intensity,value.name = "intensity", variable.name = "label")
-      colnames(data_reshape)<-c("uid", "label", "intensity")
-      
-      # Join the table
-      data_experiment<-left_join(data_reshape, exp_design_rename, by="label")
-      
-      # apply anova function
-      anova<-data_experiment %>%
-        group_by(`uid`) %>%
-        do(anova_function(.))  %>% dplyr::select(p.value) %>%
-        ungroup()
-      
-      colnames(anova)<-c("name", "anova_p.val")
-      
-      # add anova value to row data
-      rowData(anova_dep) <- merge(rowData(anova_dep), anova, by = 'name', sort = FALSE)
-      return(anova_dep)
-    }
-  })
-  
-  
   comparisons_pr<-reactive({
     temp<-capture.output(DEP::test_diff(imputed_data_pr(),type='all'),type = "message")
     gsub(".*: ","",temp)
@@ -1493,7 +1460,7 @@ server <- function(input, output,session){
       
     }
     else if(length(unique(exp_design_input()$condition)) >= 3){
-      anova_dep <- diff_all_rej
+      anova_dep <- diff_all
       # get assay data
       intensity <- assay(anova_dep)
       exp_design <- exp_design_input()
@@ -1510,14 +1477,23 @@ server <- function(input, output,session){
       # apply anova function
       anova<-data_experiment %>%
         group_by(`uid`) %>%
-        do(anova_function(.))  %>% dplyr::select(p.value) %>%
+        do(anova_function(.)) %>% dplyr::select(p.value) %>%
         ungroup()
       
       colnames(anova)<-c("name", "anova_p.val")
       
-      # add anova value to row data
+      # add anova p.value to row data
       rowData(anova_dep) <- merge(rowData(anova_dep), anova, by = 'name', sort = FALSE)
-      return(anova_dep)
+      anova_dep_rej <- DEP::add_rejections(anova_dep,alpha = input$p, lfc= input$lfc)
+      
+      # calculate adjusted anova p.value to data
+      anova_adj <-anova
+      anova_adj$anova_p.adj <- p.adjust(anova_adj$anova_p.val,method = input$fdr_correction)
+      anova_adj <- anova_adj %>% select(-anova_p.val)
+
+      # add adjusted anova p.value to row data
+      rowData(anova_dep_rej) <- merge(rowData(anova_dep_rej), anova_adj, by = 'name', sort = FALSE)
+      return(anova_dep_rej)
     }
   })
   
@@ -1644,6 +1620,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents_pr <- DT::renderDataTable({
+    withProgress(message = 'Result table calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
     df<- data_result_pr()
     return(df)
   },
@@ -2032,7 +2015,7 @@ server <- function(input, output,session){
   combined_df <- reactive({
     df <- phospho_df() %>%
       left_join(., protein_df(), by = "Gene.names")
-    df$protein_diff[is.na(df$protein_diff)] <- 0
+    # df$protein_diff[is.na(df$protein_diff)] <- 0
     df$normalized_diff <- df$phospho_diff - df$protein_diff
     # get index of the p.val
     pval <- grep("_p.val.x",colnames(df))
@@ -2052,8 +2035,8 @@ server <- function(input, output,session){
   
   # gene names for selection input
   gene_names <- reactive({
-    gene_names <- phospho_df() %>%
-      inner_join(., protein_df(), by = "Gene.names") %>% 
+    gene_names <- phospho_df_long() %>%
+      inner_join(., protein_df_long(), by = "Gene.names") %>% 
       select('Gene.names') %>%
       unique()
   })
@@ -2180,7 +2163,8 @@ server <- function(input, output,session){
     
     df$p_values <- as.numeric(df[, pval])
     
-    df %>% ggplot(aes(x = phospho_diff, y = -log10(p_values))) +
+    df %>% filter(!is.na(protein_diff)) %>%
+      ggplot(aes(x = normalized_diff, y = -log10(p_values))) +
       geom_point(aes(color = n_p_value_desc)) +
       labs(x = 'Phosphosite log fold change',
            y = '-log10(p-value)') +
@@ -2194,7 +2178,7 @@ server <- function(input, output,session){
   
   scatter_plot <- reactive({
     df <- combined_df()
-    df %>% 
+    df %>% filter(!is.na(protein_diff))  %>% 
       ggplot(aes(x=phospho_diff, y=protein_diff)) + 
       geom_point(size = 2, alpha = 0.8) +
       geom_text_repel( 
@@ -2203,7 +2187,7 @@ server <- function(input, output,session){
         aes(label=phospho_id),
         nudge_x = 0.5, nudge_y = 0,
         size = 4) + 
-      labs(title = 'Comparison between phospho and protein log fold change',
+      labs(title = paste(input$volcano_comp,'Comparison between phospho and protein log fold change', sep = "\n"),
            x = 'Phosphosite log fold change', y = 'Protein log fold change') +
       theme(plot.title = element_text(hjust = 0.5))
   })

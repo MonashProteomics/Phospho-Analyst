@@ -538,8 +538,9 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   
   # Join into a results table
   if (apply_anova){
-    ids <- as.data.frame(row_data) %>% dplyr::select(name, ID,anova_p.val)
-    ids$anova_p.val <- round(ids$anova_p.val, digits = 3)
+    ids <- as.data.frame(row_data) %>% dplyr::select(name, ID,anova_p.val,anova_p.adj)
+    # ids$anova_p.val <- round(ids$anova_p.val, digits = 3)
+    # ids$anova_p.adj <- round(ids$anova_p.adj, digits = 3)
   } else {
     ids <- as.data.frame(row_data) %>% dplyr::select(name, ID)
   }
@@ -554,11 +555,11 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   table<-table %>% dplyr::arrange(desc(significant))
   colnames(table)[1]<-c("Phosphosite")
   colnames(table)[2]<-c("Phosphosite ID")
+  
   if (apply_anova){
     colnames(table)[3]<-c("ANOVA_p.val")
-  }
-  if (apply_anova){
-    table<- table %>% dplyr::select(-anova_p.val.y)
+    colnames(table)[4]<-c("ANOVA_p.adj")
+    table<- table %>% dplyr::select(-anova_p.val.y,-anova_p.adj.y)
   } 
   
   return(table)
@@ -625,8 +626,9 @@ get_results_proteins <- function(dep, apply_anova = FALSE) {
   
   # Join into a results table
   if (apply_anova){
-    ids <- as.data.frame(row_data) %>% dplyr::select(name, ID,anova_p.val)
-    ids$anova_p.val <- round(ids$anova_p.val, digits = 3)
+    ids <- as.data.frame(row_data) %>% dplyr::select(name, ID,anova_p.val,anova_p.adj)
+    # ids$anova_p.val <- round(ids$anova_p.val, digits = 3)
+    # ids$anova_p.adj <- round(ids$anova_p.adj, digits = 3)
   } else {
     ids <- as.data.frame(row_data) %>% dplyr::select(name, ID)
   }
@@ -640,9 +642,12 @@ get_results_proteins <- function(dep, apply_anova = FALSE) {
   table<-table %>% dplyr::arrange(desc(significant))
   colnames(table)[1]<-c("Gene Name")
   colnames(table)[2]<-c("Protein ID")
+
   if (apply_anova){
     colnames(table)[3]<-c("ANOVA_p.val")
-  }
+    colnames(table)[4]<-c("ANOVA_p.adj")
+    table<- table %>% dplyr::select(-anova_p.val.y,-anova_p.adj.y)
+  } 
   # table$Gene_name<-table$name
   return(table)
 }
