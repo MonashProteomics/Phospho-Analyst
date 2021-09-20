@@ -11,6 +11,7 @@ server <- function(input, output,session){
     shinyjs::show("qc_tab")
   })
   
+  # Hide other pages if only upload one of the phosphosite or protein data file
   observeEvent(input$analyze ,{ 
     if (is.null(input$file1)){
       hideTab(inputId = "panel_list", target = "PhosphoPage")
@@ -49,8 +50,8 @@ server <- function(input, output,session){
     }
   })
   
+  #### Phosphosite page logic ========== #############
   ####======= Render Functions
-  
   output$volcano_cntrst <- renderUI({
     if (!is.null(comparisons())) {
       df <- SummarizedExperiment::rowData(dep())
@@ -60,7 +61,6 @@ server <- function(input, output,session){
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
   })
-  
   
   ##comparisons
   output$contrast <- renderUI({
@@ -72,8 +72,6 @@ server <- function(input, output,session){
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
   })
-  
-  
   
   output$contrast_1 <- renderUI({
     if (!is.null(comparisons())) {
@@ -118,29 +116,10 @@ server <- function(input, output,session){
     }
   })
   
-  
-  ## Read input files on shiny server
-  ## NOTE: have to use reactive framework, otherwise throws out error
-  # observeEvent(input$analyze,{
-  #   maxquant_data<-reactive({
-  #     inFile<-input$file1
-  #     if(is.null(inFile))
-  #       return(NULL)
-  #     read.table(inFile$datapath,
-  #                header = TRUE,
-  #                fill= TRUE, # to fill any missing data
-  #                sep = "\t"
-  #     )
-  #   })
-  # })
-  
-  ## make reactive elements
+  ## make reactive elements of the input data
   phospho_data_input<-reactive({NULL})
   protein_data_input<-reactive({NULL})
-  
   exp_design_input<-reactive({NULL})
-  # exp_design_example<-reactive({NULL})
-  # maxquant_data_example<-reactive({NULL})
   
   phospho_data_input<-eventReactive(input$analyze,{
     inFile<-input$file1
@@ -184,9 +163,8 @@ server <- function(input, output,session){
   
   
   
-  
-  
   ### Reactive components
+  # Data cleaning
   cleaned_data<- reactive({
     ## check which dataset
     if(!is.null (phospho_data_input() )){
@@ -203,14 +181,7 @@ server <- function(input, output,session){
     
     filtered_data<-ids_test(filtered_data)
     
-    
-    # 
-    # filtered_data <- phospho_data() %>% dplyr::filter(Reverse != '+') %>%
-    #   dplyr::filter(Potential.contaminant != '+') %>%
-    #   dplyr::select(- `Reverse`,-`Potential.contaminant`)
-    # filtered_data<-ids_test(filtered_data)
-    
-    # 5. Expand Site table
+    ## Expand Site table
     # get all intensity columns
     intensity <- grep("^Intensity.+|Intensity", colnames(filtered_data)) 
     # get the required intensity columns
@@ -231,16 +202,19 @@ server <- function(input, output,session){
     peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
     data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
     
-    # 9. Convert the data into SummarisedExperiment object.
+    # create unique name and ID columns for the data
+    # data_pre <- data_pre %>% 
+    #   mutate(name = paste(Gene.names,Positions.within.proteins, Multiplicity,sep = '_'))
     data_pre <- data_pre %>% 
-      mutate(name = paste(Gene.names,Positions.within.proteins, Multiplicity,sep = '_'))
+      mutate(name = paste(Protein,Positions.within.proteins, Multiplicity,sep = '_'))
+    
     data_pre <- data_pre %>% 
       mutate(ID = paste(id,Multiplicity, sep = '_'))
     return(data_pre)
   })
   
   
-  
+  ## Convert the data into SummarisedExperiment object,removing multipple missing value rows
   processed_data<- reactive({
     if(!is.null (exp_design_input() )){
       exp_design<-reactive({exp_design_input()})
@@ -256,9 +230,7 @@ server <- function(input, output,session){
     
     as.numeric(rowData(data_se)$Score.diff) # add test
     
-    
     ## Check for matching columns in maxquant and experiment design file
-    
     # Check number of replicates
     if(max(exp_design()$replicate)<3){
       threshold<-0
@@ -270,6 +242,7 @@ server <- function(input, output,session){
       threshold<-trunc(max(exp_design()$replicate)/2)
     }
     
+    # removing multipple missing value rows
     filter_missval(data_se,thr = threshold)
   })
   
@@ -304,9 +277,6 @@ server <- function(input, output,session){
   })
   
   dep<-reactive({
-    # cat('Number of non-numeric Score.diff:',count(is.numeric(rowData(imputed_data())$Score.diff) == FALSE),'\n') # test
-    # cat('Non-numeric index:',which(is.na(as.numeric(rowData(imputed_data())$Score.diff))),'\n')  # test
-    
     if(input$fdr_correction=="BH"){
       diff_all<-test_limma(normalised_data(),type='all', paired = input$paired)
       diff_all_rej <- add_rejections(diff_all,alpha = input$p, lfc= input$lfc)
@@ -368,13 +338,6 @@ server <- function(input, output,session){
     trimws(temp)
   })
   
-  ## Select point on volcano plot
-  # protein_graph_selected<- reactive({
-  #   protein_row<-nearPoints(data_result(), input$protein_click,
-  #                           maxpoints = 1)
-  #  # as.character(protein_row$name)
-  # })
-  # 
   
   ## Results plot inputs
   
@@ -464,7 +427,6 @@ server <- function(input, output,session){
     }
   })
   
-  
   volcano_input_selected<-reactive({
     if(!is.null(input$volcano_cntrst)){
       
@@ -517,7 +479,6 @@ server <- function(input, output,session){
   })
   
   protein_input<-reactive({ 
-    
     protein_selected  <- data_result()[input$contents_rows_selected,1]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep())$replicate))) <= 8){
@@ -578,7 +539,6 @@ server <- function(input, output,session){
   }) 
   
   ## Enrichment inputs
-  
   go_input<-eventReactive(input$go_analysis,{
     withProgress(message = 'Gene ontology enrichment is in progress',
                  detail = 'Please wait for a while', value = 0, {
@@ -612,7 +572,6 @@ server <- function(input, output,session){
     return(pathway_list)
   })
   
-  
   #### Interactive UI
   output$significantBox <- renderInfoBox({
     num_total <- dep() %>%
@@ -622,7 +581,7 @@ server <- function(input, output,session){
       nrow()
     frac <- num_signif / num_total
     
-    info_box <- 		infoBox("Significant proteins",
+    info_box <- infoBox("Significant proteins",
                           paste0(num_signif,
                                  " out of ",
                                  num_total),
@@ -681,6 +640,7 @@ server <- function(input, output,session){
     )
   })
   
+  # Name brush function
   protein_name_brush<- reactive({
     #protein_tmp<-nearPoints(volcano_df(), input$protein_click, maxpoints = 1)
     protein_tmp<-brushedPoints(volcano_df(), input$protein_brush, 
@@ -693,19 +653,6 @@ server <- function(input, output,session){
     #xvar = "diff", yvar = "p_values")
     protein_selected<-protein_tmp$name
   }) 
-  #   observeEvent(input$protein_brush,{
-  # output$protein_info<-renderPrint({
-  # #  protein_selected()
-  #   #nearPoints(rowData(dep()), input$protein_click, maxpoints = 1)
-  #   brushedPoints(volcano_df(), input$protein_brush, 
-  #               xvar = "diff", yvar = "p_values")
-  #  # head(volcano_df())
-  #   #input$protein_click
-  #  # str(input$protein_hover)
-  # })
-  #  })
-  
-  ## Select rows dynamically
   
   brush <- NULL
   makeReactiveBinding("brush")
@@ -750,11 +697,6 @@ server <- function(input, output,session){
                           input$check_names,
                           input$p_adj)
     }
-    # p<-plot_volcano_new(dep(),
-    #                     input$volcano_cntrst,
-    #                     input$check_anova,
-    #                     input$check_names,
-    #                     input$p_adj)
     
     p<- p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
       ggrepel::geom_text_repel(data = df_protein,
@@ -1117,8 +1059,7 @@ server <- function(input, output,session){
   )
   
   
-  
-  #### protein page logic ========== #############
+  #### Protein page logic ========== #############
   
   ####======= Render Functions
   
@@ -1189,6 +1130,8 @@ server <- function(input, output,session){
     ## Remove leading and trailing spaces
     trimws(temp)
   })
+  
+  
   ## Results plot inputs
   
   ## PCA Plot
@@ -1284,8 +1227,8 @@ server <- function(input, output,session){
   
   volcano_input_selected_pr<-reactive({
     if(!is.null(input$volcano_cntrst_pr)){
-      if (!is.null(input$contents_pr_rows_selected)){
-        proteins_selected<-data_result_pr()[c(input$contents_pr_rows_selected),]## get all rows selected
+      if (!is.null(input$contents_nr_rows_selected)){
+        proteins_selected<-data_result_pr()[c(input$contents_nr_rows_selected),]## get all rows selected
       }
       else if(!is.null(input$protein_brush_pr)){
         proteins_selected<-data_result_pr()[data_result_pr()[["Gene Name"]] %in% protein_name_brush_pr(), ] 
@@ -1760,6 +1703,7 @@ server <- function(input, output,session){
     options = list(scrollX= TRUE)
     )
   })
+  
   ## Render Result Plots
   output$pca_plot_pr<-renderPlot({
     pca_input_pr()
@@ -1929,7 +1873,6 @@ server <- function(input, output,session){
   )
   
   
-  
   #####===== Download Report =====#####
   output$downloadReport_pr <- downloadHandler(
     
@@ -1938,7 +1881,7 @@ server <- function(input, output,session){
       file.copy("www/LFQ-Analyst_report.pdf",file)   }
   )
   
-  # Comparison page plots
+  #### Comparison page logic ========== #############
   ####======= Render Functions
   
   output$volcano_comp <- renderUI({
@@ -1951,6 +1894,15 @@ server <- function(input, output,session){
     }
   })
   
+  output$selected_gene = renderUI({
+    selectInput('selected_gene', 
+                label='Select one or more Gene names', 
+                choices = as.list(gene_names()$Gene.names),
+                selected = NULL,
+                multiple = TRUE) 
+  })
+  
+  # Reactive components
   phospho_df <- reactive({
     # phospho_row <- rowData(dep()) %>% as.data.frame()
     phospho_row <- data_result() %>% mutate(rowname = Phosphosite) %>% as.data.frame()
@@ -2117,7 +2069,7 @@ server <- function(input, output,session){
     
   })
   
-  # volcano plots
+  # volcano plots input
   volcano_phospho <- reactive({
     df <- combined_df() 
     print(colnames(df))  # test
@@ -2193,6 +2145,7 @@ server <- function(input, output,session){
       scale_color_manual(values = c("#003399", "#999999", "#b30000"))
   })
   
+  # Phosphosite and protein log fold change scatter plot input
   scatter_plot <- reactive({
     df <- combined_df()
     df %>% filter(!is.na(protein_diff))  %>% 
@@ -2209,6 +2162,7 @@ server <- function(input, output,session){
       theme(plot.title = element_text(hjust = 0.5))
   })
   
+  # Output plots
   output$volcano_phospho <-renderPlot({
     withProgress(message = 'Volcano Plot calculations are in progress',
                  detail = 'Please wait for a while', value = 0, {
@@ -2229,7 +2183,9 @@ server <- function(input, output,session){
                  })
     volcano_phospho_2()
   })
-  # combined qc plots
+  
+  
+  # Output combined QC plots
   output$pca_plot_c <- renderPlot({
     ggarrange(pca_input() + labs(title = 'Phospho'), 
               pca_input_pr() + labs(title = "Protein"), 
@@ -2239,10 +2195,6 @@ server <- function(input, output,session){
   output$scatter_plot <- renderPlot({
     scatter_plot()
   })
-  
-  # output$sample_corr_c <- renderPlot({
-  #     plot_grid(correlation_input(), correlation_input_pr())
-  # })
   
   output$sample_corr_c1 <- renderPlot({
     correlation_input()
@@ -2275,10 +2227,6 @@ server <- function(input, output,session){
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
-  # output$missval_c <- renderPlot({
-  #     plot_grid(missval_input() + labs(title = 'Phospho'), 
-  #               missval_input_pr() + labs(title = "Protein"))
-  # })
   
   output$missval_c1 <- renderPlot({
     missval_input()
@@ -2294,6 +2242,7 @@ server <- function(input, output,session){
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
+  # Output interactive plots
   output$combined_inter <- renderPlot({
     combined_inter()
   })
@@ -2328,17 +2277,9 @@ server <- function(input, output,session){
       coord_flip() +
       theme(axis.text.x = element_text(angle = 45)) 
   })
+
   
-  output$selected_gene = renderUI({
-    selectInput('selected_gene', 
-                label='Select one or more Gene names', 
-                choices = as.list(gene_names()$Gene.names),
-                selected = NULL,
-                multiple = TRUE) 
-  })
-  
-  
-  ##### Normalized page
+  #### Normalized page logic ========== #############
   ####======= Render Functions
   
   output$volcano_cntrst_nr <- renderUI({
@@ -2351,7 +2292,6 @@ server <- function(input, output,session){
     }
   })
   
-  
   ##comparisons
   output$contrast_nr <- renderUI({
     if (!is.null(comparisons())) {
@@ -2362,8 +2302,6 @@ server <- function(input, output,session){
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
   })
-  
-  
   
   output$contrast_1_nr <- renderUI({
     if (!is.null(comparisons())) {
@@ -2416,7 +2354,7 @@ server <- function(input, output,session){
     phospho_pre <- cleaned_data()
     protein_pre <- cleaned_data_pr()
     protein_pre <-  protein_pre %>% 
-      select("Gene.names", grep("LFQ.", colnames(protein_pre))) # select the intensity columns
+      select("Majority.protein.IDs", grep("LFQ.", colnames(protein_pre))) # select the intensity columns
     
     # save phospho intensity colnames for use
     intensity_names <- colnames(phospho_pre)[grep("Intensity.", colnames(phospho_pre))]
@@ -2442,11 +2380,12 @@ server <- function(input, output,session){
     }
     
     protein_median <- protein_pre %>% 
-      select("Gene.names",grep("median", colnames(protein_pre)))
+      select("Majority.protein.IDs",grep("median", colnames(protein_pre)))
     
     # join two raw data 
-    phospho_protein <- phospho_pre %>% left_join(., protein_median, by = "Gene.names")
-    phospho_protein <- phospho_protein %>% filter(across(starts_with("median_"), ~ !is.na(.x))) # filter NA protein median value
+    phospho_protein <- phospho_pre %>% left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs"))
+    # change NA median protein value to zero
+    phospho_protein <- mutate_at(phospho_protein, grep("median_", colnames(phospho_protein)), ~replace(., is.na(.), 0))
     
     # use each phosphosite intensity value to subtract median protein intensity of a same group
     phospho_protein_1 <- phospho_protein
@@ -2585,14 +2524,14 @@ server <- function(input, output,session){
     if(input$analyze==0 ){
       return()
     }
-    if (num_total()<=500){
+    if (num_total_nr()<=500){
       if(length(levels(as.factor(colData(dep_nr())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_nr(), n=num_total(), point_size = 4)
+        pca_plot<-DEP::plot_pca(dep_nr(), n=num_total_nr(), point_size = 4)
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
       else{
-        pca_plot<-DEP::plot_pca(dep_nr(), n=num_total(), point_size = 4, indicate = "condition") 
+        pca_plot<-DEP::plot_pca(dep_nr(), n=num_total_nr(), point_size = 4, indicate = "condition") 
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
@@ -2663,11 +2602,11 @@ server <- function(input, output,session){
   volcano_input_selected_nr<-reactive({
     if(!is.null(input$volcano_cntrst_nr)){
       
-      if (!is.null(input$contents_pr_rows_selected)){
-        proteins_selected<-data_result()[c(input$contents_pr_rows_selected),]## get all rows selected
+      if (!is.null(input$contents_nr_rows_selected)){
+        proteins_selected<-data_result_nr()[c(input$contents_nr_rows_selected),]## get all rows selected
       }
-      else if(!is.null(input$protein_brush)){
-        proteins_selected<-data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ] 
+      else if(!is.null(input$protein_brush_nr)){
+        proteins_selected<-data_result_nr()[data_result_nr()[["Phosphosite"]] %in% protein_name_brush_nr(), ] 
       }
       print(proteins_selected)
       ## convert contrast to x and padj to y
@@ -2713,7 +2652,7 @@ server <- function(input, output,session){
   
   protein_input_nr<-reactive({ 
     
-    protein_selected  <- data_result()[input$contents_pr_rows_selected,1]
+    protein_selected  <- data_result_nr()[input$contents_nr_rows_selected,1]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep_nr())$replicate))) <= 8){
       plot_protein(dep_nr(), protein_selected, as.character(input$type))
@@ -2915,7 +2854,7 @@ server <- function(input, output,session){
     }
     df_protein <- data.frame(x = proteins_selected[, diff_proteins],
                              y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
-                             name = proteins_selected$`Gene Name`)
+                             name = proteins_selected$Phosphosite)
     #print(df_protein)
     if(length(unique(exp_design_input()$condition)) <= 2) {
       p<-plot_volcano_new(dep_nr(),
@@ -2930,13 +2869,6 @@ server <- function(input, output,session){
                           input$check_names_nr,
                           input$p_adj_nr)
     }
-    
-    # 
-    # p<-plot_volcano_new(dep_nr(),
-    #                     input$volcano_cntrst_nr,
-    #                     input$check_anova_nr,
-    #                     input$check_names_nr,
-    #                     input$p_adj_nr)
     
     p<- p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
       ggrepel::geom_text_repel(data = df_protein,
@@ -2985,6 +2917,7 @@ server <- function(input, output,session){
     options = list(scrollX= TRUE)
     )
   })
+  
   ## Render Result Plots
   output$pca_plot_nr<-renderPlot({
     pca_input_nr()
