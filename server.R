@@ -516,7 +516,7 @@ server <- function(input, output,session){
   })
   
   numbers_input <- reactive({
-    plot_numbers(normalised_data()) +
+    plot_numbers(processed_data()) +
       labs(title= "Phosphosites per sample", y = "Number of phosphosites")
   })
   
@@ -2125,7 +2125,8 @@ server <- function(input, output,session){
     
     df$p_values <- as.numeric(df[, pval])
     
-    df %>% filter(!is.na(protein_diff)) %>%
+    df %>% 
+      # filter(!is.na(protein_diff)) %>%
       ggplot(aes(x = normalized_diff, y = -log10(p_values))) +
       geom_point(aes(color = n_p_value_desc)) +
       geom_text(data = data.frame(), aes(x = c(Inf, -Inf),

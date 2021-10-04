@@ -539,8 +539,8 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   # Join into a results table
   if (apply_anova){
     ids <- as.data.frame(row_data) %>% dplyr::select(name, ID,anova_p.val,anova_p.adj)
-    # ids$anova_p.val <- round(ids$anova_p.val, digits = 3)
-    # ids$anova_p.adj <- round(ids$anova_p.adj, digits = 3)
+    ids$anova_p.val <- round(ids$anova_p.val, digits = 5)
+    ids$anova_p.adj <- round(ids$anova_p.adj, digits = 5)
   } else {
     ids <- as.data.frame(row_data) %>% dplyr::select(name, ID)
   }
@@ -627,8 +627,8 @@ get_results_proteins <- function(dep, apply_anova = FALSE) {
   # Join into a results table
   if (apply_anova){
     ids <- as.data.frame(row_data) %>% dplyr::select(name, ID,anova_p.val,anova_p.adj)
-    # ids$anova_p.val <- round(ids$anova_p.val, digits = 3)
-    # ids$anova_p.adj <- round(ids$anova_p.adj, digits = 3)
+    ids$anova_p.val <- round(ids$anova_p.val, digits = 5)
+    ids$anova_p.adj <- round(ids$anova_p.adj, digits = 5)
   } else {
     ids <- as.data.frame(row_data) %>% dplyr::select(name, ID)
   }
