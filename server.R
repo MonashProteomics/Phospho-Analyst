@@ -14,15 +14,15 @@ server <- function(input, output,session){
   # Hide other pages if only upload one of the phosphosite or protein data file
   observeEvent(input$analyze ,{ 
     if (is.null(input$file1)){
-      hideTab(inputId = "panel_list", target = "PhosphoPage")
-      hideTab(inputId = "panel_list", target = "ComparisonPage")
-      hideTab(inputId = "panel_list", target = "NormalizedPage")
+      hideTab(inputId = "panel_list", target = "Phosphosite")
+      hideTab(inputId = "panel_list", target = "Comparison")
+      hideTab(inputId = "panel_list", target = "Normalization")
     }
     
     if (is.null(input$file2)){
-      hideTab(inputId = "panel_list", target = "ProteinPage")
-      hideTab(inputId = "panel_list", target = "ComparisonPage")
-      hideTab(inputId = "panel_list", target = "NormalizedPage")
+      hideTab(inputId = "panel_list", target = "ProteinGroup")
+      hideTab(inputId = "panel_list", target = "Comparison")
+      hideTab(inputId = "panel_list", target = "Normalization")
     }
     
   })
@@ -507,8 +507,8 @@ server <- function(input, output,session){
   })
   
   imputation_input <- reactive({
-    plot_imputation(normalised_data(),
-                    diff_all())
+    plot_imputation(processed_data(),
+                    normalised_data())
   })
   
   p_hist_input <- reactive({
@@ -521,7 +521,7 @@ server <- function(input, output,session){
   })
   
   coverage_input <- reactive({
-    plot_coverage(normalised_data())+
+    plot_coverage(processed_data())+
       labs(title= "Phosphosites per sample", y = "Number of phosphosites")
   })
   
@@ -550,7 +550,7 @@ server <- function(input, output,session){
     
     if(!is.null(input$contrast)){
       enrichment_output_test(dep(), input$go_database)
-      go_results<- test_gsea_mod(dep(), databases = input$go_database, contrasts = TRUE)
+      go_results<- test_gsea_mod_phospho(dep(), databases = input$go_database, contrasts = TRUE)
       null_enrichment_test(go_results)
       plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast,
                                 databases = input$go_database, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
@@ -563,7 +563,7 @@ server <- function(input, output,session){
   pathway_input<-eventReactive(input$pathway_analysis,{
     progress_indicator("Pathway Analysis is running....")
     enrichment_output_test(dep(), input$pathway_database)
-    pathway_results<- test_gsea_mod(dep(), databases=input$pathway_database, contrasts = TRUE)
+    pathway_results<- test_gsea_mod_phospho(dep(), databases=input$pathway_database, contrasts = TRUE)
     null_enrichment_test(pathway_results)
     plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1,
                                   databases=input$pathway_database, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
@@ -581,12 +581,12 @@ server <- function(input, output,session){
       nrow()
     frac <- num_signif / num_total
     
-    info_box <- infoBox("Significant proteins",
+    info_box <- infoBox("Significant phosphosites",
                           paste0(num_signif,
                                  " out of ",
                                  num_total),
                           paste0(signif(frac * 100, digits = 3),
-                                 "% of proteins differentially expressed across all conditions"),
+                                 "% of phosphosites differentially expressed across all conditions"),
                           icon = icon("stats", lib = "glyphicon"),
                           color = "olive",
                           # fill = TRUE,
@@ -952,8 +952,8 @@ server <- function(input, output,session){
         .[SummarizedExperiment::rowData(.)$significant, ] %>%
         nrow()
       
-      tested_contrasts<- gsub("_p.adj", "", 
-                              colnames(SummarizedExperiment::rowData(dep()))[grep("p.adj", 
+      tested_contrasts<- gsub("_significant", "", 
+                              colnames(SummarizedExperiment::rowData(dep()))[grep("_significant", 
                                                                                   colnames(SummarizedExperiment::rowData(dep())))])
       pg_width<- ncol(normalised_data()) / 2.5
       # Set up parameters to pass to Rmd document
@@ -2755,12 +2755,12 @@ server <- function(input, output,session){
       nrow()
     frac <- num_signif / num_total
     
-    info_box <- 		infoBox("Significant proteins",
+    info_box <- 		infoBox("Significant phosphosites",
                           paste0(num_signif,
                                  " out of ",
                                  num_total),
                           paste0(signif(frac * 100, digits = 3),
-                                 "% of proteins differentially expressed across all conditions"),
+                                 "% of phosphosites differentially expressed across all conditions"),
                           icon = icon("stats", lib = "glyphicon"),
                           color = "olive",
                           # fill = TRUE,

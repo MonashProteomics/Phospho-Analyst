@@ -107,7 +107,7 @@ ui <- function(request){
                   and offers numerous publication-quality result output graphics and tables to facilitate statistical 
                   and exploratory analysis of label-free quantitative datasets. "), 
                       br(),
-                      HTML('<center><img src="./Phospho_analyst_logo.svg" width="600px"></center>'),
+                      HTML('<center><img src="./Phospho_analyst.svg" width="600px"></center>'),
                       br(),
                       h4("Sidebar tabs"),
                       tags$ul(
@@ -145,7 +145,7 @@ ui <- function(request){
                                                                  from MaxQuant. Use the example file template provided.")
                           ),
                           br(),
-                          HTML('<center><img src="./Phospho_analyst_logo.svg" width="500px"></center>'),
+                          HTML('<center><img src="./Phospho_analyst.svg" width="500px"></center>'),
                           width = 12,
                           solidHeader = TRUE,
                           status = "primary"
@@ -156,7 +156,7 @@ ui <- function(request){
                     div(id = 'panels',
                         box(width = 12,
                             tabsetPanel(id = 'panel_list',
-                                        tabPanel("PhosphoPage",
+                                        tabPanel("Phosphosite",
                                                  fluidRow(
                                                    column(4,
                                                           column(7,uiOutput("downloadTable"),offset = 1),
@@ -338,7 +338,7 @@ ui <- function(request){
                                                          width=6,
                                                          tabBox(title = "Enrichment", width = 12,
                                                                 tabPanel(title="Gene Ontology",
-                                                                         box(uiOutput("contrast"), width = 5),
+                                                                         box(uiOutput("contrast"), width = 6),
                                                                          box(
                                                                            selectInput("go_database", "GO database:",
                                                                                        c("Molecular Function"="GO_Molecular_Function_2017b",
@@ -368,7 +368,7 @@ ui <- function(request){
                                                  
                                                  
                                         ),
-                                        tabPanel("ProteinPage",
+                                        tabPanel("ProteinGroup",
                                                  fluidRow(
                                                    column(4,
                                                           column(7,uiOutput("downloadTable_pr"),offset = 1),
@@ -547,7 +547,7 @@ ui <- function(request){
                                                          width=6,
                                                          tabBox(title = "Enrichment", width = 12,
                                                                 tabPanel(title="Gene Ontology",
-                                                                         box(uiOutput("contrast_pr"), width = 5),
+                                                                         box(uiOutput("contrast_pr"), width = 6),
                                                                          box(
                                                                            selectInput("go_database_pr", "GO database:",
                                                                                        c("Molecular Function"="GO_Molecular_Function_2017b",
@@ -576,10 +576,10 @@ ui <- function(request){
                                                    )) # fluidrow qc close
                                         ),
                                         
-                                        tabPanel("ComparisonPage",
+                                        tabPanel("Comparison",
                                                  fluidRow(width = 12,
                                                           box(width = 12,
-                                                              title = 'Volcano plot', 
+                                                              title = 'Comparison of two levels log fold change',
                                                               status = "primary",
                                                               solidHeader = TRUE,
                                                               column(12,
@@ -591,10 +591,11 @@ ui <- function(request){
                                                                                         "Apply ANOVA",
                                                                                         value = FALSE)),
                                                               ),
-                                                              box(width = 6,'Unnormalized Phospho volcano',
-                                                                  plotOutput('volcano_phospho')),
-                                                              box(width = 6,'Normalized Phospho volcano by protein',
-                                                                  plotOutput('volcano_phospho_2'))
+                                                              column(12, plotOutput("scatter_plot", height=600))
+                                                              # box(width = 6,'Unnormalized Phospho volcano',
+                                                              #     plotOutput('volcano_phospho')),
+                                                              # box(width = 6,'Normalized Phospho volcano by protein',
+                                                              #     plotOutput('volcano_phospho_2'))
                                                               
                                                           )
                                                  ), # fluid colsed
@@ -607,9 +608,9 @@ ui <- function(request){
                                                                      tabPanel(title = "PCA Plot",
                                                                               plotOutput("pca_plot_c", height=600)
                                                                      ),
-                                                                     tabPanel(title = "Scatter plot",
-                                                                              plotOutput("scatter_plot", height=600)
-                                                                     ),
+                                                                     # tabPanel(title = "Scatter plot",
+                                                                     #          plotOutput("scatter_plot", height=600)
+                                                                     # ),
                                                                      tabPanel(title="Sample Correlation",
                                                                               # plotOutput("sample_corr_c", height = 600)
                                                                               fluidRow(height=600,
@@ -662,7 +663,7 @@ ui <- function(request){
                                                           )
                                                  )
                                         ),
-                                        tabPanel("NormalizedPage",
+                                        tabPanel("Normalization",
                                                  fluidRow(
                                                    column(4,
                                                           column(7,uiOutput("downloadTable_nr"),offset = 1),
@@ -845,7 +846,7 @@ ui <- function(request){
                                                          width=6,
                                                          tabBox(title = "Enrichment", width = 12,
                                                                 tabPanel(title="Gene Ontology",
-                                                                         box(uiOutput("contrast_nr"), width = 5),
+                                                                         box(uiOutput("contrast_nr"), width = 6),
                                                                          box(
                                                                            selectInput("go_database_nr", "GO database:",
                                                                                        c("Molecular Function"="GO_Molecular_Function_2017b",
@@ -888,9 +889,10 @@ ui <- function(request){
                       #                    div(p(HTML(paste0('A detail online user manual can be accessed ',
                       # 			a(href = 'https://monashbioinformaticsplatform.github.io/Phospho-Analyst/', 
                       #                                       target='_blank', 'here'))))),
-                      div(p(HTML(paste0("A detailed user manual can be accessed",
+                      div(p(HTML(paste0("A detailed user manual can be accessed in the near futher.",
                                         a(href = './Phospho-Analyst_manual.pdf', 
-                                          target='_blank', tags$b("here.")))))),  
+                                          # target='_blank', tags$b("here."))
+                                        )))),  
                       h4("Contact Us"),
                       p("For any feedback or question regarding Phospho-Analyst, please contact the 
 			  Monash Proteomics and Metabolomics Facility:"),
@@ -899,13 +901,13 @@ ui <- function(request){
                         tags$li("Ralf Schittenhelm: ralf.schittenhelm(at)monash.edu")
                       ),
                       
-                      h4("How to Cite Phospho-Analyst?"),
-                      
-                      div(p(HTML(paste0("Please Cite: Shah AD, Goode RJA, Huang C, Powell DR, Schittenhelm RB. 
-		Phospho-Analyst: An easy-to-use interactive web-platform to analyze and 
-		visualize proteomics data preprocessed with MaxQuant. DOI:",
-                                        a(href = 'https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00496', 
-                                          target='_blank', tags$b("0.1021/acs.jproteome.9b00496")))))),
+#                       h4("How to Cite Phospho-Analyst?"),
+#                       
+#                       div(p(HTML(paste0("Please Cite: Shah AD, Goode RJA, Huang C, Powell DR, Schittenhelm RB. 
+# 		Phospho-Analyst: An easy-to-use interactive web-platform to analyze and 
+# 		visualize proteomics data preprocessed with MaxQuant. DOI:",
+#                                         a(href = 'https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00496', 
+#                                           target='_blank', tags$b("0.1021/acs.jproteome.9b00496")))))),
                       
                       
                       h4("News and Updates"),
