@@ -37,7 +37,6 @@ enrichr_mod <- function(genes, databases = NULL) {
 
 ###### ========= Test_gsea new
 
-
 test_gsea_mod <- function(dep,
                           databases,
                           contrasts = TRUE) {
@@ -159,8 +158,6 @@ test_gsea_mod <- function(dep,
 
 
 ###### ========= Test_gsea new for phosphosite
-
-
 test_gsea_mod_phospho <- function(dep,
                           databases,
                           contrasts = TRUE) {
@@ -190,7 +187,7 @@ test_gsea_mod_phospho <- function(dep,
   
   # Run background list
   message("Background")
-  background <- gsub("[.].*", "", row_data$name)
+  background <- gsub("[_].*", "", row_data$name)
   background_enriched <- enrichr_mod(background, databases)
   df_background <- NULL
   for(database in databases) {
@@ -211,14 +208,14 @@ test_gsea_mod_phospho <- function(dep,
     df <- row_data %>%
       as.data.frame() %>%
       select(name, ends_with("_significant")) %>%
-      mutate(name = gsub("[.].*", "", name))
+      mutate(name = gsub("[_].*", "", name))
     
     # Run enrichR for every contrast
     df_enrich <- NULL
     for(contrast in colnames(df[2:ncol(df)])) {
       message(gsub("_significant", "", contrast))
       significant <- df[df[[contrast]],]
-      genes <- significant$Gene.names
+      genes <- significant$name
       enriched <- enrichr_mod(genes, databases)
       
       # Tidy output
@@ -250,10 +247,10 @@ test_gsea_mod_phospho <- function(dep,
       as.data.frame() %>%
       select(name, significant) %>%
       filter(significant) %>%
-      mutate(name = gsub("[.].*", "", name))
+      mutate(name = gsub("[_].*", "", name))
     
     # Run enrichR
-    genes <- significant$Gene.names
+    genes <- significant$name
     enriched <- enrichr_mod(genes, databases)
     
     # Tidy output

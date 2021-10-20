@@ -1,5 +1,5 @@
 ---
-title: "LFQ-Analyst report"
+title: "Phospho-Analyst(proteinGroup) report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 params:
   data: NA

@@ -203,10 +203,10 @@ server <- function(input, output,session){
     data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
     
     # create unique name and ID columns for the data
+    data_pre <- data_pre %>%
+      mutate(name = paste(Gene.names,Positions.within.proteins, Multiplicity,sep = '_'))
     # data_pre <- data_pre %>% 
-    #   mutate(name = paste(Gene.names,Positions.within.proteins, Multiplicity,sep = '_'))
-    data_pre <- data_pre %>% 
-      mutate(name = paste(Protein,Positions.within.proteins, Multiplicity,sep = '_'))
+    #   mutate(name = paste(Protein,Positions.within.proteins, Multiplicity,sep = '_'))
     
     data_pre <- data_pre %>% 
       mutate(ID = paste(id,Multiplicity, sep = '_'))
@@ -508,7 +508,7 @@ server <- function(input, output,session){
   
   imputation_input <- reactive({
     plot_imputation(processed_data(),
-                    normalised_data())
+                    diff_all())
   })
   
   p_hist_input <- reactive({
@@ -937,16 +937,16 @@ server <- function(input, output,session){
     }
   )
   
-  #####===== Download Report =====#####
+  #####===== Download Report (phosphosite)=====#####
   output$downloadReport <- downloadHandler(
     # For PDF output, change this to "report.pdf"
-    filename = "LFQ-Analyst_report.pdf",
+    filename = "Phospho-Analyst(phosphosite)report.pdf",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "LFQ_report.Rmd")
-      file.copy("LFQ_report.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), "Phosphosite_report.Rmd")
+      file.copy("Phosphosite_report.Rmd", tempReport, overwrite = TRUE)
       
       sig_proteins<-dep() %>%
         .[SummarizedExperiment::rowData(.)$significant, ] %>%
@@ -1452,7 +1452,7 @@ server <- function(input, output,session){
   })
   
   imputation_input_pr <- reactive({
-    plot_imputation(normalised_data_pr(),
+    plot_imputation(processed_data_pr(),
                     diff_all_pr())
   })
   
@@ -1873,12 +1873,51 @@ server <- function(input, output,session){
   )
   
   
-  #####===== Download Report =====#####
+  #####===== Download Report (proteinGroup)=====##### 
   output$downloadReport_pr <- downloadHandler(
-    
-    filename = "LFQ-Analyst_report.pdf",
+    # For PDF output, change this to "report.pdf"
+    filename = "Phospho-Analyst(proteinGroup)report.pdf",
     content = function(file) {
-      file.copy("www/LFQ-Analyst_report.pdf",file)   }
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "ProteinGroup_report.Rmd")
+      file.copy("ProteinGroup_report.Rmd", tempReport, overwrite = TRUE)
+      
+      sig_proteins<-dep_pr() %>%
+        .[SummarizedExperiment::rowData(.)$significant, ] %>%
+        nrow()
+      
+      tested_contrasts<- gsub("_significant", "", 
+                              colnames(SummarizedExperiment::rowData(dep_pr()))[grep("_significant", 
+                                                                                  colnames(SummarizedExperiment::rowData(dep_pr())))])
+      pg_width<- ncol(normalised_data_pr()) / 2.5
+      # Set up parameters to pass to Rmd document
+      params <- list(data = processed_data_pr,
+                     alpha = input$p,
+                     lfc = input$lfc,
+                     num_signif= sig_proteins,
+                     pg_width = pg_width,
+                     tested_contrasts= tested_contrasts,
+                     numbers_input= numbers_input_pr,
+                     detect_input = detect_input_pr,
+                     imputation_input = imputation_input_pr,
+                     missval_input = missval_input_pr,
+                     p_hist_input = p_hist_input_pr,
+                     pca_input = pca_input_pr,
+                     coverage_input= coverage_input_pr,
+                     correlation_input =correlation_input_pr,
+                     heatmap_input = heatmap_input_pr,
+                     cvs_input= cvs_input_pr,
+                     dep = dep_pr
+      )
+      
+      # Knit the document, passing in the `params` list
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
   )
   
   #### Comparison page logic ========== #############
@@ -2239,7 +2278,7 @@ server <- function(input, output,session){
   
   output$imputation_c <- renderPlot({
     ggarrange(imputation_input() + labs(title = 'Phospho'), 
-              imputation_input_pr(),
+              imputation_input_pr() + labs(title = "Protein"),
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
@@ -2724,7 +2763,7 @@ server <- function(input, output,session){
     
     if(!is.null(input$contrast_nr)){
       enrichment_output_test(dep_nr(), input$go_database_nr)
-      go_results<- test_gsea_mod(dep_nr(), databases = input$go_database_nr, contrasts = TRUE)
+      go_results<- test_gsea_mod_phospho(dep_nr(), databases = input$go_database_nr, contrasts = TRUE)
       null_enrichment_test(go_results)
       plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_nr,
                                 databases = input$go_database_nr, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
@@ -2737,7 +2776,7 @@ server <- function(input, output,session){
   pathway_input_nr<-eventReactive(input$pathway_analysis_nr,{
     progress_indicator("Pathway Analysis is running....")
     enrichment_output_test(dep_nr(), input$pathway_database_nr)
-    pathway_results<- test_gsea_mod(dep_nr(), databases=input$pathway_database_nr, contrasts = TRUE)
+    pathway_results<- test_gsea_mod_phospho(dep_nr(), databases=input$pathway_database_nr, contrasts = TRUE)
     null_enrichment_test(pathway_results)
     plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_nr,
                                   databases=input$pathway_database_nr, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
@@ -3089,12 +3128,51 @@ server <- function(input, output,session){
   
   
   
-  #####===== Download Report =====#####
+  #####===== Download Report (normalized phosphosite)=====#####
   output$downloadReport_nr <- downloadHandler(
-    
-    filename = "LFQ-Analyst_report.pdf",
+    # For PDF output, change this to "report.pdf"
+    filename = "Phospho-Analyst(normalization)report.pdf",
     content = function(file) {
-      file.copy("www/LFQ-Analyst_report.pdf",file)   }
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "Normalised_phosphosite_report.Rmd")
+      file.copy("Normalised_phosphosite_report.Rmd", tempReport, overwrite = TRUE)
+      
+      sig_proteins<-dep_nr() %>%
+        .[SummarizedExperiment::rowData(.)$significant, ] %>%
+        nrow()
+      
+      tested_contrasts<- gsub("_significant", "", 
+                              colnames(SummarizedExperiment::rowData(dep_nr()))[grep("_significant", 
+                                                                                  colnames(SummarizedExperiment::rowData(dep_nr())))])
+      pg_width<- ncol(normalised_data_nr()) / 2.5
+      # Set up parameters to pass to Rmd document
+      params <- list(data = normalized_phospho_data,
+                     alpha = input$p,
+                     lfc = input$lfc,
+                     num_signif= sig_proteins,
+                     pg_width = pg_width,
+                     tested_contrasts= tested_contrasts,
+                     numbers_input= numbers_input_nr,
+                     detect_input = detect_input_nr,
+                     imputation_input = imputation_input_nr,
+                     missval_input = missval_input_nr,
+                     p_hist_input = p_hist_input_nr,
+                     pca_input = pca_input_nr,
+                     coverage_input= coverage_input_nr,
+                     correlation_input =correlation_input_nr,
+                     heatmap_input = heatmap_input_nr,
+                     cvs_input= cvs_input_nr,
+                     dep = dep_nr
+      )
+      
+      # Knit the document, passing in the `params` list
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
   )
   
 }

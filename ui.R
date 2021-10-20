@@ -351,7 +351,7 @@ ui <- function(request){
                                                                          
                                                                 ),
                                                                 tabPanel(title= "Pathway enrichment",
-                                                                         box(uiOutput("contrast_1"), width = 5),
+                                                                         box(uiOutput("contrast_1"), width = 6),
                                                                          box(
                                                                            selectInput("pathway_database", "Pathway database:",
                                                                                        c("KEGG"="KEGG_2016",
@@ -859,7 +859,7 @@ ui <- function(request){
                                                                          
                                                                 ),
                                                                 tabPanel(title= "Pathway enrichment",
-                                                                         box(uiOutput("contrast_1_nr"), width = 5),
+                                                                         box(uiOutput("contrast_1_nr"), width = 6),
                                                                          box(
                                                                            selectInput("pathway_database_nr", "Pathway database:",
                                                                                        c("KEGG"="KEGG_2016",
@@ -889,8 +889,8 @@ ui <- function(request){
                       #                    div(p(HTML(paste0('A detail online user manual can be accessed ',
                       # 			a(href = 'https://monashbioinformaticsplatform.github.io/Phospho-Analyst/', 
                       #                                       target='_blank', 'here'))))),
-                      div(p(HTML(paste0("A detailed user manual can be accessed in the near futher.",
-                                        a(href = './Phospho-Analyst_manual.pdf', 
+                      div(p(HTML(paste0("A detailed user manual can be accessed in the near future."
+                                        # a(href = './Phospho-Analyst_manual.pdf', 
                                           # target='_blank', tags$b("here."))
                                         )))),  
                       h4("Contact Us"),
