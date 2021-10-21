@@ -107,7 +107,7 @@ ui <- function(request){
                   and offers numerous publication-quality result output graphics and tables to facilitate statistical 
                   and exploratory analysis of label-free quantitative datasets. "), 
                       br(),
-                      HTML('<center><img src="./Phospho_analyst.svg" width="600px"></center>'),
+                      HTML('<center><img src="./Phospho_Analyst.svg" width="600px"></center>'),
                       br(),
                       h4("Sidebar tabs"),
                       tags$ul(
