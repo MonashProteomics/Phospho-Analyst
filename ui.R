@@ -145,7 +145,7 @@ ui <- function(request){
                                                                  from MaxQuant. Use the example file template provided.")
                           ),
                           br(),
-                          HTML('<center><img src="./Phospho_analyst.svg" width="500px"></center>'),
+                          HTML('<center><img src="./Phospho_Analyst.svg" width="500px"></center>'),
                           width = 12,
                           solidHeader = TRUE,
                           status = "primary"
