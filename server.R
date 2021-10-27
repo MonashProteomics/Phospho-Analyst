@@ -187,6 +187,10 @@ server <- function(input, output,session){
     # get the required intensity columns
     intensity_cols <- grep("^Intensity.+___\\d", colnames(filtered_data))
     intensity_names <- colnames( filtered_data[,intensity_cols])
+    
+    # ensure all intensity columns are numeric type
+    filtered_data[,intensity_cols] <- sapply(filtered_data[,intensity_cols],as.numeric)
+    
     # get the intensity columns need to be dropped
     drop_cols <- setdiff(intensity, intensity_cols)
     # drop columns
