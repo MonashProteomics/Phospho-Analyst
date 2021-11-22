@@ -147,21 +147,160 @@ server <- function(input, output,session){
     return(temp_data1)
   })
   
+  ####======= interactive exp_design (phosphosite)=======####
+  phospho_exp_data <- reactiveValues(Data = NULL)
+
+  observe({
+    req(input$file1)
+    # read file
+    tryCatch(
+      {
+        Data <- read.table(input$file1$datapath,
+                         header = TRUE,
+                         fill= TRUE, # to fill any missing data
+                         sep = "\t")
+
+      },
+      error = function(e) {
+        # return a safeError if a parsing error occurs
+        stop(safeError(e))
+      }
+    )
+    
+    # set value to created exp_design table
+    phospho_exp_data$Data <- get_exp_design(Data)
+  })
+  
+  # overview changes in exp_design table
+  output$print_phospho <- renderPrint({
+    phospho_exp_data$Data
+  })
+
+  # editable exp_design table
+  output$exp_phospho<-DT::renderDataTable(phospho_exp_data$Data,
+                                          selection = 'none',
+                                          rownames = FALSE,
+                                          edit = list(target = "cell", 
+                                                      disable = list(columns = 0),
+                                                      numeric = list(columns = 2)),
+                                          class = "display"
+                                          )
+
+  proxy <- DT::dataTableProxy("exp_phospho")
+
+  observeEvent(input$exp_phospho_cell_edit, {
+    info <- input$exp_phospho_cell_edit
+    str(info)
+    i <- info$row
+    j <- info$col + 1
+    v <- info$value
+    phospho_exp_data$Data[i, j] <<- DT::coerceValue(v, phospho_exp_data$Data[i, j])
+    DT::replaceData(proxy, phospho_exp_data$Data, resetPaging = FALSE, rownames = FALSE)  # important
+  })
+
+  # download edited exp_design table
+  output$save_exp <- downloadHandler("phosphosite_exp_design.csv",
+                                     content = function(file){
+                                       write.csv(phospho_exp_data$Data, file, row.names = F)
+                                     },
+                                     contentType = "text/csv")
+  
+  # phosphosite exp_desgin file
   exp_design_input<-eventReactive(input$analyze,{
     inFile<-input$file3
-    if (is.null(inFile))
-      return(NULL)
-    temp_df<-read.table(inFile$datapath,
-                        header = TRUE,
-                        sep="\t",
-                        stringsAsFactors = FALSE)
-    exp_design_test(temp_df)
-    temp_df$label<-as.character(temp_df$label)
-    temp_df$condition<-trimws(temp_df$condition, which = "left")
+    if (is.null(inFile)){
+      temp_df <- phospho_exp_data$Data
+      
+    }
+    else{
+      temp_df<-read.table(inFile$datapath,
+                          header = TRUE,
+                          sep="\t",
+                          stringsAsFactors = FALSE)
+      exp_design_test(temp_df)
+      temp_df$label<-as.character(temp_df$label)
+      temp_df$condition<-trimws(temp_df$condition, which = "left")
+    }
     return(temp_df)
   })
   
+  ####======= interactive exp_design (protein)=======####
+  protein_exp_data <- reactiveValues(Data_pr = NULL)
   
+  observe({
+    req(input$file2)
+    
+    # read file
+    tryCatch(
+      {
+        Data_pr <- read.table(input$file2$datapath,
+                         header = TRUE,
+                         fill= TRUE, # to fill any missing data
+                         sep = "\t")
+        
+      },
+      error = function(e) {
+        # return a safeError if a parsing error occurs
+        stop(safeError(e))
+      }
+    )
+    
+    # set value to created exp_design table
+    protein_exp_data$Data_pr <- get_exp_design_pr(Data_pr)
+  })
+  
+  # overview changes in exp_design table
+  output$print_protein <- renderPrint({
+    protein_exp_data$Data_pr
+  })
+  
+  # editable exp_design table
+  output$exp_protein<-DT::renderDataTable(
+    protein_exp_data$Data_pr,selection = 'none', 
+    rownames = FALSE,
+    edit = list(target = "cell", 
+                disable = list(columns = 0),
+                numeric = list(columns = 2)),
+    class = "display"
+    )
+  
+  proxy_pr <- DT::dataTableProxy("exp_protein")
+  
+  observeEvent(input$exp_protein_cell_edit, {
+    info <- input$exp_protein_cell_edit
+    str(info)
+    i <- info$row
+    j <- info$col + 1
+    v <- info$value
+    protein_exp_data$Data_pr[i, j] <<- DT::coerceValue(v, protein_exp_data$Data_pr[i, j])
+    DT::replaceData(proxy_pr, protein_exp_data$Data_pr, resetPaging = FALSE, rownames = FALSE)  # important
+  })
+  
+  # download edited exp_design table
+  output$save_exp_pr <- downloadHandler("protein_exp_design.csv", 
+                                     content = function(file){
+                                       write.csv(protein_exp_data$Data_pr, file, row.names = F)
+                                     },
+                                     contentType = "text/csv")
+  
+  # proteinGroup exp_desgin file
+  exp_design_input_1<-eventReactive(input$analyze,{
+    inFile<-input$file4
+    if (is.null(inFile)){
+      temp_df <- protein_exp_data$Data_pr
+      
+    }
+    else{
+      temp_df<-read.table(inFile$datapath,
+                          header = TRUE,
+                          sep="\t",
+                          stringsAsFactors = FALSE)
+      exp_design_test(temp_df)
+      temp_df$label<-as.character(temp_df$label)
+      temp_df$condition<-trimws(temp_df$condition, which = "left")
+    }
+    return(temp_df)
+  })
   
   ### Reactive components
   # Data cleaning
@@ -1197,7 +1336,7 @@ server <- function(input, output,session){
   ### Volcano Plot
   volcano_input_pr <- reactive({
     if(!is.null(input$volcano_cntrst_pr)) {
-      if(length(unique(exp_design_input()$condition)) <= 2){
+      if(length(unique(exp_design_input_1()$condition)) <= 2){
         plot_volcano_new(dep_pr(),
                             input$volcano_cntrst_pr,
                             FALSE,
@@ -1253,7 +1392,7 @@ server <- function(input, output,session){
                                y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
                                name = proteins_selected$`Gene Name`)
       #print(df_protein)
-      if(length(unique(exp_design_input()$condition)) <= 2){
+      if(length(unique(exp_design_input_1()$condition)) <= 2){
         p<-plot_volcano_new(dep_pr(),
                          input$volcano_cntrst_pr,
                          FALSE,
@@ -1328,8 +1467,8 @@ server <- function(input, output,session){
   
   
   processed_data_pr<-reactive({
-    if(!is.null (exp_design_input() )){
-      exp_design<-reactive({exp_design_input()})
+    if(!is.null (exp_design_input_1() )){
+      exp_design<-reactive({exp_design_input_1()})
     }
     message(exp_design())
     
@@ -1399,15 +1538,15 @@ server <- function(input, output,session){
       diff_all_rej <- add_rejections(diff_all,alpha = input$p, lfc= input$lfc)
     }
     
-    if(length(unique(exp_design_input()$condition)) <= 2){
+    if(length(unique(exp_design_input_1()$condition)) <= 2){
       return(diff_all_rej)
       
     }
-    else if(length(unique(exp_design_input()$condition)) >= 3){
+    else if(length(unique(exp_design_input_1()$condition)) >= 3){
       anova_dep <- diff_all
       # get assay data
       intensity <- assay(anova_dep)
-      exp_design <- exp_design_input()
+      exp_design <- exp_design_input_1()
       exp_design_rename<-exp_design
       exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
       
@@ -1554,7 +1693,7 @@ server <- function(input, output,session){
   
   ##### Get results dataframe from Summarizedexperiment object
   data_result_pr<-reactive({
-    if(length(unique(exp_design_input()$condition)) <= 2){
+    if(length(unique(exp_design_input_1()$condition)) <= 2){
       get_results_proteins(dep_pr(),FALSE)
     } else {
       get_results_proteins(dep_pr(),TRUE)
@@ -1639,7 +1778,7 @@ server <- function(input, output,session){
                              y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
                              name = proteins_selected$`Gene Name`)
     #print(df_protein)
-    if(length(unique(exp_design_input()$condition)) <= 2) {
+    if(length(unique(exp_design_input_1()$condition)) <= 2) {
       p<-plot_volcano_new(dep_pr(),
                           input$volcano_cntrst_pr,
                           FALSE,
@@ -1983,7 +2122,7 @@ server <- function(input, output,session){
     protein_intensity <- assay(dep_pr()) %>% as.data.frame()
     protein_df <- merge(protein_row, protein_intensity, by = 0) # Merge data according to row names
     print(colnames(protein_df))
-    if(length(unique(exp_design_input()$condition)) <= 2) {
+    if(length(unique(exp_design_input_1()$condition)) <= 2) {
       col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
                         paste(input$volcano_comp, "_log2 fold change", sep = ""),
                         paste(input$volcano_comp, "_p.val", sep = ""))
@@ -2053,7 +2192,7 @@ server <- function(input, output,session){
   protein_df_long <- reactive({
     combined_df <- phospho_df() %>%
       inner_join(., protein_df(), by = "Gene.names")
-    exp_design <- exp_design_input()
+    exp_design <- exp_design_input_1()
     protein_cols <- colnames(combined_df[grep('.y', colnames(combined_df))])
     protein_cols_1 <- exp_design$label
     protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
@@ -3178,5 +3317,728 @@ server <- function(input, output,session){
       )
     }
   )
+  
+  #### Demo logic ========== #############
+  
+  ####======= Render Functions
+  output$volcano_cntrst_dm <- renderUI({
+    if (!is.null(comparisons())) {
+      df <- SummarizedExperiment::rowData(dep_dm())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("volcano_cntrst_dm",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  ##comparisons
+  output$contrast_dm <- renderUI({
+    if (!is.null(comparisons())) {
+      df <- SummarizedExperiment::rowData(dep_dm())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("contrast_dm",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  output$contrast_1_dm <- renderUI({
+    if (!is.null(comparisons())) {
+      df <- SummarizedExperiment::rowData(dep_dm())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("contrast_dm",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  output$downloadTable_dm <- renderUI({
+    if(!is.null(dep_dm())){
+      selectizeInput("dataset_dm",
+                     "Choose a dataset to save" ,
+                     c("Results","Original_matrix",
+                       "Imputed_matrix",
+                       "Full_dataset"))
+    }
+  })
+  
+  output$downloadButton_dm <- renderUI({
+    if(!is.null(dep_dm())){
+      downloadButton('downloadData_dm', 'Save')
+    }
+  })
+  
+  output$downloadZip_dm <- renderUI({
+    if(!is.null(dep_dm())){
+      downloadButton('downloadZip1_dm', 'Download result plots')
+    }
+  })
+  output$downloadreport_dm <- renderUI({
+    if(!is.null(dep_dm())){
+      downloadButton('downloadReport_dm', 'Download Report')
+    }
+  })
+  
+  output$downloadPlots <- renderUI({
+    if(!is.null(dep_dm())){
+      downloadButton('downloadPlots1_dm', 'Download Plots')
+    }
+  })
+  
+  # load demo data
+  env_dm<-reactive({
+    LoadToEnvironment("data/phosphosite_demo_data.RData", env = globalenv())
+  })
+  
+  processed_data_dm<-reactive({
+    env_dm()[["data_missval"]]
+  })
+  
+  
+  unimputed_table_dm<-reactive({
+    temp<-assay(processed_data_dm())
+    temp1<-2^(temp)
+    colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
+    temp1<-cbind(ProteinID=rownames(temp1),temp1) 
+    #temp1$ProteinID<-rownames(temp1)
+    return(as.data.frame(temp1))
+  })
+  
+  imputed_data_dm<-reactive({
+    DEP::impute(processed_data_dm(),input$imputation)
+  })
+  
+  normalised_data_dm<-reactive({
+    normalize_vsn(imputed_data_dm())
+  })
+  
+  imputed_table_dm<-reactive({
+    temp<-assay(imputed_data_dm())
+    #tibble::rownames_to_column(temp,var = "ProteinID")
+    temp1<-2^(temp)
+    colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
+    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    return(as.data.frame(temp1))
+  })
+  
+  diff_all_dm<-reactive({
+    test_diff(normalised_data_dm(),type = 'all')
+  })
+  
+  dep_dm<-reactive({
+    env_dm()[["data_dep"]]
+  })
+  
+  comparisons_dm<-reactive({
+    comparisons<-gsub("_p.adj", "", 
+                      colnames(SummarizedExperiment::rowData(dep_dm()))
+                      [grep("p.adj", colnames(SummarizedExperiment::rowData(dep_dm())))])
+  })
+  
+  ## Results plot inputs in Normalized page
+  
+  ## PCA Plot
+  pca_label_dm<-reactive({
+    pca_lable<-levels(as.factor(colData(dep_dm())$replicate))
+    print(pca_label)
+  })
+  
+  pca_input_dm<-reactive({
+    if (num_total_dm()<=500){
+      if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 6){
+        pca_plot<- DEP::plot_pca(dep_dm(), n=num_total_dm(), point_size = 4)
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }
+      else{
+        pca_plot<-DEP::plot_pca(dep_dm(), n=num_total_dm(), point_size = 4, indicate = "condition")
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }
+    }
+    else{
+      if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 6){
+        pca_plot<-DEP::plot_pca(dep_dm(), point_size = 4)
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }else{
+        pca_label<-SummarizedExperiment::colData(dep_dm())$replicate
+        pca_plot<-DEP::plot_pca(dep_dm(), point_size = 4, indicate = "condition")
+        #pca_plot<-pca_plot + geom_point()
+        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
+                                                      size = 4,
+                                                      box.padding = unit(0.1, 'lines'),
+                                                      point.padding = unit(0.1, 'lines'),
+                                                      segment.size = 0.5)
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }
+    }
+    
+  })
+  
+  ### Heatmap Differentially expressed proteins
+  heatmap_input_dm<-reactive({ 
+    get_cluster_heatmap(dep_dm(),
+                        type="centered",kmeans = TRUE,
+                        k=6, col_limit = 6,
+                        indicate = "condition"
+    )
+  })
+  
+  ### Volcano Plot
+  volcano_input_dm <- reactive({
+    if(!is.null(input$volcano_cntrst_dm)) {
+      if(length(unique(exp_design_input()$condition)) <= 2) {
+        plot_volcano_new(dep_dm(),
+                         input$volcano_cntrst_dm,
+                         FALSE,
+                         input$check_names_dm,
+                         input$p_adj_dm)
+      } else {
+        plot_volcano_new(dep_dm(),
+                         input$volcano_cntrst_dm,
+                         input$check_anova_dm,
+                         input$check_names_dm,
+                         input$p_adj_dm)
+      }
+      
+    }
+  })
+  
+  volcano_df_dm<- reactive({
+    if(!is.null(input$volcano_cntrst_dm)) {
+      get_volcano_df(dep_dm(),
+                     input$volcano_cntrst_dm) 
+      
+    }
+  })
+  
+  
+  volcano_input_selected_dm<-reactive({
+    if(!is.null(input$volcano_cntrst_dm)){
+      
+      if (!is.null(input$contents_dm_rows_selected)){
+        proteins_selected<-data_result_dm()[c(input$contents_dm_rows_selected),]## get all rows selected
+      }
+      else if(!is.null(input$protein_brush_dm)){
+        proteins_selected<-data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_dm(), ] 
+      }
+      print(proteins_selected)
+      ## convert contrast to x and padj to y
+      diff_proteins <- grep(paste(input$volcano_cntrst_dm, "_log2", sep = ""),
+                            colnames(proteins_selected))
+      if(input$p_adj=="FALSE"){
+        padj_proteins <- grep(paste(input$volcano_cntrst_dm, "_p.val", sep = ""),
+                              colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep(paste(input$volcano_cntrst, "_p.adj", sep = ""),
+                              colnames(proteins_selected))
+      }
+      
+      df_protein <- data.frame(x = proteins_selected[, diff_proteins],
+                               y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
+                               name = proteins_selected$Phosphosite)
+      # print(df_protein)
+      if(length(unique(exp_design_input()$condition)) <= 2){
+        p<-plot_volcano_new(dep_dm(),
+                            input$volcano_cntrst_dm,
+                            FALSE,
+                            input$check_names_dm,
+                            input$p_adj_dm)
+        
+      } else {
+        p<-plot_volcano_new(dep_dm(),
+                            input$volcano_cntrst_dm,
+                            input$check_anova_dm,
+                            input$check_names_dm,
+                            input$p_adj_dm)
+      }
+      p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+        ggrepel::geom_text_repel(data = df_protein,
+                                 aes(x, y, label = name),
+                                 size = 4,
+                                 box.padding = unit(0.1, 'lines'),
+                                 point.padding = unit(0.1, 'lines'),
+                                 segment.size = 0.5)## use the dataframe to plot points
+      
+    }
+  })
+  
+  protein_input_dm<-reactive({ 
+    
+    protein_selected  <- data_result_dm()[input$contents_dm_rows_selected,1]
+    protein_selected <-as.character(protein_selected)
+    if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 8){
+      plot_protein(dep_dm(), protein_selected, as.character(input$type))
+    }
+    else{
+      protein_plot<-plot_protein(dep_dm(), protein_selected, as.character(input$type))
+      protein_plot + scale_color_brewer(palette = "Paired")
+    }
+    
+  })
+  
+  ## QC Inputs
+  norm_input_dm <- reactive({
+    plot_normalization(processed_data_dm(),
+                       normalised_data_dm())
+  })
+  
+  missval_input_dm <- reactive({
+    plot_missval(processed_data_dm())
+  })
+  
+  detect_input_dm <- reactive({
+    plot_detect(processed_data_dm())
+  })
+  
+  imputation_input_dm <- reactive({
+    plot_imputation(processed_data_dm(),
+                    diff_all_dm())
+  })
+  
+  p_hist_input_dm <- reactive({
+    plot_p_hist(dep_dm())
+  })
+  
+  numbers_input_dm <- reactive({
+    plot_numbers(processed_data_dm()) +
+      labs(title= "Phosphosites per sample", y = "Number of phosphosites")
+  })
+  
+  coverage_input_dm <- reactive({
+    plot_coverage(processed_data_dm())+
+      labs(title= "Phosphosites per sample", y = "Number of phosphosites")
+  })
+  
+  correlation_input_dm<-reactive({
+    plot_cor(dep_dm(),significant = FALSE)
+  })
+  
+  cvs_input_dm<-reactive({
+    plot_cvs(dep_dm())
+  })
+  
+  num_total_dm<-reactive({
+    dep_dm() %>%
+      nrow()
+  }) 
+  
+  ## Enrichment inputs
+  
+  go_input_dm<-eventReactive(input$go_analysis_dm,{
+    withProgress(message = 'Gene ontology enrichment is in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    
+    if(!is.null(input$contrast_dm)){
+      enrichment_output_test(dep_dm(), input$go_database_dm)
+      go_results<- test_gsea_mod_phospho(dep_dm(), databases = input$go_database_dm, contrasts = TRUE)
+      null_enrichment_test(go_results)
+      plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_dm,
+                                databases = input$go_database_dm, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
+        xlab(NULL)
+      go_list<-list("go_result"=go_results, "plot_go"=plot_go)
+      return(go_list)
+    }
+  })
+  
+  pathway_input_dm<-eventReactive(input$pathway_analysis_dm,{
+    progress_indicator("Pathway Analysis is running....")
+    enrichment_output_test(dep_dm(), input$pathway_database_dm)
+    pathway_results<- test_gsea_mod_phospho(dep_dm(), databases=input$pathway_database_dm, contrasts = TRUE)
+    null_enrichment_test(pathway_results)
+    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm,
+                                  databases=input$pathway_database_dm, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+      xlab(NULL)
+    pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
+    return(pathway_list)
+  })
+  
+  #### Interactive UI (Normalized page)
+  output$significantBox_dm <- renderInfoBox({
+    num_total <- dep_dm() %>%
+      nrow()
+    num_signif <- dep_dm() %>%
+      .[SummarizedExperiment::rowData(.)$significant, ] %>%
+      nrow()
+    frac <- num_signif / num_total
+    
+    info_box <- 		infoBox("Significant phosphosites",
+                          paste0(num_signif,
+                                 " out of ",
+                                 num_total),
+                          paste0(signif(frac * 100, digits = 3),
+                                 "% of phosphosites differentially expressed across all conditions"),
+                          icon = icon("stats", lib = "glyphicon"),
+                          color = "olive",
+                          # fill = TRUE,
+                          width = 4)
+    
+    return(info_box)
+  })
+  
+  
+  ##### Get results dataframe from Summarizedexperiment object
+  data_result_dm<-reactive({
+      get_results_phospho(dep_dm(),TRUE)
+  })
+  
+  
+  #### Data table
+  output$contents_dm <- DT::renderDataTable({
+    withProgress(message = 'Result table calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    df<- data_result_dm()
+    return(df)
+  },
+  options = list(scrollX = TRUE,
+                 autoWidth=TRUE,
+                 columnDefs= list(list(width = '400px', targets = c(-1))))
+  )
+  
+  ## Deselect all rows button
+  proxy <- dataTableProxy("contents_dm")
+  
+  observeEvent(input$clear_dm,{
+    proxy %>% selectRows(NULL)
+  })
+  
+  observeEvent(input$original_dm,{
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  protein_name_brush_dm<- reactive({
+    #protein_tmp<-nearPoints(volcano_df(), input$protein_click, maxpoints = 1)
+    protein_tmp<-brushedPoints(volcano_df_dm(), input$protein_brush_dm, 
+                               xvar = "diff", yvar = "p_values")
+    protein_selected<-protein_tmp$name
+  }) 
+  protein_name_click_dm<- reactive({
+    protein_tmp<-nearPoints(volcano_df_dm(), input$protein_click_dm, maxpoints = 1)
+    # protein_tmp<-brushedPoints(volcano_df(), input$protein_brush, 
+    #xvar = "diff", yvar = "p_values")
+    protein_selected<-protein_tmp$name
+  }) 
+  
+  
+  ## Select rows dynamically
+  observeEvent(input$protein_brush_dm,{
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_dm(), ]
+      return(df)
+    },
+    options = list(scrollX= TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+    
+    proteins_selected<-data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_dm(), ] #
+    # get all rows selected
+    ## convert contrast to x and padj to y
+    diff_proteins <- grep(paste(input$volcano_cntrst_dm, "_log2", sep = ""),
+                          colnames(proteins_selected))
+    if(input$p_adj=="FALSE"){
+      padj_proteins <- grep(paste(input$volcano_cntrst_dm, "_p.val", sep = ""),
+                            colnames(proteins_selected))
+    }
+    else{
+      padj_proteins <- grep(paste(input$volcano_cntrst_dm, "_p.adj", sep = ""),
+                            colnames(proteins_selected))
+    }
+    df_protein <- data.frame(x = proteins_selected[, diff_proteins],
+                             y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
+                             name = proteins_selected$Phosphosite)
+    
+      p<-plot_volcano_new(dep_dm(),
+                          input$volcano_cntrst_dm,
+                          input$check_anova_dm,
+                          input$check_names_dm,
+                          input$p_adj_dm)
+    
+    
+    p<- p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+      ggrepel::geom_text_repel(data = df_protein,
+                               aes(x, y, label = name),
+                               size = 4,
+                               box.padding = unit(0.1, 'lines'),
+                               point.padding = unit(0.1, 'lines'),
+                               segment.size = 0.5)
+    
+    output$volcano_dm <- renderPlot({
+      withProgress(message = 'Volcano Plot calculations are in progress',
+                   detail = 'Please wait for a while', value = 0, {
+                     for (i in 1:15) {
+                       incProgress(1/15)
+                       Sys.sleep(0.25)
+                     }
+                   })
+      p
+    })
+    return(p)
+  })
+  
+  observeEvent(input$resetPlot_dm,{
+    session$resetBrush("protein_brush_dm")
+    brush <<- NULL
+    
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+    
+    output$volcano_dm <- renderPlot({
+      volcano_input_dm()
+    })
+  })
+  
+  observeEvent(input$protein_click_dm,{
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_click_dm(), ]
+      return(df)
+    },
+    options = list(scrollX= TRUE)
+    )
+  })
+  
+  ## Render Result Plots
+  output$pca_plot_dm<-renderPlot({
+    pca_input_dm()
+  })
+  output$heatmap_dm<-renderPlot({
+    withProgress(message = 'Heatmap rendering is in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    heatmap_input_dm()
+  })
+  
+  output$volcano_dm <- renderPlot({
+    withProgress(message = 'Volcano Plot calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    if(is.null(input$contents_dm_rows_selected)){
+      volcano_input_dm()
+    }
+    else if(!is.null(input$volcano_cntrst_dm)){
+      volcano_input_selected_dm()
+    } # else close
+  })
+  
+  output$protein_plot_dm<-renderPlot({
+    if(!is.null(input$contents_dm_rows_selected)){
+      protein_input_dm()
+    }
+  })
+  
+  
+  ### QC Outputs
+  output$sample_corr_dm <-renderPlot({
+    correlation_input_dm()
+  })
+  
+  output$sample_cvs_dm <- renderPlot({
+    cvs_input_dm()
+  })
+  
+  output$norm_dm <- renderPlot({
+    norm_input_dm()
+  })
+  
+  output$missval_dm <- renderPlot({
+    missval_input_dm()
+  })
+  
+  output$detect_dm <- renderPlot({
+    detect_input_dm()
+  })
+  
+  output$imputation_dm <- renderPlot({
+    imputation_input_dm()
+  })
+  
+  output$p_hist <- renderPlot({
+    p_hist_input_dm()
+  })
+  
+  output$numbers_dm <- renderPlot({
+    numbers_input_dm()
+  })
+  
+  output$coverage_dm <- renderPlot({
+    coverage_input_dm()
+  })
+  
+  ## Enrichment Outputs
+  output$go_enrichment_dm<-renderPlot({
+    go_input_dm()$plot_go
+  })
+  
+  output$pathway_enrichment_dm<-renderPlot({
+    pathway_input_dm()$plot_pa
+  })
+  
+  ##### Download Functions
+  datasetInput_dm <- reactive({
+    switch(input$dataset_dm,
+           "Results" = get_results_proteins(dep_dm()),
+           "Full dataset" = get_df_wide(dep_dm()))
+  })
+  
+  output$downloadData_dm <- downloadHandler(
+    filename = function() { paste(input$dataset_dm, ".csv", sep = "") }, ## use = instead of <-
+    content = function(file) {
+      write.table(datasetInput_dm(),
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  ### === Cluster Download ==== ####
+  
+  individual_cluster_dm <- reactive({
+    cluster_number <- input$cluster_number_dm
+    cluster_all <- heatmap_input_dm()
+    data_result_dm()[cluster_all[[cluster_number]],]
+  })
+  
+  
+  
+  output$downloadCluster_dm <- downloadHandler(
+    filename = function() { paste("Cluster_info_",input$cluster_number_dm, ".csv", sep = "") }, ## use = instead of <-
+    content = function(file) {
+      write.table(individual_cluster_dm(),
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  output$downloadVolcano_dm <- downloadHandler(
+    filename = function() {
+      paste0("Volcano_", input$volcano_cntrst_dm, ".pdf")
+    },
+    content = function(file) {
+      pdf(file)
+      print(volcano_input_selected_dm())
+      dev.off()
+    }
+  )
+  
+  
+  ## Protein plot download
+  output$downloadProtein_dm <- downloadHandler(
+    filename = function() {
+      paste0(input$type_dm,".pdf")
+    },
+    content = function(file) {
+      pdf(file)
+      print(protein_input_dm())
+      dev.off()
+    }
+  )
+  
+  ###### ==== DOWNLOAD GO TABLE ==== ####
+  output$downloadGO_dm <- downloadHandler(
+    filename = function() { paste("GO_enrichment_",input$go_database_dm, ".csv", sep = "") }, ## use = instead of <-
+    content = function(file) {
+      write.table(go_input_dm()$go_result,
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
+  output$downloadPA_dm <- downloadHandler(
+    filename = function() { paste("Pathway_enrichment_",input$pathway_database_dm, ".csv", sep = "") }, 
+    ## use = instead of <-
+    content = function(file) {
+      write.table(pathway_input_dm()$pa_result,
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  
+  
+  #####===== Download Report (demo phosphosite)=====#####
+  output$downloadReport_dm <- downloadHandler(
+    # For PDF output, change this to "report.pdf"
+    filename = "Phospho-Analyst(normalization)report.pdf",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "Normalised_phosphosite_report.Rmd")
+      file.copy("Normalised_phosphosite_report.Rmd", tempReport, overwrite = TRUE)
+      
+      sig_proteins<-dep_dm() %>%
+        .[SummarizedExperiment::rowData(.)$significant, ] %>%
+        nrow()
+      
+      tested_contrasts<- gsub("_significant", "", 
+                              colnames(SummarizedExperiment::rowData(dep_dm()))[grep("_significant", 
+                                                                                     colnames(SummarizedExperiment::rowData(dep_dm())))])
+      pg_width<- ncol(normalised_data_dm()) / 2.5
+      # Set up parameters to pass to Rmd document
+      params <- list(data = normalized_phospho_data,
+                     alpha = input$p,
+                     lfc = input$lfc,
+                     num_signif= sig_proteins,
+                     pg_width = pg_width,
+                     tested_contrasts= tested_contrasts,
+                     numbers_input= numbers_input_dm,
+                     detect_input = detect_input_dm,
+                     imputation_input = imputation_input_dm,
+                     missval_input = missval_input_dm,
+                     p_hist_input = p_hist_input_dm,
+                     pca_input = pca_input_dm,
+                     coverage_input= coverage_input_dm,
+                     correlation_input =correlation_input_dm,
+                     heatmap_input = heatmap_input_dm,
+                     cvs_input= cvs_input_dm,
+                     dep = dep_dm
+      )
+      
+      # Knit the document, passing in the `params` list
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+
   
 }

@@ -804,3 +804,23 @@ anova_function<-function(phospho_single){
   aov_single<-aov(formula_phospho, phospho_single)
   tidy(aov_single)  %>% filter(term=="condition") %>% dplyr::select(p.value)
 }
+
+# get editable experiment design (phosphosite) function
+get_exp_design <- function(df){
+  intensity_cols <- grep("Intensity[.]", colnames(df))
+  intensity_names <- colnames( df[,intensity_cols])
+  intensity_names <- intensity_names %>% gsub("Intensity[.]", "", .) %>% gsub("___\\d", "", .) %>% unique()
+  df <- data.frame(label = intensity_names) %>% 
+    add_column(condition = NA, replicate = 0)
+  return(df)
+}
+
+# get editable experiment design (proteinGroup) function
+get_exp_design_pr <- function(df){
+  intensity_cols <- grep("Intensity[.]", colnames(df))
+  intensity_names <- colnames( df[,intensity_cols])
+  intensity_names <- intensity_names %>% gsub("Intensity[.]", "", .) %>% unique()
+  df <- data.frame(label = intensity_names) %>% 
+    add_column(condition = NA, replicate = 0)
+  return(df)
+}
