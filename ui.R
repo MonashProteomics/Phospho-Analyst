@@ -911,18 +911,20 @@ ui <- function(request){
           
           #### demo ui ####
           tabItem(tabName = "demo",
-                   fluidRow(
-                     column(4,
-                            column(7,uiOutput("downloadTable_dm"),offset = 1),
-                            column(4,uiOutput("downloadButton_dm"))
-                     ),
-                     column(5,
-                            infoBoxOutput("significantBox_dm",width = 12)
-                     ),
-                     column(3,
-                            uiOutput("downloadreport_dm")
-                     )
-                   ),
+                  tabsetPanel(id = 'panel_list_dm',
+                              tabPanel("Phosphosite",
+                                       fluidRow(
+                                         column(4,
+                                                column(7,uiOutput("downloadTable_dm"),offset = 1),
+                                                column(4,uiOutput("downloadButton_dm"))
+                                                ),
+                                         column(5,
+                                                infoBoxOutput("significantBox_dm",width = 12)
+                                                ),
+                                    column(3,
+                                           uiOutput("downloadreport_dm")
+                                           )
+                                    ),
                    # align save button
                    tags$style(type='text/css', "#downloadTable_dm { width:100%; margin-top: 15px;}"),
                    tags$style(type='text/css', "#downloadButton_dm { width:100%; margin-top: 40px;}"), 
@@ -1109,6 +1111,209 @@ ui <- function(request){
                            ) # Tab box close
                          )
                      )) # fluidrow qc close
+                   ), # phosphosite panel close
+                   tabPanel("ProteinGroup",
+                            fluidRow(
+                              column(4,
+                                     column(7,uiOutput("downloadTable_dm_pr"),offset = 1),
+                                     column(4,uiOutput("downloadButton_dm_pr"))
+                              ),
+                              column(5,
+                                     infoBoxOutput("significantBox_dm_pr",width = 12)
+                              ),
+                              column(3,
+                                     uiOutput("downloadreport_dm_pr")
+                              )
+                            ),
+                            # align save button
+                            tags$style(type='text/css', "#downloadTable_dm_pr { width:100%; margin-top: 15px;}"),
+                            tags$style(type='text/css', "#downloadButton_dm_pr { width:100%; margin-top: 40px;}"), 
+                            tags$style(type='text/css', "#downloadreport_dm_pr { width:100%; vertical-align- middle; margin-top: 40px;
+                                                                    margin-bottom: 25px;}"),
+                            tags$br(), # Blank lines
+                            tags$br(),
+                            ## Data table and result plots box
+                            
+                            
+                            fluidRow(
+                              box(
+                                title = "Results Table",
+                                DT::dataTableOutput("contents_dm_pr"),
+                                #  actionButton("clear", "Deselect Rows"),
+                                actionButton("original_dm_pr", "Refresh Table"),
+                                width = 6,height = 800,
+                                status = "success",
+                                #color=""
+                                solidHeader = TRUE
+                              ),
+                              # column(
+                              box(
+                                width= 6,
+                                collapsible = TRUE,
+                                #status="primary",
+                                #solidHeader=TRUE,
+                                tabBox(
+                                  title = "Result Plots",
+                                  width = 12,
+                                  tabPanel(title = "Volcano plot",
+                                           fluidRow(
+                                             box(width = 12,
+                                                 column(8,uiOutput("volcano_cntrst_dm_pr")),
+                                                 
+                                                 column(4,
+                                                        prettyCheckbox("check_anova_dm_pr",
+                                                                       "Apply ANOVA",
+                                                                       value = FALSE),
+                                                        prettyCheckbox("check_names_dm_pr",
+                                                                       "Display names",
+                                                                       value = FALSE),
+                                                        prettyCheckbox("p_adj_dm_pr",
+                                                                       "Adjusted p values",
+                                                                       value = FALSE)
+                                                 )
+                                             ),
+                                             tags$p("Select phosphosite from Results Table to highlight on the plot OR 
+                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                                         for more than two groups.")
+                                             #Add text line
+                                             # tags$p("OR"),
+                                             #  tags$p("Drag the mouse on plot to show expression of proteins in Table") 
+                                           ),
+                                           
+                                           fluidRow(
+                                             plotOutput("volcano_dm_pr", height = 600,
+                                                        # hover = "protein_hover"),
+                                                        #),
+                                                        # click = "protein_click"),
+                                                        brush = "protein_brush_dm_pr",
+                                                        click = "protein_click_dm_pr"),
+                                             downloadButton('downloadVolcano_dm_pr', 'Save Highlighted Plot'),
+                                             actionButton("resetPlot_dm_pr", "Clear Selection")
+                                             #)),
+                                           )),
+                                  tabPanel(title= "Heatmap",
+                                           fluidRow(
+                                             plotOutput("heatmap_dm_pr", height = 600)
+                                           ),
+                                           fluidRow(
+                                             box(numericInput("cluster_number_dm_pr",
+                                                              "Cluster to download",
+                                                              min=1, max=6, value = 1), width = 6),
+                                             box(downloadButton('downloadCluster_dm_pr',"Save Cluster"),
+                                                 downloadButton('download_hm_svg_dm_pr', "Save svg"),
+                                                 width = 5)
+                                           )
+                                  ),
+                                  tabPanel(title = "Individual Plot",
+                                           fluidRow(
+                                             box(prettyRadioButtons("type_dm_pr",
+                                                                    "Plot type",
+                                                                    choices = c("Box Plot"= "boxplot",
+                                                                                "Violin Plot"="violin", 
+                                                                                "Interaction Plot"= "interaction",
+                                                                                "Intensity Plot"="dot"
+                                                                    ),
+                                                                    selected = "boxplot", 
+                                                                    inline = TRUE),
+                                                 width = 12
+                                             ),
+                                             tags$p("Select one or more rows from Results Table to plot individual 
+                                                  protein intesities across conditions and replicates")
+                                           ),
+                                           fluidRow(
+                                             plotOutput("protein_plot_dm_pr"),
+                                             downloadButton('downloadProtein_dm_pr', 'Download Plot')
+                                           )
+                                  )
+                                )
+                              ) # box or column end
+                              
+                              
+                              
+                            ), # result plot colsed
+                            
+                            
+                            ## QC Box
+                            fluidRow(
+                              div(id="qc_tab",
+                                  column(
+                                    width=6,
+                                    tabBox(title = "QC Plots", width = 12,
+                                           tabPanel(title = "PCA Plot",
+                                                    plotOutput("pca_plot_dm_pr", height=600),
+                                                    downloadButton('download_pca_svg_dm_pr', "Save svg")
+                                           ),
+                                           tabPanel(title="Sample Correlation",
+                                                    plotOutput("sample_corr_dm_pr", height = 600),
+                                                    downloadButton('download_corr_svg_dm_pr', "Save svg")
+                                           ),
+                                           tabPanel(title= "Sample CVs",
+                                                    plotOutput("sample_cvs_dm_pr", height = 600),
+                                                    downloadButton('download_cvs_svg_dm_pr', "Save svg")
+                                           ),
+                                           tabPanel(title = "Protein Numbers",
+                                                    plotOutput("numbers_dm_pr", height = 600),
+                                                    downloadButton('download_num_svg_dm_pr', "Save svg")
+                                           ),
+                                           
+                                           tabPanel(title = "Sample coverage",
+                                                    plotOutput("coverage_dm_pr", height = 600),
+                                                    downloadButton('download_cov_svg_dm_pr', "Save svg")
+                                           ),
+                                           tabPanel(title = "Normalization",
+                                                    plotOutput("norm_dm_pr", height = 600),
+                                                    downloadButton('download_norm_svg_dm_pr', "Save svg")
+                                           ),
+                                           # tabPanel(title = "Missing values - Quant",
+                                           #          plotOutput("detect", height = 600)
+                                           # ),
+                                           tabPanel(title = "Missing values - Heatmap",
+                                                    plotOutput("missval_dm_pr", height = 600),
+                                                    downloadButton('download_missval_svg_dm_pr', "Save svg")
+                                           ),
+                                           tabPanel(title = "Imputation",
+                                                    plotOutput("imputation_dm_pr", height = 600),
+                                                    downloadButton('download_imp_svg_dm_pr', "Save svg")
+                                           )#,
+                                           # tabPanel(title = "p-value Histogram",
+                                           #          plotOutput("p_hist", height = 600)
+                                           # )
+                                    ) # Tab box close
+                                  ),
+                                  column(
+                                    width=6,
+                                    tabBox(title = "Enrichment", width = 12,
+                                           tabPanel(title="Gene Ontology",
+                                                    box(uiOutput("contrast_dm_pr"), width = 6),
+                                                    box(
+                                                      selectInput("go_database_dm_pr", "GO database:",
+                                                                  c("Molecular Function"="GO_Molecular_Function_2017b",
+                                                                    "Cellular Component"="GO_Cellular_Component_2017b",
+                                                                    "Biological Process"="GO_Biological_Process_2017b")),
+                                                      width= 5),
+                                                    actionButton("go_analysis_dm_pr", "Run Enrichment"),
+                                                    plotOutput("go_enrichment_dm_pr"),
+                                                    downloadButton('downloadGO_dm_pr', 'Download Table')
+                                                    
+                                           ),
+                                           tabPanel(title= "Pathway enrichment",
+                                                    box(uiOutput("contrast_1_dm_pr"), width = 6),
+                                                    box(
+                                                      selectInput("pathway_database_dm_pr", "Pathway database:",
+                                                                  c("KEGG"="KEGG_2016",
+                                                                    "Reactome"="Reactome_2016")),
+                                                      width= 5),
+                                                    actionButton("pathway_analysis_dm_pr", "Run Enrichment"),
+                                                    plotOutput("pathway_enrichment_dm_pr"),
+                                                    downloadButton('downloadPA_dm_pr', 'Download Table')
+                                           )
+                                           
+                                    ) # Tab box close
+                                  )
+                              )) # fluidrow qc close
+                   ) # protein panel close
+                   
+                   ) # panel list close
                    
                    
                    

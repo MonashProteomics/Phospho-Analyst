@@ -944,9 +944,9 @@ server <- function(input, output,session){
     imputation_input()
   })
   
-  output$p_hist <- renderPlot({
-    p_hist_input()
-  })
+  # output$p_hist <- renderPlot({
+  #   p_hist_input()
+  # })
   
   output$numbers <- renderPlot({
     numbers_input()
@@ -1910,9 +1910,9 @@ server <- function(input, output,session){
     imputation_input_pr()
   })
   
-  output$p_hist <- renderPlot({
-    p_hist_input_pr()
-  })
+  # output$p_hist <- renderPlot({
+  #   p_hist_input_pr()
+  # })
   
   output$numbers_pr <- renderPlot({
     numbers_input_pr()
@@ -3164,9 +3164,9 @@ server <- function(input, output,session){
     imputation_input_nr()
   })
   
-  output$p_hist <- renderPlot({
-    p_hist_input_nr()
-  })
+  # output$p_hist <- renderPlot({
+  #   p_hist_input_nr()
+  # })
   
   output$numbers_nr <- renderPlot({
     numbers_input_nr()
@@ -3318,11 +3318,11 @@ server <- function(input, output,session){
     }
   )
   
-  #### Demo logic ========== #############
+  #### Demo logic (Phosphosite)========== #############
   
   ####======= Render Functions
   output$volcano_cntrst_dm <- renderUI({
-    if (!is.null(comparisons())) {
+    if (!is.null(comparisons_dm())) {
       df <- SummarizedExperiment::rowData(dep_dm())
       cols <- grep("_significant$",colnames(df))
       selectizeInput("volcano_cntrst_dm",
@@ -3333,7 +3333,7 @@ server <- function(input, output,session){
   
   ##comparisons
   output$contrast_dm <- renderUI({
-    if (!is.null(comparisons())) {
+    if (!is.null(comparisons_dm())) {
       df <- SummarizedExperiment::rowData(dep_dm())
       cols <- grep("_significant$",colnames(df))
       selectizeInput("contrast_dm",
@@ -3343,7 +3343,7 @@ server <- function(input, output,session){
   })
   
   output$contrast_1_dm <- renderUI({
-    if (!is.null(comparisons())) {
+    if (!is.null(comparisons_dm())) {
       df <- SummarizedExperiment::rowData(dep_dm())
       cols <- grep("_significant$",colnames(df))
       selectizeInput("contrast_dm",
@@ -3489,19 +3489,12 @@ server <- function(input, output,session){
   ### Volcano Plot
   volcano_input_dm <- reactive({
     if(!is.null(input$volcano_cntrst_dm)) {
-      if(length(unique(exp_design_input()$condition)) <= 2) {
-        plot_volcano_new(dep_dm(),
-                         input$volcano_cntrst_dm,
-                         FALSE,
-                         input$check_names_dm,
-                         input$p_adj_dm)
-      } else {
-        plot_volcano_new(dep_dm(),
-                         input$volcano_cntrst_dm,
-                         input$check_anova_dm,
-                         input$check_names_dm,
-                         input$p_adj_dm)
-      }
+      plot_volcano_new(dep_dm(),
+                       input$volcano_cntrst_dm,
+                       input$check_anova_dm,
+                       input$check_names_dm,
+                       input$p_adj_dm)
+      
       
     }
   })
@@ -3541,20 +3534,12 @@ server <- function(input, output,session){
                                y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
                                name = proteins_selected$Phosphosite)
       # print(df_protein)
-      if(length(unique(exp_design_input()$condition)) <= 2){
-        p<-plot_volcano_new(dep_dm(),
-                            input$volcano_cntrst_dm,
-                            FALSE,
-                            input$check_names_dm,
-                            input$p_adj_dm)
-        
-      } else {
-        p<-plot_volcano_new(dep_dm(),
-                            input$volcano_cntrst_dm,
-                            input$check_anova_dm,
-                            input$check_names_dm,
-                            input$p_adj_dm)
-      }
+      p<-plot_volcano_new(dep_dm(),
+                          input$volcano_cntrst_dm,
+                          input$check_anova_dm,
+                          input$check_names_dm,
+                          input$p_adj_dm)
+      
       p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
         ggrepel::geom_text_repel(data = df_protein,
                                  aes(x, y, label = name),
@@ -3886,9 +3871,9 @@ server <- function(input, output,session){
     imputation_input_dm()
   })
   
-  output$p_hist <- renderPlot({
-    p_hist_input_dm()
-  })
+  # output$p_hist_dm <- renderPlot({
+  #   p_hist_input_dm()
+  # })
   
   output$numbers_dm <- renderPlot({
     numbers_input_dm()
@@ -4039,6 +4024,732 @@ server <- function(input, output,session){
       )
     }
   )
+  
+  #### Demo logic (Protein Group)========== #############
+  
+  ####======= Render Functions
+  output$volcano_cntrst_dm_pr <- renderUI({
+    if (!is.null(comparisons_dm_pr())) {
+      df <- SummarizedExperiment::rowData(dep_dm_pr())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("volcano_cntrst_dm_pr",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  ##comparisons
+  output$contrast_dm_pr <- renderUI({
+    if (!is.null(comparisons_dm_pr())) {
+      df <- SummarizedExperiment::rowData(dep_dm_pr())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("contrast_dm_pr",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  output$contrast_1_dm_pr <- renderUI({
+    if (!is.null(comparisons_dm_pr())) {
+      df <- SummarizedExperiment::rowData(dep_dm_pr())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("contrast_dm_pr",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  output$downloadTable_dm_pr <- renderUI({
+    if(!is.null(dep_dm_pr())){
+      selectizeInput("dataset_dm_pr",
+                     "Choose a dataset to save" ,
+                     c("Results","Original_matrix",
+                       "Imputed_matrix",
+                       "Full_dataset"))
+    }
+  })
+  
+  output$downloadButton_dm_pr <- renderUI({
+    if(!is.null(dep_dm_pr())){
+      downloadButton('downloadData_dm_pr', 'Save')
+    }
+  })
+  
+  output$downloadZip_dm_pr <- renderUI({
+    if(!is.null(dep_dm_pr())){
+      downloadButton('downloadZip1_dm_pr', 'Download result plots')
+    }
+  })
+  output$downloadreport_dm_pr <- renderUI({
+    if(!is.null(dep_dm_pr())){
+      downloadButton('downloadReport_dm_pr', 'Download Report')
+    }
+  })
+  
+  output$downloadPlots <- renderUI({
+    if(!is.null(dep_dm_pr())){
+      downloadButton('downloadPlots1_dm_pr', 'Download Plots')
+    }
+  })
+  
+  # load demo data
+  env_dm_pr<-reactive({
+    LoadToEnvironment("data/proteinGroup_demo_data.RData", env = globalenv())
+  })
+  
+  processed_data_dm_pr<-reactive({
+    env_dm_pr()[["data_missval"]]
+  })
+  
+  
+  unimputed_table_dm_pr<-reactive({
+    temp<-assay(processed_data_dm_pr())
+    temp1<-2^(temp)
+    colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
+    temp1<-cbind(ProteinID=rownames(temp1),temp1) 
+    #temp1$ProteinID<-rownames(temp1)
+    return(as.data.frame(temp1))
+  })
+  
+  imputed_data_dm_pr<-reactive({
+    DEP::impute(processed_data_dm_pr(),input$imputation)
+  })
+  
+  normalised_data_dm_pr<-reactive({
+    normalize_vsn(imputed_data_dm_pr())
+  })
+  
+  imputed_table_dm_pr<-reactive({
+    temp<-assay(imputed_data_dm_pr())
+    #tibble::rownames_to_column(temp,var = "ProteinID")
+    temp1<-2^(temp)
+    colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
+    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    return(as.data.frame(temp1))
+  })
+  
+  diff_all_dm_pr<-reactive({
+    test_diff(normalised_data_dm_pr(),type = 'all')
+  })
+  
+  dep_dm_pr<-reactive({
+    env_dm_pr()[["data_dep"]]
+  })
+  
+  comparisons_dm_pr<-reactive({
+    comparisons<-gsub("_p.adj", "", 
+                      colnames(SummarizedExperiment::rowData(dep_dm_pr()))
+                      [grep("p.adj", colnames(SummarizedExperiment::rowData(dep_dm_pr())))])
+  })
+  
+  ## Results plot inputs in Normalized page
+  
+  ## PCA Plot
+  pca_label_dm_pr<-reactive({
+    pca_lable<-levels(as.factor(colData(dep_dm_pr())$replicate))
+    print(pca_label)
+  })
+  
+  pca_input_dm_pr<-reactive({
+    if (num_total_dm_pr()<=500){
+      if(length(levels(as.factor(colData(dep_dm_pr())$replicate))) <= 6){
+        pca_plot<- DEP::plot_pca(dep_dm_pr(), n=num_total_dm_pr(), point_size = 4)
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }
+      else{
+        pca_plot<-DEP::plot_pca(dep_dm_pr(), n=num_total_dm_pr(), point_size = 4, indicate = "condition")
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }
+    }
+    else{
+      if(length(levels(as.factor(colData(dep_dm_pr())$replicate))) <= 6){
+        pca_plot<-DEP::plot_pca(dep_dm_pr(), point_size = 4)
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }else{
+        pca_label<-SummarizedExperiment::colData(dep_dm_pr())$replicate
+        pca_plot<-DEP::plot_pca(dep_dm_pr(), point_size = 4, indicate = "condition")
+        #pca_plot<-pca_plot + geom_point()
+        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
+                                                      size = 4,
+                                                      box.padding = unit(0.1, 'lines'),
+                                                      point.padding = unit(0.1, 'lines'),
+                                                      segment.size = 0.5)
+        pca_plot<-pca_plot + labs(title = "PCA plot")
+        return(pca_plot)
+      }
+    }
+    
+  })
+  
+  ### Heatmap Differentially expressed proteins
+  heatmap_input_dm_pr<-reactive({ 
+    get_cluster_heatmap(dep_dm_pr(),
+                        type="centered",kmeans = TRUE,
+                        k=6, col_limit = 6,
+                        indicate = "condition"
+    )
+  })
+  
+  ### Volcano Plot
+  volcano_input_dm_pr <- reactive({
+    if(!is.null(input$volcano_cntrst_dm_pr)) {
+      plot_volcano_new(dep_dm_pr(),
+                         input$volcano_cntrst_dm_pr,
+                         input$check_anova_dm_pr,
+                         input$check_names_dm_pr,
+                         input$p_adj_dm_pr)
+    }
+  })
+  
+  volcano_df_dm_pr<- reactive({
+    if(!is.null(input$volcano_cntrst_dm_pr)) {
+      get_volcano_df(dep_dm_pr(),
+                     input$volcano_cntrst_dm_pr) 
+      
+    }
+  })
+  
+  
+  volcano_input_selected_dm_pr<-reactive({
+    if(!is.null(input$volcano_cntrst_dm_pr)){
+      
+      if (!is.null(input$contents_dm_pr_rows_selected)){
+        proteins_selected<-data_result_dm_pr()[c(input$contents_dm_pr_rows_selected),]## get all rows selected
+      }
+      else if(!is.null(input$protein_brush_dm_pr)){
+        proteins_selected<-data_result_dm_pr()[data_result_dm_pr()[["Gene Name"]] %in% protein_name_brush_dm_pr(), ] 
+      }
+      print(proteins_selected)
+      ## convert contrast to x and padj to y
+      diff_proteins <- grep(paste(input$volcano_cntrst_dm_pr, "_log2", sep = ""),
+                            colnames(proteins_selected))
+      if(input$p_adj=="FALSE"){
+        padj_proteins <- grep(paste(input$volcano_cntrst_dm_pr, "_p.val", sep = ""),
+                              colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep(paste(input$volcano_cntrst, "_p.adj", sep = ""),
+                              colnames(proteins_selected))
+      }
+      
+      df_protein <- data.frame(x = proteins_selected[, diff_proteins],
+                               y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
+                               name = proteins_selected$`Gene Name`)
+      # print(df_protein)
+      p<-plot_volcano_new(dep_dm_pr(),
+                            input$volcano_cntrst_dm_pr,
+                            input$check_anova_dm_pr,
+                            input$check_names_dm_pr,
+                            input$p_adj_dm_pr)
+      
+      p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+        ggrepel::geom_text_repel(data = df_protein,
+                                 aes(x, y, label = name),
+                                 size = 4,
+                                 box.padding = unit(0.1, 'lines'),
+                                 point.padding = unit(0.1, 'lines'),
+                                 segment.size = 0.5)## use the dataframe to plot points
+      
+    }
+  })
+  
+  protein_input_dm_pr<-reactive({ 
+    
+    protein_selected  <- data_result_dm_pr()[input$contents_dm_pr_rows_selected,1]
+    protein_selected <-as.character(protein_selected)
+    if(length(levels(as.factor(colData(dep_dm_pr())$replicate))) <= 8){
+      plot_protein(dep_dm_pr(), protein_selected, as.character(input$type))
+    }
+    else{
+      protein_plot<-plot_protein(dep_dm_pr(), protein_selected, as.character(input$type))
+      protein_plot + scale_color_brewer(palette = "Paired")
+    }
+    
+  })
+  
+  ## QC Inputs
+  norm_input_dm_pr <- reactive({
+    plot_normalization(processed_data_dm_pr(),
+                       normalised_data_dm_pr())
+  })
+  
+  missval_input_dm_pr <- reactive({
+    plot_missval(processed_data_dm_pr())
+  })
+  
+  detect_input_dm_pr <- reactive({
+    plot_detect(processed_data_dm_pr())
+  })
+  
+  imputation_input_dm_pr <- reactive({
+    plot_imputation(processed_data_dm_pr(),
+                    diff_all_dm_pr())
+  })
+  
+  p_hist_input_dm_pr <- reactive({
+    plot_p_hist(dep_dm_pr())
+  })
+  
+  numbers_input_dm_pr <- reactive({
+    plot_numbers(processed_data_dm_pr()) 
+  })
+  
+  coverage_input_dm_pr <- reactive({
+    plot_coverage(processed_data_dm_pr())
+  })
+  
+  correlation_input_dm_pr<-reactive({
+    plot_cor(dep_dm_pr(),significant = FALSE)
+  })
+  
+  cvs_input_dm_pr<-reactive({
+    plot_cvs(dep_dm_pr())
+  })
+  
+  num_total_dm_pr<-reactive({
+    dep_dm_pr() %>%
+      nrow()
+  }) 
+  
+  ## Enrichment inputs
+  
+  go_input_dm_pr<-eventReactive(input$go_analysis_dm_pr,{
+    withProgress(message = 'Gene ontology enrichment is in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    
+    if(!is.null(input$contrast_dm_pr)){
+      enrichment_output_test(dep_dm_pr(), input$go_database_dm_pr)
+      go_results<- test_gsea_mod(dep_dm_pr(), databases = input$go_database_dm_pr, contrasts = TRUE)
+      null_enrichment_test(go_results)
+      plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_dm_pr,
+                                databases = input$go_database_dm_pr, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
+        xlab(NULL)
+      go_list<-list("go_result"=go_results, "plot_go"=plot_go)
+      return(go_list)
+    }
+  })
+  
+  pathway_input_dm_pr<-eventReactive(input$pathway_analysis_dm_pr,{
+    progress_indicator("Pathway Analysis is running....")
+    enrichment_output_test(dep_dm_pr(), input$pathway_database_dm_pr)
+    pathway_results<- test_gsea_mod(dep_dm_pr(), databases=input$pathway_database_dm_pr, contrasts = TRUE)
+    null_enrichment_test(pathway_results)
+    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm_pr,
+                                  databases=input$pathway_database_dm_pr, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+      xlab(NULL)
+    pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
+    return(pathway_list)
+  })
+  
+  #### Interactive UI (Normalized page)
+  output$significantBox_dm_pr <- renderInfoBox({
+    num_total <- dep_dm_pr() %>%
+      nrow()
+    num_signif <- dep_dm_pr() %>%
+      .[SummarizedExperiment::rowData(.)$significant, ] %>%
+      nrow()
+    frac <- num_signif / num_total
+    
+    info_box <- 		infoBox("Significant Proteins",
+                          paste0(num_signif,
+                                 " out of ",
+                                 num_total),
+                          paste0(signif(frac * 100, digits = 3),
+                                 "% of proteins differentially expressed across all conditions"),
+                          icon = icon("stats", lib = "glyphicon"),
+                          color = "olive",
+                          # fill = TRUE,
+                          width = 4)
+    
+    return(info_box)
+  })
+  
+  
+  ##### Get results dataframe from Summarizedexperiment object
+  data_result_dm_pr<-reactive({
+    get_results_proteins(dep_dm_pr(),TRUE)
+  })
+  
+  
+  #### Data table
+  output$contents_dm_pr <- DT::renderDataTable({
+    withProgress(message = 'Result table calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    df<- data_result_dm_pr()
+    return(df)
+  },
+  options = list(scrollX = TRUE,
+                 autoWidth=TRUE,
+                 columnDefs= list(list(width = '400px', targets = c(-1))))
+  )
+  
+  ## Deselect all rows button
+  proxy <- dataTableProxy("contents_dm_pr")
+  
+  observeEvent(input$clear_dm_pr,{
+    proxy %>% selectRows(NULL)
+  })
+  
+  observeEvent(input$original_dm_pr,{
+    output$contents_dm_pr <- DT::renderDataTable({
+      df<- data_result_dm_pr()
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  protein_name_brush_dm_pr<- reactive({
+    #protein_tmp<-nearPoints(volcano_df(), input$protein_click, maxpoints = 1)
+    protein_tmp<-brushedPoints(volcano_df_dm_pr(), input$protein_brush_dm_pr, 
+                               xvar = "diff", yvar = "p_values")
+    protein_selected<-protein_tmp$name
+  }) 
+  protein_name_click_dm_pr<- reactive({
+    protein_tmp<-nearPoints(volcano_df_dm_pr(), input$protein_click_dm_pr, maxpoints = 1)
+    # protein_tmp<-brushedPoints(volcano_df(), input$protein_brush, 
+    #xvar = "diff", yvar = "p_values")
+    protein_selected<-protein_tmp$name
+  }) 
+  
+  
+  ## Select rows dynamically
+  observeEvent(input$protein_brush_dm_pr,{
+    output$contents_dm_pr <- DT::renderDataTable({
+      df<- data_result_dm_pr()[data_result_dm_pr()[["Gene Name"]] %in% protein_name_brush_dm_pr(), ]
+      return(df)
+    },
+    options = list(scrollX= TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+    
+    proteins_selected<-data_result_dm_pr()[data_result_dm_pr()[["Gene Name"]] %in% protein_name_brush_dm_pr(), ] #
+    # get all rows selected
+    ## convert contrast to x and padj to y
+    diff_proteins <- grep(paste(input$volcano_cntrst_dm_pr, "_log2", sep = ""),
+                          colnames(proteins_selected))
+    if(input$p_adj=="FALSE"){
+      padj_proteins <- grep(paste(input$volcano_cntrst_dm_pr, "_p.val", sep = ""),
+                            colnames(proteins_selected))
+    }
+    else{
+      padj_proteins <- grep(paste(input$volcano_cntrst_dm_pr, "_p.adj", sep = ""),
+                            colnames(proteins_selected))
+    }
+    df_protein <- data.frame(x = proteins_selected[, diff_proteins],
+                             y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
+                             name = proteins_selected$`Gene Name`)
+    
+    p<-plot_volcano_new(dep_dm_pr(),
+                        input$volcano_cntrst_dm_pr,
+                        input$check_anova_dm_pr,
+                        input$check_names_dm_pr,
+                        input$p_adj_dm_pr)
+    
+    
+    p<- p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+      ggrepel::geom_text_repel(data = df_protein,
+                               aes(x, y, label = name),
+                               size = 4,
+                               box.padding = unit(0.1, 'lines'),
+                               point.padding = unit(0.1, 'lines'),
+                               segment.size = 0.5)
+    
+    output$volcano_dm_pr <- renderPlot({
+      withProgress(message = 'Volcano Plot calculations are in progress',
+                   detail = 'Please wait for a while', value = 0, {
+                     for (i in 1:15) {
+                       incProgress(1/15)
+                       Sys.sleep(0.25)
+                     }
+                   })
+      p
+    })
+    return(p)
+  })
+  
+  observeEvent(input$resetPlot_dm_pr,{
+    session$resetBrush("protein_brush_dm_pr")
+    brush <<- NULL
+    
+    output$contents_dm_pr <- DT::renderDataTable({
+      df<- data_result_dm_pr()
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+    
+    output$volcano_dm_pr <- renderPlot({
+      volcano_input_dm_pr()
+    })
+  })
+  
+  observeEvent(input$protein_click_dm_pr,{
+    output$contents_dm_pr <- DT::renderDataTable({
+      df<- data_result_dm_pr()[data_result_dm_pr()[["Gene Name"]] %in% protein_name_click_dm_pr(), ]
+      return(df)
+    },
+    options = list(scrollX= TRUE)
+    )
+  })
+  
+  ## Render Result Plots
+  output$pca_plot_dm_pr<-renderPlot({
+    pca_input_dm_pr()
+  })
+  output$heatmap_dm_pr<-renderPlot({
+    withProgress(message = 'Heatmap rendering is in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    heatmap_input_dm_pr()
+  })
+  
+  output$volcano_dm_pr <- renderPlot({
+    withProgress(message = 'Volcano Plot calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    if(is.null(input$contents_dm_pr_rows_selected)){
+      volcano_input_dm_pr()
+    }
+    else if(!is.null(input$volcano_cntrst_dm_pr)){
+      volcano_input_selected_dm_pr()
+    } # else close
+  })
+  
+  output$protein_plot_dm_pr<-renderPlot({
+    if(!is.null(input$contents_dm_pr_rows_selected)){
+      protein_input_dm_pr()
+    }
+  })
+  
+  
+  ### QC Outputs
+  output$sample_corr_dm_pr <-renderPlot({
+    correlation_input_dm_pr()
+  })
+  
+  output$sample_cvs_dm_pr <- renderPlot({
+    cvs_input_dm_pr()
+  })
+  
+  output$norm_dm_pr <- renderPlot({
+    norm_input_dm_pr()
+  })
+  
+  output$missval_dm_pr <- renderPlot({
+    missval_input_dm_pr()
+  })
+  
+  output$detect_dm_pr <- renderPlot({
+    detect_input_dm_pr()
+  })
+  
+  output$imputation_dm_pr <- renderPlot({
+    imputation_input_dm_pr()
+  })
+  
+  # output$p_hist <- renderPlot({
+  #   p_hist_input_dm_pr()
+  # })
+  
+  output$numbers_dm_pr <- renderPlot({
+    numbers_input_dm_pr()
+  })
+  
+  output$coverage_dm_pr <- renderPlot({
+    coverage_input_dm_pr()
+  })
+  
+  ## Enrichment Outputs
+  output$go_enrichment_dm_pr<-renderPlot({
+    go_input_dm_pr()$plot_go
+  })
+  
+  output$pathway_enrichment_dm_pr<-renderPlot({
+    pathway_input_dm_pr()$plot_pa
+  })
+  
+  ##### Download Functions
+  datasetInput_dm_pr <- reactive({
+    switch(input$dataset_dm_pr,
+           "Results" = get_results_proteins(dep_dm_pr()),
+           "Full dataset" = get_df_wide(dep_dm_pr()))
+  })
+  
+  output$downloadData_dm_pr <- downloadHandler(
+    filename = function() { paste(input$dataset_dm_pr, ".csv", sep = "") }, ## use = instead of <-
+    content = function(file) {
+      write.table(datasetInput_dm_pr(),
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  ### === Cluster Download ==== ####
+  
+  individual_cluster_dm_pr <- reactive({
+    cluster_number <- input$cluster_number_dm_pr
+    cluster_all <- heatmap_input_dm_pr()
+    data_result_dm_pr()[cluster_all[[cluster_number]],]
+  })
+  
+  
+  
+  output$downloadCluster_dm_pr <- downloadHandler(
+    filename = function() { paste("Cluster_info_",input$cluster_number_dm_pr, ".csv", sep = "") }, ## use = instead of <-
+    content = function(file) {
+      write.table(individual_cluster_dm_pr(),
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  output$downloadVolcano_dm_pr <- downloadHandler(
+    filename = function() {
+      paste0("Volcano_", input$volcano_cntrst_dm_pr, ".pdf")
+    },
+    content = function(file) {
+      pdf(file)
+      print(volcano_input_selected_dm_pr())
+      dev.off()
+    }
+  )
+  
+  
+  ## Protein plot download
+  output$downloadProtein_dm_pr <- downloadHandler(
+    filename = function() {
+      paste0(input$type_dm_pr,".pdf")
+    },
+    content = function(file) {
+      pdf(file)
+      print(protein_input_dm_pr())
+      dev.off()
+    }
+  )
+  
+  ###### ==== DOWNLOAD GO TABLE ==== ####
+  output$downloadGO_dm_pr <- downloadHandler(
+    filename = function() { paste("GO_enrichment_",input$go_database_dm_pr, ".csv", sep = "") }, ## use = instead of <-
+    content = function(file) {
+      write.table(go_input_dm_pr()$go_result,
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
+  output$downloadPA_dm_pr <- downloadHandler(
+    filename = function() { paste("Pathway_enrichment_",input$pathway_database_dm_pr, ".csv", sep = "") }, 
+    ## use = instead of <-
+    content = function(file) {
+      write.table(pathway_input_dm_pr()$pa_result,
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
+  
+  
+  #####===== Download Report (demo protein group)=====#####
+  output$downloadReport_dm_pr <- downloadHandler(
+    # For PDF output, change this to "report.pdf"
+    filename = "Phospho-Analyst(demo)report.pdf",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "ProteinGroup_demo_report.Rmd")
+      file.copy("ProteinGroup_demo_report.Rmd", tempReport, overwrite = TRUE)
+      
+      sig_proteins<-dep_dm_pr() %>%
+        .[SummarizedExperiment::rowData(.)$significant, ] %>%
+        nrow()
+      
+      tested_contrasts<- gsub("_significant", "", 
+                              colnames(SummarizedExperiment::rowData(dep_dm_pr()))[grep("_significant", 
+                                                                                     colnames(SummarizedExperiment::rowData(dep_dm_pr())))])
+      pg_width<- ncol(normalised_data_dm_pr()) / 2.5
+      # Set up parameters to pass to Rmd document
+      params <- list(data = normalized_phospho_data,
+                     alpha = input$p,
+                     lfc = input$lfc,
+                     num_signif= sig_proteins,
+                     pg_width = pg_width,
+                     tested_contrasts= tested_contrasts,
+                     numbers_input= numbers_input_dm_pr,
+                     detect_input = detect_input_dm_pr,
+                     imputation_input = imputation_input_dm_pr,
+                     missval_input = missval_input_dm_pr,
+                     p_hist_input = p_hist_input_dm_pr,
+                     pca_input = pca_input_dm_pr,
+                     coverage_input= coverage_input_dm_pr,
+                     correlation_input =correlation_input_dm_pr,
+                     heatmap_input = heatmap_input_dm_pr,
+                     cvs_input= cvs_input_dm_pr,
+                     dep = dep_dm_pr
+      )
+      
+      # Knit the document, passing in the `params` list
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+  
+  # # used for save demo data
+  # observeEvent(input$analyze ,{ 
+  #   if(input$analyze==0 ){
+  #     return()
+  #   }
+  #   
+  #   data_missval <- processed_data()
+  #   data_dep <- dep()
+  #   save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+  # 
+  # })
+  # 
+  # observeEvent(input$analyze ,{ 
+  #   if(input$analyze==0 ){
+  #     return()
+  #   }
+  #   
+  #   data_missval <- processed_data_pr()
+  #   data_dep <- dep_pr()
+  #   save(data_missval, data_dep, file = "proteinGroup_demo_data.RData")
+  #   
+  # })
 
   
 }
