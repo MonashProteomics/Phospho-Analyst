@@ -58,3 +58,6 @@ border-top-color:#9b99c8;
   z-index: 1000;
   }
 
+.sidebar .text {
+  line-height: 200px;
+}

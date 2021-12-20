@@ -16,28 +16,44 @@ server <- function(input, output,session){
     if (is.null(input$file1)){
       hideTab(inputId = "panel_list", target = "Phosphosite")
       hideTab(inputId = "panel_list", target = "Comparison")
-      hideTab(inputId = "panel_list", target = "Normalization")
+      hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
     }
     
     if (is.null(input$file2)){
       hideTab(inputId = "panel_list", target = "ProteinGroup")
       hideTab(inputId = "panel_list", target = "Comparison")
-      hideTab(inputId = "panel_list", target = "Normalization")
+      hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
     }
     
   })
   
   
-  observeEvent(input$analyze ,{ 
+  observeEvent(input$analyze ,{
     if(input$analyze==0 ){
       return()
     }
-    
     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
                 appear on the screen", type="info",
                closeOnClickOutside = TRUE,
                closeOnEsc = TRUE,
                timer = 25000) # timer in miliseconds (10 sec)
+
+    # if(phospho_exp_data$Data$condition != protein_exp_data$Data_pr$condition){
+    #   shinyalert("Warning!","The conditions in phosphosite and protein experimental design table are different,
+    #              please check it.", type="warning",
+    #              closeOnClickOutside = TRUE,
+    #              closeOnEsc = TRUE)
+    #   # httpuv:::service()
+    #   # continue <<- !isTRUE(session$input$stopThis)
+    # }
+    # else(
+    #   shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+    #             appear on the screen", type="info",
+    #              closeOnClickOutside = TRUE,
+    #              closeOnEsc = TRUE,
+    #              timer = 25000) # timer in miliseconds (10 sec)
+    # )
+
   })
   
   observe({
@@ -149,17 +165,17 @@ server <- function(input, output,session){
   
   ####======= interactive exp_design (phosphosite)=======####
   phospho_exp_data <- reactiveValues(Data = NULL)
-
+  
   observe({
     req(input$file1)
     # read file
     tryCatch(
       {
         Data <- read.table(input$file1$datapath,
-                         header = TRUE,
-                         fill= TRUE, # to fill any missing data
-                         sep = "\t")
-
+                           header = TRUE,
+                           fill= TRUE, # to fill any missing data
+                           sep = "\t")
+        
       },
       error = function(e) {
         # return a safeError if a parsing error occurs
@@ -175,31 +191,25 @@ server <- function(input, output,session){
   output$print_phospho <- renderPrint({
     phospho_exp_data$Data
   })
-
+  
   # editable exp_design table
   output$exp_phospho<-DT::renderDataTable(phospho_exp_data$Data,
                                           selection = 'none',
-                                          rownames = FALSE,
-                                          edit = list(target = "cell", 
-                                                      disable = list(columns = 0),
-                                                      numeric = list(columns = 2)),
+                                          # rownames = FALSE,
+                                          edit = list(target = "all", 
+                                                      disable = list(columns = c(0,1)),
+                                                      numeric = list(columns = 3)),
                                           class = "display"
-                                          )
-
-  proxy <- DT::dataTableProxy("exp_phospho")
-
+  )
+  
+  # proxy_exp <- DT::dataTableProxy("exp_phospho")
+  
   observeEvent(input$exp_phospho_cell_edit, {
-    info <- input$exp_phospho_cell_edit
-    str(info)
-    i <- info$row
-    j <- info$col + 1
-    v <- info$value
-    phospho_exp_data$Data[i, j] <<- DT::coerceValue(v, phospho_exp_data$Data[i, j])
-    DT::replaceData(proxy, phospho_exp_data$Data, resetPaging = FALSE, rownames = FALSE)  # important
+    phospho_exp_data$Data <<- editData(phospho_exp_data$Data, input$exp_phospho_cell_edit, 'exp_phospho')
   })
-
+  
   # download edited exp_design table
-  output$save_exp <- downloadHandler("phosphosite_exp_design.csv",
+  output$download_exp <- downloadHandler("phosphosite_exp_design.csv",
                                      content = function(file){
                                        write.csv(phospho_exp_data$Data, file, row.names = F)
                                      },
@@ -208,7 +218,7 @@ server <- function(input, output,session){
   # phosphosite exp_desgin file
   exp_design_input<-eventReactive(input$analyze,{
     inFile<-input$file3
-    if (is.null(inFile)){
+    if (is.null(inFile) ||input$save_exp>0){
       temp_df <- phospho_exp_data$Data
       
     }
@@ -249,35 +259,28 @@ server <- function(input, output,session){
     protein_exp_data$Data_pr <- get_exp_design_pr(Data_pr)
   })
   
-  # overview changes in exp_design table
-  output$print_protein <- renderPrint({
-    protein_exp_data$Data_pr
-  })
+  # # overview changes in exp_design table
+  # output$print_protein <- renderPrint({
+  #   protein_exp_data$Data_pr
+  # })
   
   # editable exp_design table
   output$exp_protein<-DT::renderDataTable(
     protein_exp_data$Data_pr,selection = 'none', 
-    rownames = FALSE,
-    edit = list(target = "cell", 
-                disable = list(columns = 0),
-                numeric = list(columns = 2)),
+    edit = list(target = "all", 
+                disable = list(columns = c(0,1)),
+                numeric = list(columns = 3)),
     class = "display"
     )
   
   proxy_pr <- DT::dataTableProxy("exp_protein")
   
   observeEvent(input$exp_protein_cell_edit, {
-    info <- input$exp_protein_cell_edit
-    str(info)
-    i <- info$row
-    j <- info$col + 1
-    v <- info$value
-    protein_exp_data$Data_pr[i, j] <<- DT::coerceValue(v, protein_exp_data$Data_pr[i, j])
-    DT::replaceData(proxy_pr, protein_exp_data$Data_pr, resetPaging = FALSE, rownames = FALSE)  # important
+    protein_exp_data$Data_pr <<- editData(protein_exp_data$Data_pr, input$exp_protein_cell_edit, 'exp_protein')
   })
   
   # download edited exp_design table
-  output$save_exp_pr <- downloadHandler("protein_exp_design.csv", 
+  output$download_exp_pr <- downloadHandler("protein_exp_design.csv", 
                                      content = function(file){
                                        write.csv(protein_exp_data$Data_pr, file, row.names = F)
                                      },
@@ -286,7 +289,7 @@ server <- function(input, output,session){
   # proteinGroup exp_desgin file
   exp_design_input_1<-eventReactive(input$analyze,{
     inFile<-input$file4
-    if (is.null(inFile)){
+    if (is.null(inFile)||input$save_exp>0){
       temp_df <- protein_exp_data$Data_pr
       
     }
@@ -2077,295 +2080,315 @@ server <- function(input, output,session){
   })
   
   output$selected_gene = renderUI({
-    selectInput('selected_gene', 
-                label='Select one or more Gene names', 
-                choices = as.list(gene_names()$Gene.names),
-                selected = NULL,
-                multiple = TRUE) 
+    if (!is.null(gene_names())){
+      df <- gene_names()
+      selectInput('selected_gene', 
+                  label='Select one or more Gene names', 
+                  choices = as.list(df$Gene.names),
+                  selected = NULL,
+                  multiple = TRUE) 
+    }
   })
   
   # Reactive components
   phospho_df <- reactive({
-    # phospho_row <- rowData(dep()) %>% as.data.frame()
-    phospho_row <- data_result() %>% mutate(rowname = Phosphosite) %>% as.data.frame()
-    phospho_row <- column_to_rownames(phospho_row, 'rowname')
-    phospho_intensity <- assay(dep())  %>% as.data.frame()
-    phospho_df <- merge(phospho_row, phospho_intensity, by = 0) # Merge data according to row names
-    if(length(unique(exp_design_input()$condition)) <= 2) {
-      col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
-                        paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                        paste(input$volcano_comp, "_p.val", sep = ""))
-    } else {
-      if (input$check_anova_comp =="FALSE") {
+    if (!is.null(input$volcano_comp)){
+      # phospho_row <- rowData(dep()) %>% as.data.frame()
+      phospho_row <- data_result() %>% mutate(rowname = Phosphosite) %>% as.data.frame()
+      phospho_row <- column_to_rownames(phospho_row, 'rowname')
+      phospho_intensity <- assay(dep())  %>% as.data.frame()
+      phospho_df <- merge(phospho_row, phospho_intensity, by = 0) # Merge data according to row names
+      if(length(unique(exp_design_input()$condition)) <= 2) {
         col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
                           paste(input$volcano_comp, "_log2 fold change", sep = ""),
                           paste(input$volcano_comp, "_p.val", sep = ""))
       } else {
-        col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
-                          paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                          "ANOVA_p.val")
+        if (input$check_anova_comp =="FALSE") {
+          col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
+                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
+                            paste(input$volcano_comp, "_p.val", sep = ""))
+        } else {
+          col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
+                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
+                            "ANOVA_p.val")
+        }
       }
+      phospho_df_1 <- phospho_df %>% 
+        subset(select = col_selected) %>% 
+        dplyr::rename(phospho_id = Phosphosite, phospho_diff = paste(input$volcano_comp, "_log2 fold change", sep = ""))
+      return(phospho_df_1)
+      print(head(phospho_df_1)) # test
     }
-    phospho_df_1 <- phospho_df %>% 
-      subset(select = col_selected) %>% 
-      dplyr::rename(phospho_id = Phosphosite, phospho_diff = paste(input$volcano_comp, "_log2 fold change", sep = ""))
-    return(phospho_df_1)
-    print(head(phospho_df_1)) # test
   })
   
   protein_df <- reactive({
-    # protein_row <- rowData(dep_pr()) %>% as.data.frame()
-    data_df <- data_result_pr()
-    colnames(data_df)[1]<-c("Gene.names")
-    protein_row <- data_df %>% mutate(rowname = Gene.names) %>% as.data.frame()
-    protein_row <- column_to_rownames(protein_row, 'rowname')
-    protein_intensity <- assay(dep_pr()) %>% as.data.frame()
-    protein_df <- merge(protein_row, protein_intensity, by = 0) # Merge data according to row names
-    print(colnames(protein_df))
-    if(length(unique(exp_design_input_1()$condition)) <= 2) {
-      col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
-                        paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                        paste(input$volcano_comp, "_p.val", sep = ""))
-    } else {
-      if (input$check_anova_comp =="FALSE") {
+    if (!is.null(input$volcano_comp)){
+      # protein_row <- rowData(dep_pr()) %>% as.data.frame()
+      data_df <- data_result_pr()
+      colnames(data_df)[1]<-c("Gene.names")
+      protein_row <- data_df %>% mutate(rowname = Gene.names) %>% as.data.frame()
+      protein_row <- column_to_rownames(protein_row, 'rowname')
+      protein_intensity <- assay(dep_pr()) %>% as.data.frame()
+      protein_df <- merge(protein_row, protein_intensity, by = 0) # Merge data according to row names
+      print(colnames(protein_df))
+      if(length(unique(exp_design_input_1()$condition)) <= 2) {
         col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
                           paste(input$volcano_comp, "_log2 fold change", sep = ""),
                           paste(input$volcano_comp, "_p.val", sep = ""))
       } else {
-        col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
-                          paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                          "ANOVA_p.val")
+        if (input$check_anova_comp =="FALSE") {
+          col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
+                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
+                            paste(input$volcano_comp, "_p.val", sep = ""))
+        } else {
+          col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
+                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
+                            "ANOVA_p.val")
+        }
       }
+      protein_df_1 <- protein_df %>% 
+        subset(select = col_selected) %>% 
+        dplyr::rename(protein_diff = paste(input$volcano_comp, "_log2 fold change", sep = "") )
+      return(protein_df_1)
+      cat(head(protein_df_1)) # test
     }
-    protein_df_1 <- protein_df %>% 
-      subset(select = col_selected) %>% 
-      dplyr::rename(protein_diff = paste(input$volcano_comp, "_log2 fold change", sep = "") )
-    return(protein_df_1)
-    cat(head(protein_df_1)) # test
+    
   })
   combined_df <- reactive({
-    df <- phospho_df() %>%
-      left_join(., protein_df(), by = "Gene.names")
-    # df$protein_diff[is.na(df$protein_diff)] <- 0
-    df$normalized_diff <- df$phospho_diff - df$protein_diff
-    # get index of the p.val
-    pval <- grep("_p.val.x",colnames(df))
-    df$p_values <- as.numeric(df[, pval])
-    
-    df <- df %>%
-      mutate(p_value_desc = case_when(phospho_diff > 1 & p_values < 0.05 ~ 'Up',
-                                      phospho_diff < -1 & p_values < 0.05 ~ 'Down',
-                                      TRUE ~ 'Not Sig'))
-    df <- df %>% 
-      mutate(n_p_value_desc = case_when(normalized_diff > 1 & p_values < 0.05 ~ 'Up',
-                                        normalized_diff < -1 & p_values < 0.05 ~ 'Down',
+    if (!is.null(phospho_df()) & !is.null(protein_df())){
+      df <- phospho_df() %>%
+        left_join(., protein_df(), by = "Gene.names")
+      # df$protein_diff[is.na(df$protein_diff)] <- 0
+      df$normalized_diff <- df$phospho_diff - df$protein_diff
+      # get index of the p.val
+      pval <- grep("_p.val.x",colnames(df))
+      df$p_values <- as.numeric(df[, pval])
+      
+      df <- df %>%
+        mutate(p_value_desc = case_when(phospho_diff > 1 & p_values < 0.05 ~ 'Up',
+                                        phospho_diff < -1 & p_values < 0.05 ~ 'Down',
                                         TRUE ~ 'Not Sig'))
-    return(df)
-    cat(head(df)) # test
+      df <- df %>% 
+        mutate(n_p_value_desc = case_when(normalized_diff > 1 & p_values < 0.05 ~ 'Up',
+                                          normalized_diff < -1 & p_values < 0.05 ~ 'Down',
+                                          TRUE ~ 'Not Sig'))
+      return(df)
+      cat(head(df)) # test
+    }
   })
   
   # gene names for selection input
   gene_names <- reactive({
-    gene_names <- phospho_df_long() %>%
-      inner_join(., protein_df_long(), by = "Gene.names") %>% 
-      select('Gene.names') %>%
-      unique()
+    if (!is.null(phospho_df_long()) & !is.null(protein_df_long())){
+      gene_names_list <- phospho_df_long() %>%
+        inner_join(., protein_df_long(), by = "Gene.names") %>% 
+        select('Gene.names') %>%
+        unique()
+      return(gene_names_list)
+    }
   })
   
   # phosphosite and protein data 
   phospho_df_long <- reactive({
-    combined_df <- phospho_df() %>%
-      inner_join(., protein_df(), by = "Gene.names")
-    exp_design <- exp_design_input()
-    phospho_cols <- colnames(combined_df[grep('.x', colnames(combined_df))])
-    phospho_cols_1 <- exp_design$label
-    phospho_df_11 <- subset(combined_df, select = c(phospho_cols,'phospho_id','Gene.names','phospho_diff' ))
-    names(phospho_df_11) <- c(phospho_cols_1,"p.val",'phospho_id','Gene.names','phospho_diff')
-    phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>% 
-      gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
-    phospho_df_33 <- phospho_df_22 %>%
-      left_join(., exp_design, by = "label")
-    return(phospho_df_33)
-    cat(head(phospho_df_33)) # test
+    if (!is.null(phospho_df()) & !is.null(protein_df())){
+      combined_df <- phospho_df() %>%
+        inner_join(., protein_df(), by = "Gene.names")
+      exp_design <- exp_design_input()
+      phospho_cols <- colnames(combined_df[grep('.x', colnames(combined_df))])
+      phospho_cols_1 <- exp_design$label
+      phospho_df_11 <- subset(combined_df, select = c(phospho_cols,'phospho_id','Gene.names','phospho_diff' ))
+      names(phospho_df_11) <- c(phospho_cols_1,"p.val",'phospho_id','Gene.names','phospho_diff')
+      phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>% 
+        gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+      phospho_df_33 <- phospho_df_22 %>%
+        left_join(., exp_design, by = "label")
+      return(phospho_df_33)
+      cat(head(phospho_df_33)) # test
+    }
   })
   
   protein_df_long <- reactive({
-    combined_df <- phospho_df() %>%
-      inner_join(., protein_df(), by = "Gene.names")
-    exp_design <- exp_design_input_1()
-    protein_cols <- colnames(combined_df[grep('.y', colnames(combined_df))])
-    protein_cols_1 <- exp_design$label
-    protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
-    names(protein_df_11) <- c(protein_cols_1,"p.val","protein_id",'Gene.names','protein_diff')
-    protein_df_22 <- protein_df_11 %>% rownames_to_column() %>% 
-      gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
-    protein_df_33 <- protein_df_22 %>%
-      left_join(., exp_design, by = "label")
-    return(protein_df_33)
-    cat(head(protein_df_33)) # test
+    if (!is.null(phospho_df()) & !is.null(protein_df())){
+      combined_df <- phospho_df() %>%
+        inner_join(., protein_df(), by = "Gene.names")
+      exp_design <- exp_design_input_1()
+      protein_cols <- colnames(combined_df[grep('.y', colnames(combined_df))])
+      protein_cols_1 <- exp_design$label
+      protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
+      names(protein_df_11) <- c(protein_cols_1,"p.val","protein_id",'Gene.names','protein_diff')
+      protein_df_22 <- protein_df_11 %>% rownames_to_column() %>% 
+        gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
+      protein_df_33 <- protein_df_22 %>%
+        left_join(., exp_design, by = "label")
+      return(protein_df_33)
+      cat(head(protein_df_33)) # test
+    }
   })
   
   # interactive plots
   combined_inter <- reactive({
-    if (is.null(input$selected_gene)){
-      phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
-      protein_df <- protein_df_long() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
+    if (!is.null(phospho_df_long()) & !is.null(protein_df_long())){
+      if (is.null(input$selected_gene)){
+        phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
+        protein_df <- protein_df_long() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
+      }
+      else {
+        phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+        protein_df <- protein_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+      }
+      
+      # phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+      # protein_df <- protein_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+      
+      p1 <- phospho_df %>% 
+        unique() %>%
+        ggplot(aes(x = condition, y = intensity)) +
+        geom_point(aes(color = factor(replicate)),
+                   size = 3) +
+        geom_line(aes(group= factor(replicate), color= factor(replicate))) +
+        scale_colour_discrete(name  ="Replicate") + 
+        ylim(19,28) + labs(title = 'Phospho site', x = '') +
+        facet_grid(. ~phospho_id + Gene.names) +
+        theme(axis.text.x = element_text(angle = 45)) 
+      
+      p2 <- protein_df %>% 
+        select(-'rowname') %>%
+        unique() %>%
+        ggplot(aes(x = condition, y = intensity)) +
+        geom_point(aes(color = factor(replicate)),
+                   size = 3) +
+        geom_line(aes(group= factor(replicate), color= factor(replicate))) +
+        scale_colour_discrete(name  ="Replicate") + 
+        ylim(19,28) + labs(title = 'Protein', x = '') +
+        facet_grid(. ~protein_id + Gene.names) +
+        theme(axis.text.x = element_text(angle = 45)) 
+      
+      ggarrange(p2, 
+                p1 + 
+                  theme(axis.text.y = element_blank(),
+                        axis.ticks.y = element_blank(),
+                        axis.title.y = element_blank()), 
+                widths=c(1,4), common.legend = TRUE, legend = 'right') 
     }
-    else {
-      phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
-      protein_df <- protein_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
-    }
-    
-    # phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
-    # protein_df <- protein_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
-    
-    p1 <- phospho_df %>% 
-      unique() %>%
-      ggplot(aes(x = condition, y = intensity)) +
-      geom_point(aes(color = factor(replicate)),
-                 size = 3) +
-      geom_line(aes(group= factor(replicate), color= factor(replicate))) +
-      scale_colour_discrete(name  ="Replicate") + 
-      ylim(19,28) + labs(title = 'Phospho site', x = '') +
-      facet_grid(. ~phospho_id + Gene.names) +
-      theme(axis.text.x = element_text(angle = 45)) 
-    
-    p2 <- protein_df %>% 
-      select(-'rowname') %>%
-      unique() %>%
-      ggplot(aes(x = condition, y = intensity)) +
-      geom_point(aes(color = factor(replicate)),
-                 size = 3) +
-      geom_line(aes(group= factor(replicate), color= factor(replicate))) +
-      scale_colour_discrete(name  ="Replicate") + 
-      ylim(19,28) + labs(title = 'Protein', x = '') +
-      facet_grid(. ~protein_id + Gene.names) +
-      theme(axis.text.x = element_text(angle = 45)) 
-    
-    ggarrange(p2, 
-              p1 + 
-                theme(axis.text.y = element_blank(),
-                      axis.ticks.y = element_blank(),
-                      axis.title.y = element_blank()), 
-              widths=c(1,4), common.legend = TRUE, legend = 'right') 
-    
   })
   
-  # volcano plots input
-  volcano_phospho <- reactive({
-    df <- combined_df() 
-    print(colnames(df))  # test
-    if(length(unique(exp_design_input()$condition)) <= 2) {
-      pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-    } else {
-      if (input$check_anova_comp =="FALSE") {
-        pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-      } else {
-        pval <- grep("ANOVA_p.val.x",colnames(df))
-      }
-    }
-    print(pval) # test
-    name1 <- gsub("_vs_.*", "", input$volcano_comp)
-    name2 <- gsub(".*_vs_", "", input$volcano_comp)
-    
-    df <- df %>% dplyr::mutate(p_values = as.numeric(df[, pval]))
-    
-    df %>% ggplot(aes(x = phospho_diff, y = -log10(p_values))) +
-      geom_point(aes(color = p_value_desc)) +
-      geom_text(data = data.frame(), aes(x = c(Inf, -Inf),
-                                         y = c(-Inf, -Inf),
-                                         hjust = c(1, 0),
-                                         vjust = c(-1, -1),
-                                         label = c(name1, name2),
-                                         size = 5,
-                                         fontface = "bold")) +
-      labs(x = 'Phosphosite log fold change',
-           y = '-log10(p-value)') +
-      geom_text_repel(
-        data=df %>% filter(p_value_desc != 'Not Sig'), # Filter data first
-        aes(label=phospho_id),
-        nudge_x = 0.5, nudge_y = 0,
-        size = 4) +
-      theme(plot.title = element_text(hjust = 0.5)) +
-      scale_color_manual(values = c("#003399", "#999999", "#b30000")) 
-  })
-  
-  volcano_phospho_2 <- reactive({
-    df <- combined_df() 
-    if(length(unique(exp_design_input()$condition)) <= 2) {
-      pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-    } else {
-      if (input$check_anova_comp =="FALSE") {
-        pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-      } else {
-        pval <- grep("ANOVA_p.val.x",colnames(df))
-      }
-    }
-    
-    name1 <- gsub("_vs_.*", "", input$volcano_comp)
-    name2 <- gsub(".*_vs_", "", input$volcano_comp)
-    
-    df$p_values <- as.numeric(df[, pval])
-    
-    df %>% 
-      # filter(!is.na(protein_diff)) %>%
-      ggplot(aes(x = normalized_diff, y = -log10(p_values))) +
-      geom_point(aes(color = n_p_value_desc)) +
-      geom_text(data = data.frame(), aes(x = c(Inf, -Inf),
-                                         y = c(-Inf, -Inf),
-                                         hjust = c(1, 0),
-                                         vjust = c(-1, -1),
-                                         label = c(name1, name2),
-                                         size = 5,
-                                         fontface = "bold")) +
-      labs(x = 'Phosphosite log fold change',
-           y = '-log10(p-value)') +
-      geom_text_repel(
-        data=df %>% filter(n_p_value_desc != 'Not Sig'), # Filter data first
-        aes(label=phospho_id),
-        nudge_x = 0.5, nudge_y = 0,
-        size = 4)+
-      scale_color_manual(values = c("#003399", "#999999", "#b30000"))
-  })
+  # # volcano plots input
+  # volcano_phospho <- reactive({
+  #   df <- combined_df() 
+  #   print(colnames(df))  # test
+  #   if(length(unique(exp_design_input()$condition)) <= 2) {
+  #     pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
+  #   } else {
+  #     if (input$check_anova_comp =="FALSE") {
+  #       pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
+  #     } else {
+  #       pval <- grep("ANOVA_p.val.x",colnames(df))
+  #     }
+  #   }
+  #   print(pval) # test
+  #   name1 <- gsub("_vs_.*", "", input$volcano_comp)
+  #   name2 <- gsub(".*_vs_", "", input$volcano_comp)
+  #   
+  #   df <- df %>% dplyr::mutate(p_values = as.numeric(df[, pval]))
+  #   
+  #   df %>% ggplot(aes(x = phospho_diff, y = -log10(p_values))) +
+  #     geom_point(aes(color = p_value_desc)) +
+  #     geom_text(data = data.frame(), aes(x = c(Inf, -Inf),
+  #                                        y = c(-Inf, -Inf),
+  #                                        hjust = c(1, 0),
+  #                                        vjust = c(-1, -1),
+  #                                        label = c(name1, name2),
+  #                                        size = 5,
+  #                                        fontface = "bold")) +
+  #     labs(x = 'Phosphosite log fold change',
+  #          y = '-log10(p-value)') +
+  #     geom_text_repel(
+  #       data=df %>% filter(p_value_desc != 'Not Sig'), # Filter data first
+  #       aes(label=phospho_id),
+  #       nudge_x = 0.5, nudge_y = 0,
+  #       size = 4) +
+  #     theme(plot.title = element_text(hjust = 0.5)) +
+  #     scale_color_manual(values = c("#003399", "#999999", "#b30000")) 
+  # })
+  # 
+  # volcano_phospho_2 <- reactive({
+  #   df <- combined_df() 
+  #   if(length(unique(exp_design_input()$condition)) <= 2) {
+  #     pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
+  #   } else {
+  #     if (input$check_anova_comp =="FALSE") {
+  #       pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
+  #     } else {
+  #       pval <- grep("ANOVA_p.val.x",colnames(df))
+  #     }
+  #   }
+  #   
+  #   name1 <- gsub("_vs_.*", "", input$volcano_comp)
+  #   name2 <- gsub(".*_vs_", "", input$volcano_comp)
+  #   
+  #   df$p_values <- as.numeric(df[, pval])
+  #   
+  #   df %>% 
+  #     # filter(!is.na(protein_diff)) %>%
+  #     ggplot(aes(x = normalized_diff, y = -log10(p_values))) +
+  #     geom_point(aes(color = n_p_value_desc)) +
+  #     geom_text(data = data.frame(), aes(x = c(Inf, -Inf),
+  #                                        y = c(-Inf, -Inf),
+  #                                        hjust = c(1, 0),
+  #                                        vjust = c(-1, -1),
+  #                                        label = c(name1, name2),
+  #                                        size = 5,
+  #                                        fontface = "bold")) +
+  #     labs(x = 'Phosphosite log fold change',
+  #          y = '-log10(p-value)') +
+  #     geom_text_repel(
+  #       data=df %>% filter(n_p_value_desc != 'Not Sig'), # Filter data first
+  #       aes(label=phospho_id),
+  #       nudge_x = 0.5, nudge_y = 0,
+  #       size = 4)+
+  #     scale_color_manual(values = c("#003399", "#999999", "#b30000"))
+  # })
   
   # Phosphosite and protein log fold change scatter plot input
   scatter_plot <- reactive({
-    df <- combined_df()
-    df %>% filter(!is.na(protein_diff))  %>% 
-      ggplot(aes(x=phospho_diff, y=protein_diff)) + 
-      geom_point(size = 2, alpha = 0.8) +
-      geom_text_repel( 
-        data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
-                             protein_diff>2| protein_diff < -2), # Filter data first
-        aes(label=phospho_id),
-        nudge_x = 0.5, nudge_y = 0,
-        size = 4) + 
-      labs(title = paste(input$volcano_comp,'Comparison between phospho and protein log fold change', sep = "\n"),
-           x = 'Phosphosite log fold change', y = 'Protein log fold change') +
-      theme(plot.title = element_text(hjust = 0.5))
+    if(!is.null(input$volcano_comp) & !is.null(combined_df())){
+      df <- combined_df()
+      df %>% filter(!is.na(protein_diff))  %>% 
+        ggplot(aes(x=phospho_diff, y=protein_diff)) + 
+        geom_point(size = 2, alpha = 0.8) +
+        geom_text_repel( 
+          data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
+                               protein_diff>2| protein_diff < -2), # Filter data first
+          aes(label=phospho_id),
+          nudge_x = 0.5, nudge_y = 0,
+          size = 4) + 
+        labs(title = paste(input$volcano_comp,'Comparison between phospho and protein log fold change', sep = "\n"),
+             x = 'Phosphosite log fold change', y = 'Protein log fold change') +
+        theme(plot.title = element_text(hjust = 0.5))
+    }
   })
   
   # Output plots
-  output$volcano_phospho <-renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
-    volcano_phospho()
-  })
-  output$volcano_phospho_2 <-renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
-    volcano_phospho_2()
-  })
+  # output$volcano_phospho <-renderPlot({
+  #   withProgress(message = 'Volcano Plot calculations are in progress',
+  #                detail = 'Please wait for a while', value = 0, {
+  #                  for (i in 1:15) {
+  #                    incProgress(1/15)
+  #                    Sys.sleep(0.25)
+  #                  }
+  #                })
+  #   volcano_phospho()
+  # })
+  # output$volcano_phospho_2 <-renderPlot({
+  #   withProgress(message = 'Volcano Plot calculations are in progress',
+  #                detail = 'Please wait for a while', value = 0, {
+  #                  for (i in 1:15) {
+  #                    incProgress(1/15)
+  #                    Sys.sleep(0.25)
+  #                  }
+  #                })
+  #   volcano_phospho_2()
+  # })
   
   
   # Output combined QC plots
@@ -2431,34 +2454,36 @@ server <- function(input, output,session){
   })
   
   output$combined_point <- renderPlot({
-    exp_design<- exp_design_input()
-    conditions <- exp_design$condition %>% unique()
-    # phospho_df <- phospho_df() %>% dplyr::filter(Gene.names %in% input$selected_gene)
-    
-    if (is.null(input$selected_gene)){
-      phospho_df <- phospho_df() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
+    if (!is.null(phospho_df())){
+      exp_design<- exp_design_input()
+      conditions <- exp_design$condition %>% unique()
+      # phospho_df <- phospho_df() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+      
+      if (is.null(input$selected_gene)){
+        phospho_df <- phospho_df() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
+      }
+      else {
+        phospho_df <- phospho_df() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+      }
+      phospho_df_1 <- phospho_df
+      print(colnames(phospho_df_1)) # test
+      for (i in 1:length(conditions)) {
+        condition <- conditions[i]
+        pattern <- paste(condition,"[[:digit:]]",sep = '_')
+        phospho_df_1[paste0('mean',sep = "_",condition)] <- rowMeans(phospho_df_1 %>% select(grep(pattern, colnames(phospho_df_1))), na.rm = TRUE)
+      }
+      
+      phospho_df_2 <- phospho_df_1 %>% 
+        # dplyr::filter(Gene.names %in% input$selected_gene) %>% 
+        select(Gene.names,phospho_id, grep('mean', colnames(phospho_df_1))) %>%
+        pivot_longer(names_to = "group", values_to = "mean_intensity", cols = starts_with('mean'))
+      
+      phospho_df_2 %>% ggplot(aes(x = phospho_id, y = group)) +
+        geom_point(aes(size = mean_intensity, color = group)) +
+        facet_grid(rows = vars(Gene.names), scales = "free_y", space = "free_y") +
+        coord_flip() +
+        theme(axis.text.x = element_text(angle = 45)) 
     }
-    else {
-      phospho_df <- phospho_df() %>% dplyr::filter(Gene.names %in% input$selected_gene)
-    }
-    phospho_df_1 <- phospho_df
-    print(colnames(phospho_df_1)) # test
-    for (i in 1:length(conditions)) {
-      condition <- conditions[i]
-      pattern <- paste(condition,"[[:digit:]]",sep = '_')
-      phospho_df_1[paste0('mean',sep = "_",condition)] <- rowMeans(phospho_df_1 %>% select(grep(pattern, colnames(phospho_df_1))), na.rm = TRUE)
-    }
-    
-    phospho_df_2 <- phospho_df_1 %>% 
-      # dplyr::filter(Gene.names %in% input$selected_gene) %>% 
-      select(Gene.names,phospho_id, grep('mean', colnames(phospho_df_1))) %>%
-      pivot_longer(names_to = "group", values_to = "mean_intensity", cols = starts_with('mean'))
-    
-    phospho_df_2 %>% ggplot(aes(x = phospho_id, y = group)) +
-      geom_point(aes(size = mean_intensity, color = group)) +
-      facet_grid(rows = vars(Gene.names), scales = "free_y", space = "free_y") +
-      coord_flip() +
-      theme(axis.text.x = element_text(angle = 45)) 
   })
 
   
@@ -4728,26 +4753,324 @@ server <- function(input, output,session){
     }
   )
   
+  #### Comparison demo page logic ========== #############
+  ####======= Render Functions
+  
+  # load demo data
+  env_dm_c<-reactive({
+    LoadToEnvironment("data/exp_demo_data.RData", env = globalenv())
+  })
+  
+  exp_design_demo<-reactive({
+    env_dm_c()[["exp_demo"]]
+  })
+
+  output$volcano_comp_dm <- renderUI({
+    if (!is.null(comparisons_dm())) {
+      df <- SummarizedExperiment::rowData(dep_dm())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("volcano_comp_dm",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+
+  output$selected_gene_dm = renderUI({
+    selectInput('selected_gene_dm',
+                label='Select one or more Gene names',
+                choices = as.list(gene_names_dm()$Gene.names),
+                selected = NULL,
+                multiple = TRUE)
+  })
+
+  # Reactive components 
+  phospho_df_dm <- reactive({
+    # phospho_row <- rowData(dep()) %>% as.data.frame()
+    phospho_row <- data_result_dm() %>% mutate(rowname = Phosphosite) %>% as.data.frame()
+    phospho_row <- column_to_rownames(phospho_row, 'rowname')
+    phospho_intensity <- assay(dep_dm())  %>% as.data.frame()
+    phospho_df_dm <- merge(phospho_row, phospho_intensity, by = 0) # Merge data according to row names
+
+    col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
+                          paste(input$volcano_comp_dm, "_log2 fold change", sep = ""),
+                          paste(input$volcano_comp_dm, "_p.val", sep = ""))
+
+    phospho_df_1_dm <- phospho_df_dm %>%
+      subset(select = col_selected) %>%
+      dplyr::rename(phospho_id = Phosphosite, phospho_diff = paste(input$volcano_comp_dm, "_log2 fold change", sep = ""))
+    return(phospho_df_1_dm)
+    print(head(phospho_df_1_dm)) # test
+  })
+
+  protein_df_dm <- reactive({
+    # protein_row <- rowData(dep_pr()) %>% as.data.frame()
+    data_df <- data_result_dm_pr()
+    colnames(data_df)[1]<-c("Gene.names")
+    protein_row <- data_df %>% mutate(rowname = Gene.names) %>% as.data.frame()
+    protein_row <- column_to_rownames(protein_row, 'rowname')
+    protein_intensity <- assay(dep_dm_pr()) %>% as.data.frame()
+    protein_df_dm <- merge(protein_row, protein_intensity, by = 0) # Merge data according to row names
+    print(colnames(protein_df_dm))
+
+    col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
+                          paste(input$volcano_comp_dm, "_log2 fold change", sep = ""),
+                          paste(input$volcano_comp_dm, "_p.val", sep = ""))
+
+    protein_df_1_dm <- protein_df_dm %>%
+      subset(select = col_selected) %>%
+      dplyr::rename(protein_diff = paste(input$volcano_comp_dm, "_log2 fold change", sep = "") )
+    return(protein_df_1_dm)
+    cat(head(protein_df_1_dm)) # test
+  })
+
+  combined_df_dm <- reactive({
+    df <- phospho_df_dm() %>%
+      left_join(., protein_df_dm(), by = "Gene.names")
+    # df$protein_diff[is.na(df$protein_diff)] <- 0
+    df$normalized_diff <- df$phospho_diff - df$protein_diff
+    # get index of the p.val
+    pval <- grep("_p.val.x",colnames(df))
+    df$p_values <- as.numeric(df[, pval])
+
+    df <- df %>%
+      mutate(p_value_desc = case_when(phospho_diff > 1 & p_values < 0.05 ~ 'Up',
+                                      phospho_diff < -1 & p_values < 0.05 ~ 'Down',
+                                      TRUE ~ 'Not Sig'))
+    df <- df %>%
+      mutate(n_p_value_desc = case_when(normalized_diff > 1 & p_values < 0.05 ~ 'Up',
+                                        normalized_diff < -1 & p_values < 0.05 ~ 'Down',
+                                        TRUE ~ 'Not Sig'))
+    return(df)
+    cat(head(df)) # test
+  })
+
+  # gene names for selection input
+  gene_names_dm <- reactive({
+    gene_names <- phospho_df_long_dm() %>%
+      inner_join(., protein_df_long_dm(), by = "Gene.names") %>%
+      select('Gene.names') %>%
+      unique()
+  })
+
+  # phosphosite and protein data
+  phospho_df_long_dm <- reactive({
+    combined_df <- phospho_df_dm() %>%
+      inner_join(., protein_df_dm(), by = "Gene.names")
+    exp_design <- exp_design_demo()
+    phospho_cols <- colnames(combined_df[grep('.x', colnames(combined_df))])
+    phospho_cols_1 <- exp_design$label
+    phospho_df_11 <- subset(combined_df, select = c(phospho_cols,'phospho_id','Gene.names','phospho_diff' ))
+    names(phospho_df_11) <- c(phospho_cols_1,"p.val",'phospho_id','Gene.names','phospho_diff')
+    phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>%
+      gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+    phospho_df_33 <- phospho_df_22 %>%
+      left_join(., exp_design, by = "label")
+    return(phospho_df_33)
+    cat(head(phospho_df_33)) # test
+  })
+
+  protein_df_long_dm <- reactive({
+    combined_df <- phospho_df_dm() %>%
+      inner_join(., protein_df_dm(), by = "Gene.names")
+    exp_design <- exp_design_demo()
+    protein_cols <- colnames(combined_df[grep('.y', colnames(combined_df))])
+    protein_cols_1 <- exp_design$label
+    protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
+    names(protein_df_11) <- c(protein_cols_1,"p.val","protein_id",'Gene.names','protein_diff')
+    protein_df_22 <- protein_df_11 %>% rownames_to_column() %>%
+      gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
+    protein_df_33 <- protein_df_22 %>%
+      left_join(., exp_design, by = "label")
+    return(protein_df_33)
+    cat(head(protein_df_33)) # test
+  })
+
+  # interactive plots
+  combined_inter_dm <- reactive({
+    if (is.null(input$selected_gene_dm)){
+      phospho_df <- phospho_df_long_dm() %>% dplyr::filter(Gene.names == gene_names_dm()$Gene.names[1])
+      protein_df <- protein_df_long_dm() %>% dplyr::filter(Gene.names == gene_names_dm()$Gene.names[1])
+    }
+    else {
+      phospho_df <- phospho_df_long_dm() %>% dplyr::filter(Gene.names %in% input$selected_gene_dm)
+      protein_df <- protein_df_long_dm() %>% dplyr::filter(Gene.names %in% input$selected_gene_dm)
+    }
+
+    # phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+    # protein_df <- protein_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+
+    p1 <- phospho_df %>%
+      unique() %>%
+      ggplot(aes(x = condition, y = intensity)) +
+      geom_point(aes(color = factor(replicate)),
+                 size = 3) +
+      geom_line(aes(group= factor(replicate), color= factor(replicate))) +
+      scale_colour_discrete(name  ="Replicate") +
+      ylim(19,28) + labs(title = 'Phospho site', x = '') +
+      facet_grid(. ~phospho_id + Gene.names) +
+      theme(axis.text.x = element_text(angle = 45))
+
+    p2 <- protein_df %>%
+      select(-'rowname') %>%
+      unique() %>%
+      ggplot(aes(x = condition, y = intensity)) +
+      geom_point(aes(color = factor(replicate)),
+                 size = 3) +
+      geom_line(aes(group= factor(replicate), color= factor(replicate))) +
+      scale_colour_discrete(name  ="Replicate") +
+      ylim(19,28) + labs(title = 'Protein', x = '') +
+      facet_grid(. ~protein_id + Gene.names) +
+      theme(axis.text.x = element_text(angle = 45))
+
+    ggarrange(p2,
+              p1 +
+                theme(axis.text.y = element_blank(),
+                      axis.ticks.y = element_blank(),
+                      axis.title.y = element_blank()),
+              widths=c(1,4), common.legend = TRUE, legend = 'right')
+
+  })
+
+  # Phosphosite and protein log fold change scatter plot input
+  scatter_plot_dm <- reactive({
+    df <- combined_df_dm()
+    df %>% filter(!is.na(protein_diff))  %>%
+      ggplot(aes(x=phospho_diff, y=protein_diff)) +
+      geom_point(size = 2, alpha = 0.8) +
+      geom_text_repel(
+        data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
+                             protein_diff>2| protein_diff < -2), # Filter data first
+        aes(label=phospho_id),
+        nudge_x = 0.5, nudge_y = 0,
+        size = 4) +
+      labs(title = paste(input$volcano_comp_dm,'Comparison between phospho and protein log fold change', sep = "\n"),
+           x = 'Phosphosite log fold change', y = 'Protein log fold change') +
+      theme(plot.title = element_text(hjust = 0.5))
+  })
+
+  # Output combined QC plots
+  output$pca_plot_c_dm <- renderPlot({
+    ggarrange(pca_input_dm() + labs(title = 'Phospho'),
+              pca_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+
+  output$scatter_plot_dm <- renderPlot({
+    scatter_plot_dm()
+  })
+
+  output$sample_corr_c1_dm <- renderPlot({
+    correlation_input_dm()
+  })
+
+  output$sample_corr_c2_dm <- renderPlot({
+    correlation_input_dm_pr()
+  })
+
+  output$sample_cvs_c_dm <- renderPlot({
+    ggarrange(cvs_input_dm() + labs(title = 'Phospho'),
+              cvs_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+
+  output$numbers_c_dm <- renderPlot({
+    ggarrange(numbers_input_dm() + labs(title = 'Phospho'),
+              numbers_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+
+  output$coverage_c_dm <- renderPlot({
+    ggarrange(coverage_input_dm() + labs(title = 'Phospho'),
+              coverage_input_dm_pr() + labs(title = "Protein"))
+  })
+
+  output$norm_c_dm <- renderPlot({
+    ggarrange(norm_input_dm() + labs(title = 'Phospho'),
+              norm_input_dm_pr() + labs(title = "Protein") ,
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+
+
+  output$missval_c1_dm <- renderPlot({
+    missval_input_dm()
+  })
+
+  output$missval_c2_dm <- renderPlot({
+    missval_input_dm_pr()
+  })
+
+  output$imputation_c_dm <- renderPlot({
+    ggarrange(imputation_input_dm() + labs(title = 'Phospho'),
+              imputation_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+
+  # Output interactive plots
+  output$combined_inter_dm <- renderPlot({
+    combined_inter_dm()
+  })
+
+  output$combined_point_dm <- renderPlot({
+    exp_design<- exp_design_demo()
+    conditions <- exp_design$condition %>% unique()
+    # phospho_df <- phospho_df() %>% dplyr::filter(Gene.names %in% input$selected_gene)
+
+    if (is.null(input$selected_gene_dm)){
+      phospho_df <- phospho_df_dm() %>% dplyr::filter(Gene.names == gene_names_dm()$Gene.names[1])
+    }
+    else {
+      phospho_df <- phospho_df_dm() %>% dplyr::filter(Gene.names %in% input$selected_gene_dm)
+    }
+    phospho_df_1 <- phospho_df
+    print(colnames(phospho_df_1)) # test
+    for (i in 1:length(conditions)) {
+      condition <- conditions[i]
+      pattern <- paste(condition,"[[:digit:]]",sep = '_')
+      phospho_df_1[paste0('mean',sep = "_",condition)] <- rowMeans(phospho_df_1 %>% select(grep(pattern, colnames(phospho_df_1))), na.rm = TRUE)
+    }
+
+    phospho_df_2 <- phospho_df_1 %>%
+      # dplyr::filter(Gene.names %in% input$selected_gene) %>%
+      select(Gene.names,phospho_id, grep('mean', colnames(phospho_df_1))) %>%
+      pivot_longer(names_to = "group", values_to = "mean_intensity", cols = starts_with('mean'))
+
+    phospho_df_2 %>% ggplot(aes(x = phospho_id, y = group)) +
+      geom_point(aes(size = mean_intensity, color = group)) +
+      facet_grid(rows = vars(Gene.names), scales = "free_y", space = "free_y") +
+      coord_flip() +
+      theme(axis.text.x = element_text(angle = 45))
+  })
+  
   # # used for save demo data
-  # observeEvent(input$analyze ,{ 
+  # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
   #     return()
   #   }
-  #   
+  # 
   #   data_missval <- processed_data()
   #   data_dep <- dep()
   #   save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
   # 
   # })
   # 
-  # observeEvent(input$analyze ,{ 
+  # observeEvent(input$analyze ,{
+  #   if(input$analyze==0 ){
+  #     return()
+  #   }
+  # 
+  #   data_missval <- processed_data_pr()
+  #   data_dep <- dep_pr()
+  #   save(data_missval, data_dep, file = "proteinGroup_demo_data.RData")
+  # 
+  # })
+  # 
+  # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
   #     return()
   #   }
   #   
-  #   data_missval <- processed_data_pr()
-  #   data_dep <- dep_pr()
-  #   save(data_missval, data_dep, file = "proteinGroup_demo_data.RData")
+  #   exp_demo <- exp_design_input()
+  #   save(exp_demo, file = "exp_demo_data.RData")
   #   
   # })
 
