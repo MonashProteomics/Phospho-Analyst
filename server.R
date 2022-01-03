@@ -93,7 +93,7 @@ server <- function(input, output,session){
     if (!is.null(comparisons())) {
       df <- SummarizedExperiment::rowData(dep())
       cols <- grep("_significant$",colnames(df))
-      selectizeInput("contrast",
+      selectizeInput("contrast_1",
                      "Comparison",
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
@@ -347,6 +347,7 @@ server <- function(input, output,session){
     data_ex <- data_ex %>% dplyr::filter(Localization.prob >= 0.75)
     peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
     data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
+    data_pre$Residue.Both <- map2(data_pre$Positions.within.proteins, data_pre$Amino.acid,create_Residue.Both_func)
     data_pre$Gene.names <- data_pre$Gene.names %>% toupper()
     
     # create unique name and ID columns for the data
@@ -699,25 +700,55 @@ server <- function(input, output,session){
       enrichment_output_test(dep(), input$go_database)
       go_results<- test_gsea_mod_phospho(dep(), databases = input$go_database, contrasts = TRUE)
       null_enrichment_test(go_results)
-      plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast,
-                                databases = input$go_database, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
-        xlab(NULL)
+      if (input$go_database == "KEGG" | input$go_database == "Reactome"){
+        plot_go<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast,
+                                      databases=input$pathway_database, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+          xlab(NULL)
+      }
+      else{
+        plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast,
+                                  databases = input$go_database, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
+          xlab(NULL)
+      }
+      
       go_list<-list("go_result"=go_results, "plot_go"=plot_go)
       return(go_list)
     }
   })
+  # 
+  # pathway_input<-eventReactive(input$pathway_analysis,{
+  #   progress_indicator("Pathway Analysis is running....")
+  #   enrichment_output_test(dep(), input$pathway_database)
+  #   pathway_results<- test_gsea_mod_phospho(dep(), databases=input$pathway_database, contrasts = TRUE)
+  #   null_enrichment_test(pathway_results)
+  #   plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast,
+  #                                 databases=input$pathway_database, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+  #     xlab(NULL)
+  #   pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
+  #   return(pathway_list)
+  # })
   
-  pathway_input<-eventReactive(input$pathway_analysis,{
-    progress_indicator("Pathway Analysis is running....")
-    enrichment_output_test(dep(), input$pathway_database)
-    pathway_results<- test_gsea_mod_phospho(dep(), databases=input$pathway_database, contrasts = TRUE)
-    null_enrichment_test(pathway_results)
-    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1,
-                                  databases=input$pathway_database, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
-      xlab(NULL)
-    pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
-    return(pathway_list)
+  KSEA_input<-eventReactive(input$KSEA_analysis,{
+    progress_indicator("Kinase-Substrate Analysis is running....")
+    
+    result_df <- get_results_phospho(dep(),FALSE)
+    print(input$contrast_1)  #test
+    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+                      paste(input$contrast_1, "_p.val", sep = ""),
+                      paste(input$contrast_1, "_log2 fold change", sep = ""))
+    print(col_selected) #test
+    
+    # select required columns and rename them
+    column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
+    PX <- result_df %>% dplyr::select (col_selected)
+    names(PX) <- column_names
+    KSData <- KSEAapp::KSData 
+    
+    # Generate a summary bar plot using the KSEA.Barplot() function
+    plot_KSEA <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff=5, p.cutoff=0.01, export=FALSE)
+    return(plot_KSEA)
   })
+  
   
   #### Interactive UI
   output$significantBox <- renderInfoBox({
@@ -745,9 +776,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep(),FALSE)
+      get_results_phospho(dep(),FALSE) %>% dplyr::select (-Residue.Both,-peptide.sequence,-Protein)
     } else {
-      get_results_phospho(dep(),TRUE)
+      get_results_phospho(dep(),TRUE) %>% dplyr::select (-Residue.Both,-peptide.sequence,-Protein)
     }
   })
   
@@ -965,8 +996,8 @@ server <- function(input, output,session){
     go_input()$plot_go
   })
   
-  output$pathway_enrichment<-renderPlot({
-    pathway_input()$plot_pa
+  output$KSEA_enrichment<-renderPlot({
+    KSEA_input()
   })
   
   ##### Download Functions
@@ -1231,11 +1262,11 @@ server <- function(input, output,session){
     }
   })
   
-  output$contrast_pr_1 <- renderUI({
+  output$contrast_1_pr <- renderUI({
     if (!is.null(comparisons_pr())) {
       df <- SummarizedExperiment::rowData(dep_pr())
       cols <- grep("_significant$",colnames(df))
-      selectizeInput("contrast_pr_1",
+      selectizeInput("contrast_1_pr",
                      "Comparison",
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
@@ -1662,7 +1693,7 @@ server <- function(input, output,session){
                  })
     enrichment_output_test(dep_pr(), input$pathway_database_pr)
     pathway_results<- test_gsea_mod(dep_pr(), databases=input$pathway_database_pr, contrasts = TRUE)
-    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_pr_1,
+    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_pr,
                                   databases=input$pathway_database_pr, nrow = 3, term_size = 8) + 
       aes(stringr::str_wrap(Term, 30)) +
       xlab(NULL)
@@ -2517,7 +2548,7 @@ server <- function(input, output,session){
     if (!is.null(comparisons())) {
       df <- SummarizedExperiment::rowData(dep_nr())
       cols <- grep("_significant$",colnames(df))
-      selectizeInput("contrast_nr",
+      selectizeInput("contrast_1_nr",
                      "Comparison",
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
@@ -2982,9 +3013,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result_nr<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep_nr(),FALSE)
+      get_results_phospho(dep_nr(),FALSE) %>% dplyr::select (-Residue.Both,-peptide.sequence,-Protein)
     } else {
-      get_results_phospho(dep_nr(),TRUE)
+      get_results_phospho(dep_nr(),TRUE) %>% dplyr::select (-Residue.Both,-peptide.sequence,-Protein)
     }
   })
   
@@ -3373,7 +3404,7 @@ server <- function(input, output,session){
     if (!is.null(comparisons_dm())) {
       df <- SummarizedExperiment::rowData(dep_dm())
       cols <- grep("_significant$",colnames(df))
-      selectizeInput("contrast_dm",
+      selectizeInput("contrast_1_dm",
                      "Comparison",
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
@@ -3653,25 +3684,53 @@ server <- function(input, output,session){
       enrichment_output_test(dep_dm(), input$go_database_dm)
       go_results<- test_gsea_mod_phospho(dep_dm(), databases = input$go_database_dm, contrasts = TRUE)
       null_enrichment_test(go_results)
-      plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_dm,
-                                databases = input$go_database_dm, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
-        xlab(NULL)
+      if (input$go_database_dm == "KEGG" | input$go_database_dm == "Reactome"){
+        plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm,
+                                      databases=input$pathway_database_dm, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+          xlab(NULL)
+      }
+      else{
+        plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_dm,
+                                  databases = input$go_database_dm, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
+          xlab(NULL)
+      }
       go_list<-list("go_result"=go_results, "plot_go"=plot_go)
       return(go_list)
     }
   })
   
-  pathway_input_dm<-eventReactive(input$pathway_analysis_dm,{
-    progress_indicator("Pathway Analysis is running....")
-    enrichment_output_test(dep_dm(), input$pathway_database_dm)
-    pathway_results<- test_gsea_mod_phospho(dep_dm(), databases=input$pathway_database_dm, contrasts = TRUE)
-    null_enrichment_test(pathway_results)
-    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm,
-                                  databases=input$pathway_database_dm, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
-      xlab(NULL)
-    pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
-    return(pathway_list)
+  KSEA_input_dm<-eventReactive(input$KSEA_analysis_dm,{
+    progress_indicator("Kinase-Substrate Analysis is running....")
+    
+    result_df <- get_results_phospho(dep_dm(),FALSE)
+    print(input$contrast_1_dm)  #test
+    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+                      paste(input$contrast_1_dm, "_p.val", sep = ""),
+                      paste(input$contrast_1_dm, "_log2 fold change", sep = ""))
+    print(col_selected) #test
+    
+    # select required columns and rename them
+    column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
+    PX <- result_df %>% dplyr::select (col_selected)
+    names(PX) <- column_names
+    KSData <- KSEAapp::KSData 
+    
+    # Generate a summary bar plot using the KSEA.Barplot() function
+    plot_KSEA_dm <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff=5, p.cutoff=0.01, export=FALSE)
+    return(plot_KSEA_dm)
   })
+
+  # pathway_input_dm<-eventReactive(input$pathway_analysis_dm,{
+  #   progress_indicator("Pathway Analysis is running....")
+  #   enrichment_output_test(dep_dm(), input$pathway_database_dm)
+  #   pathway_results<- test_gsea_mod_phospho(dep_dm(), databases=input$pathway_database_dm, contrasts = TRUE)
+  #   null_enrichment_test(pathway_results)
+  #   plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm,
+  #                                 databases=input$pathway_database_dm, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+  #     xlab(NULL)
+  #   pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
+  #   return(pathway_list)
+  # })
   
   #### Interactive UI (Normalized page)
   output$significantBox_dm <- renderInfoBox({
@@ -3699,7 +3758,7 @@ server <- function(input, output,session){
   
   ##### Get results dataframe from Summarizedexperiment object
   data_result_dm<-reactive({
-      get_results_phospho(dep_dm(),TRUE)
+      get_results_phospho(dep_dm(),TRUE) %>% dplyr::select (-Residue.Both,-peptide.sequence,-Protein)
   })
   
   
@@ -3915,8 +3974,8 @@ server <- function(input, output,session){
     go_input_dm()$plot_go
   })
   
-  output$pathway_enrichment_dm<-renderPlot({
-    pathway_input_dm()$plot_pa
+  output$KSEA_enrichment_dm<-renderPlot({
+    KSEA_input_dm()
   })
   
   ##### Download Functions
@@ -4080,7 +4139,7 @@ server <- function(input, output,session){
     if (!is.null(comparisons_dm_pr())) {
       df <- SummarizedExperiment::rowData(dep_dm_pr())
       cols <- grep("_significant$",colnames(df))
-      selectizeInput("contrast_dm_pr",
+      selectizeInput("contrast_1_dm_pr",
                      "Comparison",
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }

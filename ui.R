@@ -375,25 +375,39 @@ ui <- function(request){
                                                                            selectInput("go_database", "GO database:",
                                                                                        c("Molecular Function"="GO_Molecular_Function_2017b",
                                                                                          "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                                         "Biological Process"="GO_Biological_Process_2017b")),
+                                                                                         "Biological Process"="GO_Biological_Process_2017b",
+                                                                                         "KEGG"="KEGG_2016",
+                                                                                         "Reactome"="Reactome_2016")),
                                                                            width= 5),
                                                                          actionButton("go_analysis", "Run Enrichment"),
                                                                          plotOutput("go_enrichment"),
                                                                          downloadButton('downloadGO', 'Download Table')
                                                                          
                                                                 ),
-                                                                tabPanel(title= "Pathway enrichment",
-                                                                         box(uiOutput("contrast_1"), width = 6),
-                                                                         box(
-                                                                           selectInput("pathway_database", "Pathway database:",
-                                                                                       c("KEGG"="KEGG_2016",
-                                                                                         "Reactome"="Reactome_2016")),
-                                                                           width= 5),
-                                                                         actionButton("pathway_analysis", "Run Enrichment"),
-                                                                         plotOutput("pathway_enrichment"),
-                                                                         downloadButton('downloadPA', 'Download Table')
+                                                                tabPanel(title= "Kinase-Substrate enrichment ",
+                                                                         box(uiOutput("contrast_1"), width = 12),
+                                                                         # box(
+                                                                         #   selectInput("pathway_database", "Pathway database:",
+                                                                         #               c("KEGG"="KEGG_2016",
+                                                                         #                 "Reactome"="Reactome_2016")),
+                                                                         #   width= 5),
+                                                                         actionButton("KSEA_analysis", "Run Enrichment"),
+                                                                         plotOutput("KSEA_enrichment"),
+                                                                         downloadButton('downloadKSEA', 'Download Table')
                                                                 )
                                                                 
+                                                                # tabPanel(title= "Pathway enrichment",
+                                                                #          box(uiOutput("contrast_1"), width = 6),
+                                                                #          box(
+                                                                #            selectInput("pathway_database", "Pathway database:",
+                                                                #                        c("KEGG"="KEGG_2016",
+                                                                #                          "Reactome"="Reactome_2016")),
+                                                                #            width= 5),
+                                                                #          actionButton("pathway_analysis", "Run Enrichment"),
+                                                                #          plotOutput("pathway_enrichment"),
+                                                                #          downloadButton('downloadPA', 'Download Table')
+                                                                # )
+                                                                # 
                                                          ) # Tab box close
                                                        )
                                                    )) # fluidrow qc close
@@ -1094,23 +1108,36 @@ ui <- function(request){
                                              selectInput("go_database_dm", "GO database:",
                                                          c("Molecular Function"="GO_Molecular_Function_2017b",
                                                            "Cellular Component"="GO_Cellular_Component_2017b",
-                                                           "Biological Process"="GO_Biological_Process_2017b")),
+                                                           "Biological Process"="GO_Biological_Process_2017b",
+                                                           "KEGG"="KEGG_2016",
+                                                           "Reactome"="Reactome_2016")),
                                              width= 5),
                                            actionButton("go_analysis_dm", "Run Enrichment"),
                                            plotOutput("go_enrichment_dm"),
                                            downloadButton('downloadGO_dm', 'Download Table')
                                            
                                   ),
-                                  tabPanel(title= "Pathway enrichment",
-                                           box(uiOutput("contrast_1_dm"), width = 6),
-                                           box(
-                                             selectInput("pathway_database_dm", "Pathway database:",
-                                                         c("KEGG"="KEGG_2016",
-                                                           "Reactome"="Reactome_2016")),
-                                             width= 5),
-                                           actionButton("pathway_analysis_dm", "Run Enrichment"),
-                                           plotOutput("pathway_enrichment_dm"),
-                                           downloadButton('downloadPA_dm', 'Download Table')
+                                  tabPanel(title= "Kinase-Substrate enrichment ",
+                                           box(uiOutput("contrast_1_dm"), width = 12),
+                                           # box(
+                                           #   selectInput("pathway_database", "Pathway database:",
+                                           #               c("KEGG"="KEGG_2016",
+                                           #                 "Reactome"="Reactome_2016")),
+                                           #   width= 5),
+                                           actionButton("KSEA_analysis_dm", "Run Enrichment"),
+                                           plotOutput("KSEA_enrichment_dm"),
+                                           downloadButton('downloadKSEA_dm', 'Download Table')
+                                           
+                                  # tabPanel(title= "Pathway enrichment",
+                                  #          box(uiOutput("contrast_1_dm"), width = 6),
+                                  #          box(
+                                  #            selectInput("pathway_database_dm", "Pathway database:",
+                                  #                        c("KEGG"="KEGG_2016",
+                                  #                          "Reactome"="Reactome_2016")),
+                                  #            width= 5),
+                                  #          actionButton("pathway_analysis_dm", "Run Enrichment"),
+                                  #          plotOutput("pathway_enrichment_dm"),
+                                  #          downloadButton('downloadPA_dm', 'Download Table')
                                   )
                                   
                            ) # Tab box close

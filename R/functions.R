@@ -550,7 +550,7 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   # table <- dplyr::left_join(table, centered, by = c("name" = "rowname")) %>%
   #   dplyr::arrange(desc(significant))
   table<-as.data.frame(row_data) %>% 
-    dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names) %>%
+    dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names,Residue.Both,peptide.sequence,Protein) %>%
     dplyr::left_join(table, ., by = "name")
   table<-table %>% dplyr::arrange(desc(significant))
   colnames(table)[1]<-c("Phosphosite")
@@ -823,4 +823,11 @@ get_exp_design_pr <- function(df){
   df <- data.frame(label = intensity_names) %>% 
     add_column(condition = NA, replicate = 0)
   return(df)
+}
+
+# create residue.both column
+create_Residue.Both_func <-function(protein_position,amino_acid){
+  protein_position_list <- strsplit(protein_position, split=";")
+  residue_list <- mapply(paste,amino_acid,protein_position_list,sep = '',SIMPLIFY=FALSE)
+  residue <- paste(unlist(residue_list), collapse = ";")
 }
