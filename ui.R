@@ -372,7 +372,7 @@ ui <- function(request){
                                                                 tabPanel(title="Gene Ontology",
                                                                          box(uiOutput("contrast"), width = 6),
                                                                          box(
-                                                                           selectInput("go_database", "GO database:",
+                                                                           selectInput("go_database", "Database:",
                                                                                        c("Molecular Function"="GO_Molecular_Function_2017b",
                                                                                          "Cellular Component"="GO_Cellular_Component_2017b",
                                                                                          "Biological Process"="GO_Biological_Process_2017b",
@@ -385,12 +385,18 @@ ui <- function(request){
                                                                          
                                                                 ),
                                                                 tabPanel(title= "Kinase-Substrate enrichment ",
-                                                                         box(uiOutput("contrast_1"), width = 12),
-                                                                         # box(
-                                                                         #   selectInput("pathway_database", "Pathway database:",
-                                                                         #               c("KEGG"="KEGG_2016",
-                                                                         #                 "Reactome"="Reactome_2016")),
-                                                                         #   width= 5),
+                                                                         box(width = 12,
+                                                                             column(12, 
+                                                                                    uiOutput("contrast_1")),
+                                                                             column(6,
+                                                                                    numericInput("m.cutoff",
+                                                                                                 p("substrate count cutoff", style = 'color:#2E3440'),
+                                                                                                 min = 0, value = 5)),
+                                                                             column(6,
+                                                                                    numericInput("p.cutoff",
+                                                                                                 p("p-value cutoff", style = 'color:#2E3440'),
+                                                                                                 min = 0, max = 1, value = 0.01))
+                                                                         ),
                                                                          actionButton("KSEA_analysis", "Run Enrichment"),
                                                                          plotOutput("KSEA_enrichment"),
                                                                          downloadButton('downloadKSEA', 'Download Table')
@@ -1105,7 +1111,7 @@ ui <- function(request){
                                   tabPanel(title="Gene Ontology",
                                            box(uiOutput("contrast_dm"), width = 6),
                                            box(
-                                             selectInput("go_database_dm", "GO database:",
+                                             selectInput("go_database_dm", "Database:",
                                                          c("Molecular Function"="GO_Molecular_Function_2017b",
                                                            "Cellular Component"="GO_Cellular_Component_2017b",
                                                            "Biological Process"="GO_Biological_Process_2017b",
@@ -1118,12 +1124,18 @@ ui <- function(request){
                                            
                                   ),
                                   tabPanel(title= "Kinase-Substrate enrichment ",
-                                           box(uiOutput("contrast_1_dm"), width = 12),
-                                           # box(
-                                           #   selectInput("pathway_database", "Pathway database:",
-                                           #               c("KEGG"="KEGG_2016",
-                                           #                 "Reactome"="Reactome_2016")),
-                                           #   width= 5),
+                                           box(width = 12,
+                                               column(12, 
+                                                      uiOutput("contrast_1_dm")),
+                                               column(6,
+                                                      numericInput("m.cutoff_dm",
+                                                                   p("substrate count cutoff", style = 'color:#2E3440'),
+                                                                   min = 0, value = 5)),
+                                               column(6,
+                                                      numericInput("p.cutoff_dm",
+                                                                   p("p-value cutoff", style = 'color:#2E3440'),
+                                                                   min = 0, max = 1, value = 0.01))
+                                               ),
                                            actionButton("KSEA_analysis_dm", "Run Enrichment"),
                                            plotOutput("KSEA_enrichment_dm"),
                                            downloadButton('downloadKSEA_dm', 'Download Table')

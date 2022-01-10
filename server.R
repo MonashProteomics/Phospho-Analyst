@@ -745,7 +745,7 @@ server <- function(input, output,session){
     KSData <- KSEAapp::KSData 
     
     # Generate a summary bar plot using the KSEA.Barplot() function
-    plot_KSEA <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff=5, p.cutoff=0.01, export=FALSE)
+    plot_KSEA <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff, p.cutoff= input$p.cutoff, export=FALSE)
     return(plot_KSEA)
   })
   
@@ -3688,7 +3688,7 @@ server <- function(input, output,session){
       go_results<- test_gsea_mod_phospho(dep_dm(), databases = input$go_database_dm, contrasts = TRUE)
       null_enrichment_test(go_results)
       if (input$go_database_dm == "KEGG" | input$go_database_dm == "Reactome"){
-        plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm,
+        plot_go<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm,
                                       databases=input$pathway_database_dm, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
           xlab(NULL)
       }
@@ -3719,7 +3719,7 @@ server <- function(input, output,session){
     KSData <- KSEAapp::KSData 
     
     # Generate a summary bar plot using the KSEA.Barplot() function
-    plot_KSEA_dm <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff=5, p.cutoff=0.01, export=FALSE)
+    plot_KSEA_dm <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_dm, p.cutoff= input$p.cutoff_dm, export=FALSE)
     return(plot_KSEA_dm)
   })
 
