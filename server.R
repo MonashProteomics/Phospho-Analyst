@@ -1405,8 +1405,8 @@ server <- function(input, output,session){
   
   volcano_input_selected_pr<-reactive({
     if(!is.null(input$volcano_cntrst_pr)){
-      if (!is.null(input$contents_nr_rows_selected)){
-        proteins_selected<-data_result_pr()[c(input$contents_nr_rows_selected),]## get all rows selected
+      if (!is.null(input$contents_pr_rows_selected)){
+        proteins_selected<-data_result_pr()[c(input$contents_pr_rows_selected),]## get all rows selected
       }
       else if(!is.null(input$protein_brush_pr)){
         proteins_selected<-data_result_pr()[data_result_pr()[["Gene Name"]] %in% protein_name_brush_pr(), ] 
