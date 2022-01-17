@@ -230,6 +230,8 @@ server <- function(input, output,session){
       exp_design_test(temp_df)
       temp_df$label<-as.character(temp_df$label)
       temp_df$condition<-trimws(temp_df$condition, which = "left")
+      temp_df$label <- temp_df$label %>% gsub('[-]', '.',.)
+      temp_df$condition <- temp_df$condition %>% gsub('[-]', '.',.)
     }
     return(temp_df)
   })
@@ -288,19 +290,31 @@ server <- function(input, output,session){
   
   # proteinGroup exp_desgin file
   exp_design_input_1<-eventReactive(input$analyze,{
-    inFile<-input$file4
-    if (is.null(inFile)||input$save_exp>0){
-      temp_df <- protein_exp_data$Data_pr
+    inFile<-input$file3
+    inFile_1 <-input$file4
+    if (is.null(inFile_1)){
+      if(!is.null(inFile)||input$save_exp==0){
+        temp_df<-read.delim(inFile$datapath,
+                            header = TRUE,
+                            sep="\t",
+                            stringsAsFactors = FALSE)
+      }
+      else{
+        temp_df <- protein_exp_data$Data_pr
+      }
+      
       
     }
     else{
-      temp_df<-read.delim(inFile$datapath,
+      temp_df<-read.delim(inFile_1$datapath,
                           header = TRUE,
                           sep="\t",
                           stringsAsFactors = FALSE)
       exp_design_test(temp_df)
       temp_df$label<-as.character(temp_df$label)
       temp_df$condition<-trimws(temp_df$condition, which = "left")
+      temp_df$label <- temp_df$label %>% gsub('[-]', '.',.)
+      temp_df$condition <- temp_df$condition %>% gsub('[-]', '.',.)
     }
     return(temp_df)
   })
@@ -5825,18 +5839,20 @@ server <- function(input, output,session){
     }
   )
   
-  # used for save demo data
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  # 
-  #   # data_missval <- processed_data()
-  #   data_dep <- dep()
-  #   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-  #   saveRDS(data_dep, file="phosphosite_demo_data.Rds")
-  # 
-  # })
+# used for save demo data
+# observeEvent(input$analyze ,{
+#   if(input$analyze==0 ){
+#     return()
+#   }
+# 
+#   # data_missval <- processed_data()
+#   # data_dep <- dep()
+#   # phospho_pre <- cleaned_data()
+#   phospho_imp <- imputed_data()
+#   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+#   saveRDS(phospho_imp, file="phosphosite_demo_data4.Rds")
+# 
+# })
 # 
 #   observeEvent(input$analyze ,{
 #     if(input$analyze==0 ){
@@ -5844,31 +5860,34 @@ server <- function(input, output,session){
 #     }
 # 
 #     # data_missval <- processed_data_pr()
-#     data_dep <- dep_pr()
+#     # data_dep_pr <- dep_pr()
+#     # protein_pre <- cleaned_data_pr()
+#     protein_imp <- imputed_data_pr()
 #     # save(data_missval, data_dep, file = "proteinGroup_demo_data.RData")
-#     saveRDS(data_dep, file="proteinGroup_demo_data.Rds")
+#     saveRDS(protein_imp, file="proteinGroup_demo_data4.Rds")
 #   })
-  # 
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  #   
-  #   exp_demo <- exp_design_input()
-  #   save(exp_demo, file = "exp_demo_data.RData")
-  #   
-  # })
-  # 
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  # 
-  #   data_missval <- normalized_phospho_data()
-  #   data_dep <- dep_nr()
-  #   save(data_missval, data_dep, file = "phosphosite(corrected)_demo_data.RData")
-  # 
-  # })
+
+# observeEvent(input$analyze ,{
+#   if(input$analyze==0 ){
+#     return()
+#   }
+# 
+#   exp_demo <- exp_design_input()
+#   save(exp_demo, file = "exp_demo_data.RData")
+# 
+# })
+
+# observeEvent(input$analyze ,{
+#   if(input$analyze==0 ){
+#     return()
+#   }
+# 
+#   # data_missval <- normalized_phospho_data()
+#   data_dep_nr <- dep_nr()
+#   # save(data_missval, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
+#   saveRDS(data_dep_nr, file="phosphosite(corrected)_demo_data.Rds")
+# 
+# })
 
   
 }

@@ -865,7 +865,7 @@ ui <- function(request){
                                                                          plotOutput("sample_cvs_nr", height = 600),
                                                                          downloadButton('download_cvs_svg_nr', "Save svg")
                                                                 ),
-                                                                tabPanel(title = "Protein Numbers",
+                                                                tabPanel(title = "Phosphosite Numbers",
                                                                          plotOutput("numbers_nr", height = 600),
                                                                          downloadButton('download_num_svg_nr', "Save svg")
                                                                 ),
@@ -1076,7 +1076,7 @@ ui <- function(request){
                                            plotOutput("sample_cvs_dm", height = 600),
                                            downloadButton('download_cvs_svg_dm', "Save svg")
                                   ),
-                                  tabPanel(title = "Protein Numbers",
+                                  tabPanel(title = "Phosphosite Numbers",
                                            plotOutput("numbers_dm", height = 600),
                                            downloadButton('download_num_svg_dm', "Save svg")
                                   ),
@@ -1108,7 +1108,7 @@ ui <- function(request){
                          column(
                            width=6,
                            tabBox(title = "Enrichment", width = 12,
-                                  tabPanel(title="Gene Ontology",
+                                  tabPanel(title="Gene Ontology/ Pathway",
                                            box(uiOutput("contrast_dm"), width = 6),
                                            box(
                                              selectInput("go_database_dm", "Database:",
@@ -1589,7 +1589,7 @@ ui <- function(request){
                                              plotOutput("sample_cvs_dm_nr", height = 600),
                                              downloadButton('download_cvs_svg_dm_nr', "Save svg")
                                     ),
-                                    tabPanel(title = "Protein Numbers",
+                                    tabPanel(title = "Phosphosite Numbers",
                                              plotOutput("numbers_dm_nr", height = 600),
                                              downloadButton('download_num_svg_dm_nr', "Save svg")
                                     ),
