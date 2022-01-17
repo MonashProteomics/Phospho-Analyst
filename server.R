@@ -2296,7 +2296,7 @@ server <- function(input, output,session){
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
         scale_colour_discrete(name  ="Replicate") + 
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Phospho site', x = '') +
-        facet_grid(. ~phospho_id + Gene.names) +
+        facet_grid(. ~phospho_id) +
         theme_DEP2()
       
       p2 <- protein_df %>% 
@@ -2308,7 +2308,7 @@ server <- function(input, output,session){
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
         scale_colour_discrete(name  ="Replicate") + 
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Protein', x = '', y = 'Intensity') +
-        facet_grid(. ~protein_id + Gene.names) +
+        facet_grid(. ~Gene.names) +
         theme_DEP2()
       
       ggarrange(p2, 
@@ -4995,7 +4995,7 @@ server <- function(input, output,session){
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
         scale_colour_discrete(name  ="Replicate") +
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Phospho site', x = '') +
-        facet_grid(. ~phospho_id + Gene.names) +
+        facet_grid(. ~phospho_id) +
         theme_DEP2()
       
       p2 <- protein_df %>%
@@ -5007,7 +5007,7 @@ server <- function(input, output,session){
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
         scale_colour_discrete(name  ="Replicate") +
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Protein', x = '', y = 'Intensity') +
-        facet_grid(. ~protein_id + Gene.names) +
+        facet_grid(. ~Gene.names) +
         theme_DEP2()
       
       ggarrange(p2,

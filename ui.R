@@ -369,7 +369,7 @@ ui <- function(request){
                                                        column(
                                                          width=6,
                                                          tabBox(title = "Enrichment", width = 12,
-                                                                tabPanel(title="Gene Ontology",
+                                                                tabPanel(title="Gene Ontology/ Pathway",
                                                                          box(uiOutput("contrast"), width = 6),
                                                                          box(
                                                                            selectInput("go_database", "Database:",
