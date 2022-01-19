@@ -33,25 +33,38 @@ ui <- function(request){
                                              accept=c('text/csv',
                                                       'text/comma-separated-values,text/plain',
                                                       '.csv')),
+                                   tags$hr(),
                                    fileInput('file3',
                                              p('Upload Experimental Design (Phosphosite) Matrix', style = 'color:#2E3440'),
                                              accept=c('text/csv',
                                                       'text/comma-separated-values,text/plain',
                                                       '.csv')),
                                    # editable table for phosphosite data
-                                   actionButton("showTable", "Create", icon = icon("table")),
+                                   fluidRow(
+                                     column(1),
+                                     column(3,tags$strong('Or Create It:', style = 'color:#2E3440') ),
+                                     column(8,
+                                            actionButton("showTable", "Experiment design", icon = icon("table")))
+                                   ),
+                                   tags$hr(),
                                    fileInput('file2',
-                                             p('Upload MaxQuant ProteinGroup.txt', style = 'color:#2E3440'),
+                                             p('Upload MaxQuant ProteinGroup.txt (Optional)', style = 'color:#2E3440'),
                                              accept=c('text/csv',
                                                       'text/comma-separated-values,text/plain',
                                                       '.csv')),
+                                   tags$hr(),
                                    fileInput('file4',
-                                             p('Upload Experimental Design (Protein) Matrix', style = 'color:#2E3440'),
+                                             p('Upload Experimental Design (Protein) Matrix (Optional)', style = 'color:#2E3440'),
                                              accept=c('text/csv',
                                                       'text/comma-separated-values,text/plain',
                                                       '.csv')),
                                    # editable table for phosphosite data
-                                   actionButton("showTable_pr", "Create", icon = icon("table")),
+                                   fluidRow(
+                                     column(1),
+                                     column(3,tags$strong('Or Create It:', style = 'color:#2E3440') ),
+                                     column(8,
+                                            actionButton("showTable_pr", "Experiment design", icon = icon("table")))
+                                   ),
                                    tags$hr(),
                                    menuItem("Advanced Options",tabName="advanced", icon = icon("cogs"), 
                                             numericInput("p", 
@@ -703,15 +716,12 @@ ui <- function(request){
                                                               solidHeader = TRUE,
                                                               title = 'Individual Protein plots',
                                                               uiOutput('selected_gene'),
-                                                              fluidRow(height = 600,
-                                                                       column(width = 8,'Interaction plot',
+                                                              tabBox(width = 12,
+                                                                     tabPanel(title= "Interaction plot",
                                                                               plotOutput("combined_inter", height = 600)),
-                                                                       column(width = 4,'Bubble plot',
-                                                                              plotOutput("combined_point", height = 600)
-                                                                       )
+                                                                     tabPanel(title= "Bubble plot",
+                                                                              plotOutput("combined_point", height = 600))
                                                               )
-                                                              
-                                                              
                                                           )
                                                  )
                                         ),
@@ -1424,15 +1434,12 @@ ui <- function(request){
                                   solidHeader = TRUE,
                                   title = 'Individual Protein plots',
                                   uiOutput('selected_gene_dm'),
-                                  fluidRow(height = 600,
-                                           column(width = 8,'Interaction plot',
-                                                  plotOutput("combined_inter_dm", height = 600)),
-                                           column(width = 4,'Bubble plot',
-                                                  plotOutput("combined_point_dm", height = 600)
-                                           )
+                                  tabBox(width = 12,
+                                    tabPanel(title= "Interaction plot",
+                                             plotOutput("combined_inter_dm", height = 600)),
+                                    tabPanel(title= "Bubble plot",
+                                             plotOutput("combined_point_dm", height = 600))
                                   )
-                                  
-                                  
                               )
                      )
                      

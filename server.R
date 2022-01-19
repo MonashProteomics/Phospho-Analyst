@@ -2226,9 +2226,8 @@ server <- function(input, output,session){
   
   # gene names for selection input
   gene_names <- reactive({
-    if (!is.null(phospho_df_long()) & !is.null(protein_df_long())){
+    if (!is.null(phospho_df_long())){
       gene_names_list <- phospho_df_long() %>%
-        inner_join(., protein_df_long(), by = "Gene.names") %>% 
         select('Gene.names') %>%
         unique()
       return(gene_names_list)
@@ -2241,14 +2240,26 @@ server <- function(input, output,session){
       combined_df <- phospho_df() %>%
         inner_join(., protein_df(), by = "Gene.names")
       exp_design <- exp_design_input()
-      phospho_cols <- colnames(combined_df %>% select(dplyr::ends_with(".x")))
+      # phospho_cols <- colnames(combined_df %>% select(dplyr::ends_with(".x")))
+      
+      phospho_cols <- colnames(combined_df %>% select(1:ncol(phospho_df())))
       phospho_cols_1 <- exp_design$label
-      phospho_df_11 <- subset(combined_df, select = c(phospho_cols,'phospho_id','Gene.names','phospho_diff' ))
-      names(phospho_df_11) <- c(phospho_cols_1,"p.val",'phospho_id','Gene.names','phospho_diff')
-      phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>% 
+      
+      
+      phospho_df_11 <- subset(combined_df, select = phospho_cols)
+      names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names','phospho_diff',"p.val")
+      phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>%
         gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
       phospho_df_33 <- phospho_df_22 %>%
         left_join(., exp_design, by = "label")
+      
+      # 
+      # phospho_df_11 <- subset(combined_df, select = c(phospho_cols,'phospho_id','Gene.names','phospho_diff' ))
+      # names(phospho_df_11) <- c(phospho_cols_1,"p.val",'phospho_id','Gene.names','phospho_diff')
+      # phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>% 
+      #   gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+      # phospho_df_33 <- phospho_df_22 %>%
+      #   left_join(., exp_design, by = "label")
       return(phospho_df_33)
       cat(head(phospho_df_33)) # test
     }
@@ -2259,14 +2270,24 @@ server <- function(input, output,session){
       combined_df <- phospho_df() %>%
         inner_join(., protein_df(), by = "Gene.names")
       exp_design <- exp_design_input_1()
-      protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
+      # protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
+      protein_cols <- colnames(combined_df %>% select((ncol(phospho_df())+1):ncol(combined_df)))
       protein_cols_1 <- exp_design$label
-      protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
-      names(protein_df_11) <- c(protein_cols_1,"p.val","protein_id",'Gene.names','protein_diff')
-      protein_df_22 <- protein_df_11 %>% rownames_to_column() %>% 
+      
+      protein_df_11 <- subset(combined_df, select = c(protein_cols,'Gene.names'))
+      names(protein_df_11) <- c(protein_cols_1,"protein_id",'protein_diff','p.val','Gene.names')
+      protein_df_22 <- protein_df_11 %>% rownames_to_column() %>%
         gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
       protein_df_33 <- protein_df_22 %>%
         left_join(., exp_design, by = "label")
+      
+      
+      # protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
+      # names(protein_df_11) <- c(protein_cols_1,"p.val","protein_id",'Gene.names','protein_diff')
+      # protein_df_22 <- protein_df_11 %>% rownames_to_column() %>% 
+      #   gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
+      # protein_df_33 <- protein_df_22 %>%
+      #   left_join(., exp_design, by = "label")
       return(protein_df_33)
       cat(head(protein_df_33)) # test
     }
@@ -4929,11 +4950,11 @@ server <- function(input, output,session){
 
   # gene names for selection input
   gene_names_dm <- reactive({
-    if (!is.null(phospho_df_long_dm()) & !is.null(protein_df_long_dm())){
-      gene_names <- phospho_df_long_dm() %>%
-        inner_join(., protein_df_long_dm(), by = "Gene.names") %>%
+    if (!is.null(phospho_df_long_dm())){
+      gene_names_list <- phospho_df_long_dm() %>%
         select('Gene.names') %>%
         unique()
+      return(gene_names_list)
     }
   })
 
@@ -4943,14 +4964,25 @@ server <- function(input, output,session){
       combined_df <- phospho_df_dm() %>%
         inner_join(., protein_df_dm(), by = "Gene.names")
       exp_design <- exp_design_demo()
-      phospho_cols <- colnames(combined_df %>% select(dplyr::ends_with(".x")))
+      # phospho_cols <- colnames(combined_df %>% select(dplyr::ends_with(".x")))
+      phospho_cols <- colnames(combined_df %>% select(1:ncol(phospho_df_dm())))
       phospho_cols_1 <- exp_design$label
-      phospho_df_11 <- subset(combined_df, select = c(phospho_cols,'phospho_id','Gene.names','phospho_diff' ))
-      names(phospho_df_11) <- c(phospho_cols_1,"p.val",'phospho_id','Gene.names','phospho_diff')
+      
+      phospho_df_11 <- subset(combined_df, select = phospho_cols)
+      names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names','phospho_diff',"p.val")
       phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>%
         gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
       phospho_df_33 <- phospho_df_22 %>%
         left_join(., exp_design, by = "label")
+      
+      # 
+      # phospho_df_11 <- subset(combined_df, select = c(phospho_cols,'phospho_id','Gene.names','phospho_diff' ))
+      # names(phospho_df_11) <- c(phospho_cols_1,"p.val",'phospho_id','Gene.names','phospho_diff')
+      # 
+      # phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>%
+      #   gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+      # phospho_df_33 <- phospho_df_22 %>%
+      #   left_join(., exp_design, by = "label")
       return(phospho_df_33)
     }
   })
@@ -4960,14 +4992,26 @@ server <- function(input, output,session){
       combined_df <- phospho_df_dm() %>%
         inner_join(., protein_df_dm(), by = "Gene.names")
       exp_design <- exp_design_demo()
-      protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
+      # protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
+      protein_cols <- colnames(combined_df %>% select((ncol(phospho_df_dm())+1):ncol(combined_df)))
       protein_cols_1 <- exp_design$label
-      protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
-      names(protein_df_11) <- c(protein_cols_1,"p.val","protein_id",'Gene.names','protein_diff')
+      
+      
+      protein_df_11 <- subset(combined_df, select = c(protein_cols,'Gene.names'))
+      names(protein_df_11) <- c(protein_cols_1,"protein_id",'protein_diff','p.val','Gene.names')
       protein_df_22 <- protein_df_11 %>% rownames_to_column() %>%
         gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
       protein_df_33 <- protein_df_22 %>%
         left_join(., exp_design, by = "label")
+      
+      
+      # 
+      # protein_df_11 <- subset(combined_df, select = c(protein_cols,"Protein ID",'Gene.names','protein_diff'))
+      # names(protein_df_11) <- c(protein_cols_1,"p.val","protein_id",'Gene.names','protein_diff')
+      # protein_df_22 <- protein_df_11 %>% rownames_to_column() %>%
+      #   gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
+      # protein_df_33 <- protein_df_22 %>%
+      #   left_join(., exp_design, by = "label")
       return(protein_df_33)
     }
   })
