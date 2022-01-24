@@ -17,7 +17,7 @@
 })(window,document,'script',
   'https://www.google-analytics.com/analytics.js','ga');
 
-ga('create', 'G-P3VNRBHWX5', 'auto');
+ga('create', 'UA-66833365-4', 'auto');
 ga('send', 'pageview');
 
 // Event Tracking Code
