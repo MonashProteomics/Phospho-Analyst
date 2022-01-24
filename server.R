@@ -3714,10 +3714,10 @@ server <- function(input, output,session){
     protein_selected  <- data_result_dm()[input$contents_dm_rows_selected,1]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 8){
-      plot_protein(dep_dm(), protein_selected, as.character(input$type))
+      plot_protein(dep_dm(), protein_selected, as.character(input$type_dm))
     }
     else{
-      protein_plot<-plot_protein(dep_dm(), protein_selected, as.character(input$type))
+      protein_plot<-plot_protein(dep_dm(), protein_selected, as.character(input$type_dm))
       protein_plot + scale_color_brewer(palette = "Paired")
     }
     
@@ -4451,10 +4451,10 @@ server <- function(input, output,session){
     protein_selected  <- data_result_dm_pr()[input$contents_dm_pr_rows_selected,1]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep_dm_pr())$replicate))) <= 8){
-      plot_protein(dep_dm_pr(), protein_selected, as.character(input$type))
+      plot_protein(dep_dm_pr(), protein_selected, as.character(input$type_dm_pr))
     }
     else{
-      protein_plot<-plot_protein(dep_dm_pr(), protein_selected, as.character(input$type))
+      protein_plot<-plot_protein(dep_dm_pr(), protein_selected, as.character(input$type_dm_pr))
       protein_plot + scale_color_brewer(palette = "Paired")
     }
     
@@ -5482,10 +5482,10 @@ server <- function(input, output,session){
     protein_selected  <- data_result_dm_nr()[input$contents_dm_nr_rows_selected,1]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep_dm_nr())$replicate))) <= 8){
-      plot_protein(dep_dm_nr(), protein_selected, as.character(input$type))
+      plot_protein(dep_dm_nr(), protein_selected, as.character(input$type_dm_nr))
     }
     else{
-      protein_plot<-plot_protein(dep_dm_nr(), protein_selected, as.character(input$type))
+      protein_plot<-plot_protein(dep_dm_nr(), protein_selected, as.character(input$type_dm_nr))
       protein_plot + scale_color_brewer(palette = "Paired")
     }
 
