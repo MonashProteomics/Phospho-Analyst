@@ -831,3 +831,69 @@ create_Residue.Both_func <-function(protein_position,amino_acid){
   residue_list <- mapply(paste,amino_acid,protein_position_list,sep = '',SIMPLIFY=FALSE)
   residue <- paste(unlist(residue_list), collapse = ";")
 }
+
+#### phosphosites corrected function ####
+phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr){
+  # get untransformed intensity values
+  phospho_intensity <- 2^(assay(phospho_imp)) %>% data.frame() 
+  protein_intensity <- 2^(assay(protein_imp)) %>% data.frame() 
+  
+  # get row data
+  phospho_df <- rowData(phospho_imp)   %>% data.frame() %>% select('Protein')
+  protein_df <- rowData(protein_imp)   %>% data.frame() %>% select('Majority.protein.IDs')
+  
+  # merge phospho data with its intensity values
+  phospho_df_1 <- merge(phospho_df, phospho_intensity,by='row.names',all=TRUE)
+  protein_df_1 <- merge(protein_df, protein_intensity,by='row.names',all=TRUE)
+  
+  # get conditions
+  conditions <- exp_design$condition %>% unique()
+  conditions_pr <- exp_design_pr$condition %>% unique()
+  
+  # get median intensity values of each protein group 
+  # find median value in protein intensity
+  protein_df_2 <- protein_df_1
+  
+  for (i in 1:length(conditions_pr)) {
+    condition <- conditions_pr[i]
+    pattern <- paste(condition,"[[:digit:]]",sep = '_')
+    protein_df_2[paste0('median',sep = "_",condition)] <- rowMedians(
+      as.matrix(protein_df_2 %>% 
+                  select(grep(pattern, colnames(protein_df_2)))), na.rm = TRUE)
+  }
+  
+  protein_median <- protein_df_2 %>% 
+    select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
+  
+  # join two raw data 
+  phospho_protein <- phospho_df_1 %>% 
+    left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
+    data.frame (row.names = 1) %>% 
+    select(-'Protein')
+  
+  # use each phosphosite intensity value to divide median protein intensity of a same group
+  df_corrected <- row.names(phospho_protein) %>% data.frame()
+  
+  for (i in 1: length(conditions)) {
+    condition <- conditions[i]
+    one_group <- colnames(phospho_protein %>% select(dplyr::starts_with(condition)))           
+    df <- phospho_protein[one_group]                
+    median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
+    
+    # division get factor
+    df_factor <- df/phospho_protein[,median_col]
+    df_factor[is.na(df_factor)] <- 1
+    
+    # correct phosphosite data by using factor
+    df_corrected <- cbind(df_corrected, df*df_factor)
+  }
+  
+  # get the log fold transformed data
+  phospho_corrected <- log2(as.matrix(df_corrected[,-1]))
+  
+  # replace the assay data
+  assay(phospho_imp,withDimnames=FALSE) <- phospho_corrected
+  
+  return(phospho_imp)
+  
+}

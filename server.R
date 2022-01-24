@@ -715,8 +715,8 @@ server <- function(input, output,session){
       go_results<- test_gsea_mod_phospho(dep(), databases = input$go_database, contrasts = TRUE)
       null_enrichment_test(go_results)
       if (input$go_database == "KEGG" | input$go_database == "Reactome"){
-        plot_go<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast,
-                                      databases=input$pathway_database, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+        plot_go<-plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast,
+                                      databases=input$go_database, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
           xlab(NULL)
       }
       else{
@@ -758,9 +758,14 @@ server <- function(input, output,session){
     names(PX) <- column_names
     KSData <- KSEAapp::KSData 
     
+    # Create result table using KSEA.Scores() function
+    KSEA_result <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5) 
+    
     # Generate a summary bar plot using the KSEA.Barplot() function
     plot_KSEA <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff, p.cutoff= input$p.cutoff, export=FALSE)
-    return(plot_KSEA)
+    
+    KSEA_list<-list("KSEA_result"=KSEA_result, "plot_KSEA"=plot_KSEA)
+    return(KSEA_list)
   })
   
   
@@ -1011,7 +1016,7 @@ server <- function(input, output,session){
   })
   
   output$KSEA_enrichment<-renderPlot({
-    KSEA_input()
+    KSEA_input()$plot_KSEA
   })
   
   ##### Download Functions
@@ -1102,17 +1107,29 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
-  output$downloadPA <- downloadHandler(
-    filename = function() { paste("Pathway_enrichment_",input$pathway_database, ".csv", sep = "") }, 
+  ###### ==== DOWNLOAD Kinase-Substrate TABLE ==== ####
+  output$downloadKSEA <- downloadHandler(
+    filename = function() { paste("Kinase-Substrate_enrichment", ".csv", sep = "") }, 
     ## use = instead of <-
     content = function(file) {
-      write.table(pathway_input()$pa_result,
+      write.table(KSEA_input()$KSEA_result,
                   file,
                   col.names = TRUE,
                   row.names = FALSE,
                   sep =",") }
   )
+  
+  # ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
+  # output$downloadPA <- downloadHandler(
+  #   filename = function() { paste("Pathway_enrichment_",input$pathway_database, ".csv", sep = "") }, 
+  #   ## use = instead of <-
+  #   content = function(file) {
+  #     write.table(pathway_input()$pa_result,
+  #                 file,
+  #                 col.names = TRUE,
+  #                 row.names = FALSE,
+  #                 sep =",") }
+  # )
   
   output$download_hm_svg<-downloadHandler(
     filename = function() { "heatmap.svg" }, 
@@ -2625,96 +2642,113 @@ server <- function(input, output,session){
     }
   })
   
-  # subtraction on raw data and pre-processing
-  normalized_phospho_data <- reactive({
+  # # subtraction on raw data and pre-processing
+  # normalized_phospho_data <- reactive({
+  #   if(!is.null (exp_design_input() )){
+  #     exp_design<-reactive({exp_design_input()})
+  #   }
+  #   phospho_pre <- cleaned_data()
+  #   protein_pre <- cleaned_data_pr()
+  #   protein_pre <-  protein_pre %>% 
+  #     select("Majority.protein.IDs", grep("LFQ.", colnames(protein_pre))) # select the intensity columns
+  #   
+  #   # save phospho intensity colnames for use
+  #   intensity_names <- colnames(phospho_pre)[grep("Intensity.", colnames(phospho_pre))]
+  #   # change protein intensity colnames 
+  #   search_protein <- paste("LFQ.intensity.", exp_design()$label, sep = "") %>% unique()
+  #   replace_protein <- paste(exp_design()$condition, exp_design()$replicate,sep = "_") %>% unique()
+  #   colnames(protein_pre)[colnames(protein_pre) %in% search_protein] <- replace_protein[match(colnames(protein_pre), search_protein, nomatch = 0)]
+  #   
+  #   # change phospho intensity colnames
+  #   search_phospho <- paste("Intensity.", exp_design()$label, sep = "") %>% unique()
+  #   replace_phospho <- paste("Intensity",exp_design()$condition, exp_design()$replicate,sep = "_") %>% unique()
+  #   colnames(phospho_pre)[colnames(phospho_pre) %in% search_phospho] <- replace_phospho[match(colnames(phospho_pre), search_phospho, nomatch = 0)]
+  #   
+  #   # get condition names
+  #   conditions <- exp_design()$condition %>% unique()
+  #   conditions
+  #   
+  #   # find median value in protein intensity
+  #   for (i in 1:length(conditions)) {
+  #     condition <- conditions[i]
+  #     pattern <- paste(condition,"[[:digit:]]",sep = '_')
+  #     protein_pre[paste0('median',sep = "_",condition)] <- rowMedians(as.matrix(protein_pre %>% select(grep(pattern, colnames(protein_pre)))), na.rm = TRUE)
+  #   }
+  #   
+  #   protein_median <- protein_pre %>% 
+  #     select("Majority.protein.IDs",grep("median", colnames(protein_pre)))
+  #   
+  #   # join two raw data 
+  #   phospho_protein <- phospho_pre %>% left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs"))
+  #   # change NA median protein value to zero
+  #   phospho_protein <- mutate_at(phospho_protein, grep("median_", colnames(phospho_protein)), ~replace(., is.na(.), 0))
+  #   
+  #   # use each phosphosite intensity value to subtract median protein intensity of a same group
+  #   phospho_protein_1 <- phospho_protein
+  #   for (i in 1:length(conditions)){
+  #     condition <- conditions[i]
+  #     intensity_col <- grep(paste0("Intensity", sep = "_",condition), colnames(phospho_protein_1)) %>% as.vector()
+  #     median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein_1)) 
+  #     for (j in intensity_col){
+  #       phospho_protein_1[j] <- phospho_protein_1[j] - phospho_protein_1[median_col]
+  #     }
+  #   }
+  #   
+  #   # remove median columns
+  #   phospho_protein_2 <- phospho_protein_1 %>% 
+  #     select(-grep("median_", colnames(phospho_protein_1)))
+  #   
+  #   # rename phospho intensity names
+  #   colnames(phospho_protein_2)[grep("Intensity_", colnames(phospho_protein_2))] <- intensity_names
+  #   
+  #   # Convert dataframe to SE object
+  #   data_unique_names <- DEP::make_unique(phospho_protein_2, 'name','ID', delim = ";")
+  #   intensity_ints <- grep("^Intensity.", colnames(data_unique_names))
+  #   data_se <- make_se(data_unique_names, intensity_ints, exp_design())
+  #   
+  #   # Check number of replicates
+  #   if(max(exp_design()$replicate)<3){
+  #     threshold<-0
+  #   } else  if(max(exp_design()$replicate)==3){
+  #     threshold<-1
+  #   } else if(max(exp_design()$replicate)<6 ){
+  #     threshold<-2
+  #   } else if (max(exp_design()$replicate)>=6){
+  #     threshold<-trunc(max(exp_design()$replicate)/2)
+  #   }
+  #   
+  #   filter_missval(data_se,thr = threshold)
+  #   
+  # })
+  # 
+  # unimputed_table_nr<-reactive({
+  #   temp<-assay(normalized_phospho_data())
+  #   temp1<-2^(temp)
+  #   colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
+  #   temp1<-cbind(ProteinID=rownames(temp1),temp1) 
+  #   #temp1$ProteinID<-rownames(temp1)
+  #   return(as.data.frame(temp1))
+  # })
+  
+  imputed_data_nr<-reactive({
+    # DEP::impute(normalized_phospho_data(),input$imputation)
+    
     if(!is.null (exp_design_input() )){
-      exp_design<-reactive({exp_design_input()})
-    }
-    phospho_pre <- cleaned_data()
-    protein_pre <- cleaned_data_pr()
-    protein_pre <-  protein_pre %>% 
-      select("Majority.protein.IDs", grep("LFQ.", colnames(protein_pre))) # select the intensity columns
-    
-    # save phospho intensity colnames for use
-    intensity_names <- colnames(phospho_pre)[grep("Intensity.", colnames(phospho_pre))]
-    # change protein intensity colnames 
-    search_protein <- paste("LFQ.intensity.", exp_design()$label, sep = "") %>% unique()
-    replace_protein <- paste(exp_design()$condition, exp_design()$replicate,sep = "_") %>% unique()
-    colnames(protein_pre)[colnames(protein_pre) %in% search_protein] <- replace_protein[match(colnames(protein_pre), search_protein, nomatch = 0)]
-    
-    # change phospho intensity colnames
-    search_phospho <- paste("Intensity.", exp_design()$label, sep = "") %>% unique()
-    replace_phospho <- paste("Intensity",exp_design()$condition, exp_design()$replicate,sep = "_") %>% unique()
-    colnames(phospho_pre)[colnames(phospho_pre) %in% search_phospho] <- replace_phospho[match(colnames(phospho_pre), search_phospho, nomatch = 0)]
-    
-    # get condition names
-    conditions <- exp_design()$condition %>% unique()
-    conditions
-    
-    # find median value in protein intensity
-    for (i in 1:length(conditions)) {
-      condition <- conditions[i]
-      pattern <- paste(condition,"[[:digit:]]",sep = '_')
-      protein_pre[paste0('median',sep = "_",condition)] <- rowMedians(as.matrix(protein_pre %>% select(grep(pattern, colnames(protein_pre)))), na.rm = TRUE)
-    }
-    
-    protein_median <- protein_pre %>% 
-      select("Majority.protein.IDs",grep("median", colnames(protein_pre)))
-    
-    # join two raw data 
-    phospho_protein <- phospho_pre %>% left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs"))
-    # change NA median protein value to zero
-    phospho_protein <- mutate_at(phospho_protein, grep("median_", colnames(phospho_protein)), ~replace(., is.na(.), 0))
-    
-    # use each phosphosite intensity value to subtract median protein intensity of a same group
-    phospho_protein_1 <- phospho_protein
-    for (i in 1:length(conditions)){
-      condition <- conditions[i]
-      intensity_col <- grep(paste0("Intensity", sep = "_",condition), colnames(phospho_protein_1)) %>% as.vector()
-      median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein_1)) 
-      for (j in intensity_col){
-        phospho_protein_1[j] <- phospho_protein_1[j] - phospho_protein_1[median_col]
+      exp_design<-exp_design_input()
+      if(!is.null (exp_design_input_1() )){
+        exp_design_pr<-exp_design_input_1()
+      }
+      else{
+        exp_design_pr <- exp_design
       }
     }
     
-    # remove median columns
-    phospho_protein_2 <- phospho_protein_1 %>% 
-      select(-grep("median_", colnames(phospho_protein_1)))
+    # get imputed data to do phosphosites correction
+    phospho_imp <- imputed_data()
+    protein_imp <- imputed_data_pr()
     
-    # rename phospho intensity names
-    colnames(phospho_protein_2)[grep("Intensity_", colnames(phospho_protein_2))] <- intensity_names
+    imputed_data <- phospho_correction(phospho_imp, protein_imp, exp_design, exp_design_pr)
     
-    # Convert dataframe to SE object
-    data_unique_names <- DEP::make_unique(phospho_protein_2, 'name','ID', delim = ";")
-    intensity_ints <- grep("^Intensity.", colnames(data_unique_names))
-    data_se <- make_se(data_unique_names, intensity_ints, exp_design())
-    
-    # Check number of replicates
-    if(max(exp_design()$replicate)<3){
-      threshold<-0
-    } else  if(max(exp_design()$replicate)==3){
-      threshold<-1
-    } else if(max(exp_design()$replicate)<6 ){
-      threshold<-2
-    } else if (max(exp_design()$replicate)>=6){
-      threshold<-trunc(max(exp_design()$replicate)/2)
-    }
-    
-    filter_missval(data_se,thr = threshold)
-    
-  })
-  
-  unimputed_table_nr<-reactive({
-    temp<-assay(normalized_phospho_data())
-    temp1<-2^(temp)
-    colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) 
-    #temp1$ProteinID<-rownames(temp1)
-    return(as.data.frame(temp1))
-  })
-  
-  imputed_data_nr<-reactive({
-    DEP::impute(normalized_phospho_data(),input$imputation)
   })
   
   normalised_data_nr<-reactive({
@@ -2945,35 +2979,17 @@ server <- function(input, output,session){
   
   ## QC Inputs
   norm_input_nr <- reactive({
-    plot_normalization(normalized_phospho_data(),
+    # plot_normalization(normalized_phospho_data(),
+    #                    normalised_data_nr())
+    plot_normalization(normalised_data(),
                        normalised_data_nr())
   })
   
-  missval_input_nr <- reactive({
-    plot_missval(normalized_phospho_data())
-  })
-  
-  detect_input_nr <- reactive({
-    plot_detect(normalized_phospho_data())
-  })
-  
   imputation_input_nr <- reactive({
-    plot_imputation(normalized_phospho_data(),
-                    diff_all_nr())
-  })
-  
-  p_hist_input_nr <- reactive({
-    plot_p_hist(dep_nr())
-  })
-  
-  numbers_input_nr <- reactive({
-    plot_numbers(normalised_data_nr()) +
-      labs(title= "Phosphosites per sample", y = "Number of phosphosites")
-  })
-  
-  coverage_input_nr <- reactive({
-    plot_coverage(normalised_data_nr())+
-      labs(title= "Phosphosites per sample", y = "Number of phosphosites")
+    # plot_imputation(normalized_phospho_data(),
+    #                 diff_all_nr())
+    plot_imputation(imputed_data(),
+                    imputed_data_nr())
   })
   
   correlation_input_nr<-reactive({
@@ -2989,6 +3005,32 @@ server <- function(input, output,session){
       nrow()
   }) 
   
+  # missval_input_nr <- reactive({
+  #   # plot_missval(normalized_phospho_data())
+  #   plot_missval(imputed_data_nr())
+  # })
+  
+  # detect_input_nr <- reactive({
+  #   # plot_detect(normalized_phospho_data())
+  #   plot_detect(imputed_data_nr())
+  # })
+
+  
+  # p_hist_input_nr <- reactive({
+  #   plot_p_hist(dep_nr())
+  # })
+  
+  # numbers_input_nr <- reactive({
+  #   plot_numbers(imputed_data_nr()) +
+  #     labs(title= "Phosphosites per sample", y = "Number of phosphosites")
+  # })
+  
+  # coverage_input_nr <- reactive({
+  #   plot_coverage(imputed_data_nr())+
+  #     labs(title= "Phosphosites per sample", y = "Number of phosphosites")
+  # })
+
+  
   ## Enrichment inputs
   
   go_input_nr<-eventReactive(input$go_analysis_nr,{
@@ -3001,27 +3043,49 @@ server <- function(input, output,session){
                  })
     
     if(!is.null(input$contrast_nr)){
-      enrichment_output_test(dep_nr(), input$go_database_nr)
+      # enrichment_output_test(dep_nr(), input$go_database_nr)
       go_results<- test_gsea_mod_phospho(dep_nr(), databases = input$go_database_nr, contrasts = TRUE)
       null_enrichment_test(go_results)
-      plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_nr,
-                                databases = input$go_database_nr, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
-        xlab(NULL)
+      if (input$go_database_nr == "KEGG" | input$go_database_nr == "Reactome"){
+        plot_go<-plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_nr,
+                                 databases=input$go_database_nr, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+          xlab(NULL)
+      }
+      else{
+        plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_nr,
+                                  databases = input$go_database_nr, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
+          xlab(NULL)
+      }
+      
       go_list<-list("go_result"=go_results, "plot_go"=plot_go)
       return(go_list)
     }
   })
   
-  pathway_input_nr<-eventReactive(input$pathway_analysis_nr,{
-    progress_indicator("Pathway Analysis is running....")
-    enrichment_output_test(dep_nr(), input$pathway_database_nr)
-    pathway_results<- test_gsea_mod_phospho(dep_nr(), databases=input$pathway_database_nr, contrasts = TRUE)
-    null_enrichment_test(pathway_results)
-    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_nr,
-                                  databases=input$pathway_database_nr, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
-      xlab(NULL)
-    pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
-    return(pathway_list)
+  KSEA_input_nr<-eventReactive(input$KSEA_analysis_nr,{
+    progress_indicator("Kinase-Substrate Analysis is running....")
+    
+    result_df <- get_results_phospho(dep_nr(),FALSE)
+    print(input$contrast_1_nr)  #test
+    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+                      paste(input$contrast_1_nr, "_p.val", sep = ""),
+                      paste(input$contrast_1_nr, "_log2 fold change", sep = ""))
+    print(col_selected) #test
+    
+    # select required columns and rename them
+    column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
+    PX <- result_df %>% dplyr::select (col_selected)
+    names(PX) <- column_names
+    KSData <- KSEAapp::KSData 
+    
+    # Create result table using KSEA.Scores() function
+    KSEA_result_nr <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5)
+    
+    # Generate a summary bar plot using the KSEA.Barplot() function
+    plot_KSEA_nr <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_nr, p.cutoff= input$p.cutoff_nr, export=FALSE)
+    
+    KSEA_list_nr<-list("KSEA_result"=KSEA_result_nr, "plot_KSEA"=plot_KSEA_nr)
+    return(KSEA_list_nr)
   })
   
   #### Interactive UI (Normalized page)
@@ -3264,21 +3328,21 @@ server <- function(input, output,session){
   #   p_hist_input_nr()
   # })
   
-  output$numbers_nr <- renderPlot({
-    numbers_input_nr()
-  })
+  # output$numbers_nr <- renderPlot({
+  #   numbers_input_nr()
+  # })
   
-  output$coverage_nr <- renderPlot({
-    coverage_input_nr()
-  })
+  # output$coverage_nr <- renderPlot({
+  #   coverage_input_nr()
+  # })
   
   ## Enrichment Outputs
   output$go_enrichment_nr<-renderPlot({
     go_input_nr()$plot_go
   })
   
-  output$pathway_enrichment_nr<-renderPlot({
-    pathway_input_nr()$plot_pa
+  output$KSEA_enrichment_nr<-renderPlot({
+    KSEA_input_nr()$plot_KSEA
   })
   
   ##### Download Functions
@@ -3353,19 +3417,17 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
-  output$downloadPA_nr <- downloadHandler(
-    filename = function() { paste("Pathway_enrichment_",input$pathway_database_nr, ".csv", sep = "") }, 
+  ###### ==== DOWNLOAD Kinase-Substrate TABLE ==== ####
+  output$downloadKSEA_nr <- downloadHandler(
+    filename = function() { paste("Kinase-Substrate_enrichment", ".csv", sep = "") }, 
     ## use = instead of <-
     content = function(file) {
-      write.table(pathway_input_nr()$pa_result,
+      write.table(KSEA_input_nr()$KSEA_result,
                   file,
                   col.names = TRUE,
                   row.names = FALSE,
                   sep =",") }
   )
-  
-  
   
   #####===== Download Report (normalized phosphosite)=====#####
   output$downloadReport_nr <- downloadHandler(
@@ -3719,7 +3781,7 @@ server <- function(input, output,session){
                  })
     
     if(!is.null(input$contrast_dm)){
-      enrichment_output_test(dep_dm(), input$go_database_dm)
+      # enrichment_output_test(dep_dm(), input$go_database_dm)
       go_results<- test_gsea_mod_phospho(dep_dm(), databases = input$go_database_dm, contrasts = TRUE)
       null_enrichment_test(go_results)
       if (input$go_database_dm == "KEGG" | input$go_database_dm == "Reactome"){
@@ -3753,9 +3815,13 @@ server <- function(input, output,session){
     names(PX) <- column_names
     KSData <- KSEAapp::KSData 
     
+    # Create result table using KSEA.Scores() function
+    KSEA_result_dm <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5) 
     # Generate a summary bar plot using the KSEA.Barplot() function
     plot_KSEA_dm <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_dm, p.cutoff= input$p.cutoff_dm, export=FALSE)
-    return(plot_KSEA_dm)
+    
+    KSEA_list_dm<-list("KSEA_result"=KSEA_result_dm, "plot_KSEA"=plot_KSEA_dm)
+    return(KSEA_list_dm)
   })
 
   # pathway_input_dm<-eventReactive(input$pathway_analysis_dm,{
@@ -4013,7 +4079,7 @@ server <- function(input, output,session){
   })
   
   output$KSEA_enrichment_dm<-renderPlot({
-    KSEA_input_dm()
+    KSEA_input_dm()$plot_KSEA
   })
   
   ##### Download Functions
@@ -4088,12 +4154,12 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
-  output$downloadPA_dm <- downloadHandler(
-    filename = function() { paste("Pathway_enrichment_",input$pathway_database_dm, ".csv", sep = "") }, 
+  ###### ==== DOWNLOAD Kinase-Substrate TABLE ==== ####
+  output$downloadKSEA_dm <- downloadHandler(
+    filename = function() { paste("Kinase-Substrate_enrichment", ".csv", sep = "") }, 
     ## use = instead of <-
     content = function(file) {
-      write.table(pathway_input_dm()$pa_result,
+      write.table(KSEA_input_dm()$KSEA_result,
                   file,
                   col.names = TRUE,
                   row.names = FALSE,
@@ -4222,7 +4288,7 @@ server <- function(input, output,session){
   })
   
   processed_data_dm_pr<-reactive({
-    env_dm_pr()[["data_missval"]]
+    env_dm_pr()[["data_missval_pr"]]
   })
   
   
@@ -4257,7 +4323,7 @@ server <- function(input, output,session){
   })
   
   dep_dm_pr<-reactive({
-    env_dm_pr()[["data_dep"]]
+    env_dm_pr()[["data_dep_pr"]]
   })
   
   comparisons_dm_pr<-reactive({
@@ -5251,21 +5317,22 @@ server <- function(input, output,session){
     LoadToEnvironment("data/phosphosite(corrected)_demo_data.RData", env = globalenv())
   })
   
-  processed_data_dm_nr<-reactive({
-    env_dm_nr()[["data_missval"]]
-  })
-  
-  unimputed_table_dm_nr<-reactive({
-    temp<-assay(processed_data_dm_nr())
-    temp1<-2^(temp)
-    colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1)
-    #temp1$ProteinID<-rownames(temp1)
-    return(as.data.frame(temp1))
-  })
+  # processed_data_dm_nr<-reactive({
+  #   env_dm_nr()[["data_missval"]]
+  # })
+  # 
+  # unimputed_table_dm_nr<-reactive({
+  #   temp<-assay(processed_data_dm_nr())
+  #   temp1<-2^(temp)
+  #   colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
+  #   temp1<-cbind(ProteinID=rownames(temp1),temp1)
+  #   #temp1$ProteinID<-rownames(temp1)
+  #   return(as.data.frame(temp1))
+  # })
 
   imputed_data_dm_nr<-reactive({
-    DEP::impute(processed_data_dm_nr(),input$imputation)
+    # DEP::impute(processed_data_dm_nr(),input$imputation)
+    env_dm_nr()[["data_imputed_nr"]]
   })
 
   normalised_data_dm_nr<-reactive({
@@ -5286,7 +5353,7 @@ server <- function(input, output,session){
   })
   
   dep_dm_nr<-reactive({
-    env_dm_nr()[["data_dep"]]
+    env_dm_nr()[["data_dep_nr"]]
   })
   
   comparisons_dm_nr<-reactive({
@@ -5426,49 +5493,48 @@ server <- function(input, output,session){
 
   ## QC Inputs
   norm_input_dm_nr <- reactive({
-    plot_normalization(processed_data_dm_nr(),
+    plot_normalization(normalised_data_dm(),
                        normalised_data_dm_nr())
   })
-
-  missval_input_dm_nr <- reactive({
-    plot_missval(processed_data_dm_nr())
-  })
-
-  detect_input_dm_nr <- reactive({
-    plot_detect(processed_data_dm_nr())
-  })
-
+  
   imputation_input_dm_nr <- reactive({
-    plot_imputation(processed_data_dm_nr(),
-                    diff_all_dm_nr())
+    plot_imputation(imputed_data_dm(),
+                    imputed_data_dm_nr())
   })
-
-  p_hist_input_dm_nr <- reactive({
-    plot_p_hist(dep_dm_nr())
-  })
-
-  numbers_input_dm_nr <- reactive({
-    plot_numbers(processed_data_dm_nr()) +
-      labs(title= "Phosphosites per sample", y = "Number of phosphosites")
-  })
-
-  coverage_input_dm_nr <- reactive({
-    plot_coverage(processed_data_dm_nr())+
-      labs(title= "Phosphosites per sample", y = "Number of phosphosites")
-  })
-
+  
   correlation_input_dm_nr<-reactive({
     plot_cor(dep_dm_nr(),significant = FALSE)
   })
-
+  
   cvs_input_dm_nr<-reactive({
     plot_cvs(dep_dm_nr())
   })
-
+  
   num_total_dm_nr<-reactive({
     dep_dm_nr() %>%
       nrow()
   })
+  
+  # missval_input_dm_nr <- reactive({
+  #   plot_missval(processed_data_dm_nr())
+  # })
+  # 
+  # detect_input_dm_nr <- reactive({
+  #   plot_detect(processed_data_dm_nr())
+  # })
+  # p_hist_input_dm_nr <- reactive({
+  #   plot_p_hist(dep_dm_nr())
+  # })
+
+  # numbers_input_dm_nr <- reactive({
+  #   plot_numbers(processed_data_dm_nr()) +
+  #     labs(title= "Phosphosites per sample", y = "Number of phosphosites")
+  # })
+
+  # coverage_input_dm_nr <- reactive({
+  #   plot_coverage(processed_data_dm_nr())+
+  #     labs(title= "Phosphosites per sample", y = "Number of phosphosites")
+  # })
 
   ## Enrichment inputs
 
@@ -5482,27 +5548,48 @@ server <- function(input, output,session){
                  })
 
     if(!is.null(input$contrast_dm_nr)){
-      enrichment_output_test(dep_dm_nr(), input$go_database_dm_nr)
+      # enrichment_output_test(dep_dm_nr(), input$go_database_dm_nr)
       go_results<- test_gsea_mod_phospho(dep_dm_nr(), databases = input$go_database_dm_nr, contrasts = TRUE)
       null_enrichment_test(go_results)
-      plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_dm_nr,
-                                databases = input$go_database_dm_nr, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
-        xlab(NULL)
+      if (input$go_database_dm_nr == "KEGG" | input$go_database_dm_nr == "Reactome"){
+        plot_go<-plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_dm_nr,
+                                 databases=input$go_database_dm_nr, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
+          xlab(NULL)
+      }
+      else{
+        plot_go<- plot_enrichment(go_results, number = 5, alpha = 0.05, contrasts =input$contrast_dm_nr,
+                                  databases = input$go_database_dm_nr, nrow = 2, term_size = 8) + aes(stringr::str_wrap(Term, 60)) +
+          xlab(NULL)
+      }
       go_list<-list("go_result"=go_results, "plot_go"=plot_go)
       return(go_list)
     }
   })
-
-  pathway_input_dm_nr<-eventReactive(input$pathway_analysis_dm_nr,{
-    progress_indicator("Pathway Analysis is running....")
-    enrichment_output_test(dep_dm_nr(), input$pathway_database_dm_nr)
-    pathway_results<- test_gsea_mod_phospho(dep_dm_nr(), databases=input$pathway_database_dm_nr, contrasts = TRUE)
-    null_enrichment_test(pathway_results)
-    plot_pathway<-plot_enrichment(pathway_results, number = 5, alpha = 0.05, contrasts =input$contrast_1_dm_nr,
-                                  databases=input$pathway_database_dm_nr, nrow = 3, term_size = 8) + aes(stringr::str_wrap(Term, 30)) +
-      xlab(NULL)
-    pathway_list<-list("pa_result"=pathway_results, "plot_pa"=plot_pathway)
-    return(pathway_list)
+  
+  KSEA_input_dm_nr<-eventReactive(input$KSEA_analysis_dm_nr,{
+    progress_indicator("Kinase-Substrate Analysis is running....")
+    
+    result_df <- get_results_phospho(dep_dm_nr(),FALSE)
+    print(input$contrast_1_dm_nr)  #test
+    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+                      paste(input$contrast_1_dm_nr, "_p.val", sep = ""),
+                      paste(input$contrast_1_dm_nr, "_log2 fold change", sep = ""))
+    print(col_selected) #test
+    
+    # select required columns and rename them
+    column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
+    PX <- result_df %>% dplyr::select (col_selected)
+    names(PX) <- column_names
+    KSData <- KSEAapp::KSData 
+    
+    # Create result table using KSEA.Scores() function
+    KSEA_result_dm_nr <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5)
+    
+    # Generate a summary bar plot using the KSEA.Barplot() function
+    plot_KSEA_dm_nr <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_dm_nr, p.cutoff= input$p.cutoff_dm_nr, export=FALSE)
+    
+    KSEA_list_dm_nr <- list("KSEA_result"=KSEA_result_dm_nr, "plot_KSEA"=plot_KSEA_dm_nr)
+    return(KSEA_list_dm_nr)
   })
 
   #### Interactive UI (Normalized page)
@@ -5746,10 +5833,10 @@ server <- function(input, output,session){
     go_input_dm_nr()$plot_go
   })
 
-  output$pathway_enrichment_dm_nr<-renderPlot({
-    pathway_input_dm_nr()$plot_pa
+  output$KSEA_enrichment_dm_nr<-renderPlot({
+    KSEA_input_dm_nr()
   })
-
+  
   ##### Download Functions
   datasetInput_dm_nr <- reactive({
     switch(input$dataset_dm_nr,
@@ -5821,21 +5908,19 @@ server <- function(input, output,session){
                   row.names = FALSE,
                   sep =",") }
   )
-
-  ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
-  output$downloadPA_dm_nr <- downloadHandler(
-    filename = function() { paste("Pathway_enrichment_",input$pathway_database_dm_nr, ".csv", sep = "") },
+  
+  ###### ==== DOWNLOAD Kinase-Substrate TABLE ==== ####
+  output$downloadKSEA_dm_nr <- downloadHandler(
+    filename = function() { paste("Kinase-Substrate_enrichment", ".csv", sep = "") }, 
     ## use = instead of <-
     content = function(file) {
-      write.table(pathway_input_dm_nr()$pa_result,
+      write.table(KSEA_input_dm_nr()$KSEA_result,
                   file,
                   col.names = TRUE,
                   row.names = FALSE,
                   sep =",") }
   )
-
-
-
+  
   #####===== Download Report (normalized phosphosite)=====#####
   output$downloadReport_dm_nr <- downloadHandler(
     # For PDF output, change this to "report.pdf"
@@ -5883,18 +5968,18 @@ server <- function(input, output,session){
     }
   )
   
-# used for save demo data
+# # used for save demo data
 # observeEvent(input$analyze ,{
 #   if(input$analyze==0 ){
 #     return()
 #   }
 # 
-#   # data_missval <- processed_data()
-#   # data_dep <- dep()
+#   data_missval <- processed_data()
+#   data_dep <- dep()
 #   # phospho_pre <- cleaned_data()
-#   phospho_imp <- imputed_data()
-#   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-#   saveRDS(phospho_imp, file="phosphosite_demo_data4.Rds")
+#   # phospho_imp <- imputed_data()
+#   save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+#   # saveRDS(phospho_imp, file="phosphosite_demo_data4.Rds")
 # 
 # })
 # 
@@ -5903,14 +5988,14 @@ server <- function(input, output,session){
 #       return()
 #     }
 # 
-#     # data_missval <- processed_data_pr()
-#     # data_dep_pr <- dep_pr()
+#     data_missval_pr <- processed_data_pr()
+#     data_dep_pr <- dep_pr()
 #     # protein_pre <- cleaned_data_pr()
-#     protein_imp <- imputed_data_pr()
-#     # save(data_missval, data_dep, file = "proteinGroup_demo_data.RData")
-#     saveRDS(protein_imp, file="proteinGroup_demo_data4.Rds")
+#     # protein_imp <- imputed_data_pr()
+#     save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
+#     # saveRDS(protein_imp, file="proteinGroup_demo_data4.Rds")
 #   })
-
+# 
 # observeEvent(input$analyze ,{
 #   if(input$analyze==0 ){
 #     return()
@@ -5920,16 +6005,17 @@ server <- function(input, output,session){
 #   save(exp_demo, file = "exp_demo_data.RData")
 # 
 # })
-
+# 
 # observeEvent(input$analyze ,{
 #   if(input$analyze==0 ){
 #     return()
 #   }
 # 
 #   # data_missval <- normalized_phospho_data()
+#   data_imputed_nr <- imputed_data_nr()
 #   data_dep_nr <- dep_nr()
-#   # save(data_missval, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
-#   saveRDS(data_dep_nr, file="phosphosite(corrected)_demo_data.Rds")
+#   save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
+#   # saveRDS(data_dep_nr, file="phosphosite(corrected)_demo_data.Rds")
 # 
 # })
 

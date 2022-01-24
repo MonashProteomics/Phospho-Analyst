@@ -99,8 +99,8 @@ ui <- function(request){
                                        href="data/Phospho (STY)Sites_example.txt", 
                                        download="Phospho (STY)Sites_example.txt")),
                                    p(a("Example ProteinGroup data", target= "_blank",
-                                       href="data/proteinGroups_test_phospho_example.txt", 
-                                       download="proteinGroups_test_phospho_example.txt")),
+                                       href="data/proteinGroups_example.txt", 
+                                       download="proteinGroups_example.txt")),
                                    p(a("Example Experimental Design file", target= "_blank",
                                        href="data/experimental_design_example.txt", 
                                        download="experimental_design_example.txt"))
@@ -327,8 +327,6 @@ ui <- function(request){
                                                        # verbatimTextOutput("protein_info"))
                                                      )
                                                    ) # box or column end
-                                                   
-                                                   
                                                    
                                                  ), # result plot colsed
                                                  
@@ -557,7 +555,6 @@ ui <- function(request){
                                                        # verbatimTextOutput("protein_info"))
                                                      )
                                                    ) # box or column end
-                                                   
                                                    
                                                    
                                                  ), # result plot colsed
@@ -875,30 +872,33 @@ ui <- function(request){
                                                                          plotOutput("sample_cvs_nr", height = 600),
                                                                          downloadButton('download_cvs_svg_nr', "Save svg")
                                                                 ),
-                                                                tabPanel(title = "Phosphosite Numbers",
-                                                                         plotOutput("numbers_nr", height = 600),
-                                                                         downloadButton('download_num_svg_nr', "Save svg")
-                                                                ),
-                                                                
-                                                                tabPanel(title = "Sample coverage",
-                                                                         plotOutput("coverage_nr", height = 600),
-                                                                         downloadButton('download_cov_svg_nr', "Save svg")
-                                                                ),
-                                                                tabPanel(title = "Normalization",
+                                                                tabPanel(title = "Normalization (normal vs corrected)",
                                                                          plotOutput("norm_nr", height = 600),
                                                                          downloadButton('download_norm_svg_nr', "Save svg")
                                                                 ),
+                                                                tabPanel(title = "Imputation (normal vs corrected)",
+                                                                         plotOutput("imputation_nr", height = 600),
+                                                                         downloadButton('download_imp_svg_nr', "Save svg")
+                                                                )
+                                                                # tabPanel(title = "Phosphosite Numbers",
+                                                                #          plotOutput("numbers_nr", height = 600),
+                                                                #          downloadButton('download_num_svg_nr', "Save svg")
+                                                                # ),
+                                                                
+                                                                # tabPanel(title = "Sample coverage",
+                                                                #          plotOutput("coverage_nr", height = 600),
+                                                                #          downloadButton('download_cov_svg_nr', "Save svg")
+                                                                # ),
+
                                                                 # tabPanel(title = "Missing values - Quant",
                                                                 #          plotOutput("detect", height = 600)
                                                                 # ),
-                                                                tabPanel(title = "Missing values - Heatmap",
-                                                                         plotOutput("missval_nr", height = 600),
-                                                                         downloadButton('download_missval_svg_nr', "Save svg")
-                                                                ),
-                                                                tabPanel(title = "Imputation",
-                                                                         plotOutput("imputation_nr", height = 600),
-                                                                         downloadButton('download_imp_svg_nr', "Save svg")
-                                                                )#,
+                                                                # tabPanel(title = "Missing values - Heatmap",
+                                                                #          plotOutput("missval_nr", height = 600),
+                                                                #          downloadButton('download_missval_svg_nr', "Save svg")
+                                                                # ),
+
+                                                                #,
                                                                 # tabPanel(title = "p-value Histogram",
                                                                 #          plotOutput("p_hist", height = 600)
                                                                 # )
@@ -907,30 +907,49 @@ ui <- function(request){
                                                        column(
                                                          width=6,
                                                          tabBox(title = "Enrichment", width = 12,
-                                                                tabPanel(title="Gene Ontology",
+                                                                tabPanel(title="Gene Ontology/ Pathway",
                                                                          box(uiOutput("contrast_nr"), width = 6),
                                                                          box(
                                                                            selectInput("go_database_nr", "GO database:",
                                                                                        c("Molecular Function"="GO_Molecular_Function_2017b",
                                                                                          "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                                         "Biological Process"="GO_Biological_Process_2017b")),
+                                                                                         "Biological Process"="GO_Biological_Process_2017b",
+                                                                                         "KEGG"="KEGG_2016",
+                                                                                         "Reactome"="Reactome_2016")),
                                                                            width= 5),
                                                                          actionButton("go_analysis_nr", "Run Enrichment"),
                                                                          plotOutput("go_enrichment_nr"),
                                                                          downloadButton('downloadGO_nr', 'Download Table')
                                                                          
                                                                 ),
-                                                                tabPanel(title= "Pathway enrichment",
-                                                                         box(uiOutput("contrast_1_nr"), width = 6),
-                                                                         box(
-                                                                           selectInput("pathway_database_nr", "Pathway database:",
-                                                                                       c("KEGG"="KEGG_2016",
-                                                                                         "Reactome"="Reactome_2016")),
-                                                                           width= 5),
-                                                                         actionButton("pathway_analysis_nr", "Run Enrichment"),
-                                                                         plotOutput("pathway_enrichment_nr"),
-                                                                         downloadButton('downloadPA_nr', 'Download Table')
+                                                                tabPanel(title= "Kinase-Substrate enrichment ",
+                                                                         box(width = 12,
+                                                                             column(12, 
+                                                                                    uiOutput("contrast_1_nr")),
+                                                                             column(6,
+                                                                                    numericInput("m.cutoff_nr",
+                                                                                                 p("substrate count cutoff", style = 'color:#2E3440'),
+                                                                                                 min = 0, value = 5)),
+                                                                             column(6,
+                                                                                    numericInput("p.cutoff_nr",
+                                                                                                 p("p-value cutoff", style = 'color:#2E3440'),
+                                                                                                 min = 0, max = 1, value = 0.01))
+                                                                         ),
+                                                                         actionButton("KSEA_analysis_nr", "Run Enrichment"),
+                                                                         plotOutput("KSEA_enrichment_nr"),
+                                                                         downloadButton('downloadKSEA_nr', 'Download Table')
                                                                 )
+                                                                # tabPanel(title= "Pathway enrichment",
+                                                                #          box(uiOutput("contrast_1_nr"), width = 6),
+                                                                #          box(
+                                                                #            selectInput("pathway_database_nr", "Pathway database:",
+                                                                #                        c("KEGG"="KEGG_2016",
+                                                                #                          "Reactome"="Reactome_2016")),
+                                                                #            width= 5),
+                                                                #          actionButton("pathway_analysis_nr", "Run Enrichment"),
+                                                                #          plotOutput("pathway_enrichment_nr"),
+                                                                #          downloadButton('downloadPA_nr', 'Download Table')
+                                                                # )
                                                                 
                                                          ) # Tab box close
                                                        )
@@ -1596,30 +1615,35 @@ ui <- function(request){
                                              plotOutput("sample_cvs_dm_nr", height = 600),
                                              downloadButton('download_cvs_svg_dm_nr', "Save svg")
                                     ),
-                                    tabPanel(title = "Phosphosite Numbers",
-                                             plotOutput("numbers_dm_nr", height = 600),
-                                             downloadButton('download_num_svg_dm_nr', "Save svg")
-                                    ),
                                     
-                                    tabPanel(title = "Sample coverage",
-                                             plotOutput("coverage_dm_nr", height = 600),
-                                             downloadButton('download_cov_svg_dm_nr', "Save svg")
-                                    ),
-                                    tabPanel(title = "Normalization",
+                                    tabPanel(title = "Normalization (normal vs corrected)",
                                              plotOutput("norm_dm_nr", height = 600),
                                              downloadButton('download_norm_svg_dm_nr', "Save svg")
                                     ),
+                                    
+                                    tabPanel(title = "Imputation (normal vs corrected)",
+                                             plotOutput("imputation_dm_nr", height = 600),
+                                             downloadButton('download_imp_svg_dm_nr', "Save svg")
+                                    )
+                                    # tabPanel(title = "Phosphosite Numbers",
+                                    #          plotOutput("numbers_dm_nr", height = 600),
+                                    #          downloadButton('download_num_svg_dm_nr', "Save svg")
+                                    # ),
+                                    # 
+                                    # tabPanel(title = "Sample coverage",
+                                    #          plotOutput("coverage_dm_nr", height = 600),
+                                    #          downloadButton('download_cov_svg_dm_nr', "Save svg")
+                                    # ),
+
                                     # tabPanel(title = "Missing values - Quant",
                                     #          plotOutput("detect", height = 600)
                                     # ),
-                                    tabPanel(title = "Missing values - Heatmap",
-                                             plotOutput("missval_dm_nr", height = 600),
-                                             downloadButton('download_missval_svg_dm_nr', "Save svg")
-                                    ),
-                                    tabPanel(title = "Imputation",
-                                             plotOutput("imputation_dm_nr", height = 600),
-                                             downloadButton('download_imp_svg_dm_nr', "Save svg")
-                                    )#,
+                                    # tabPanel(title = "Missing values - Heatmap",
+                                    #          plotOutput("missval_dm_nr", height = 600),
+                                    #          downloadButton('download_missval_svg_dm_nr', "Save svg")
+                                    # ),
+
+                                    #,
                                     # tabPanel(title = "p-value Histogram",
                                     #          plotOutput("p_hist", height = 600)
                                     # )
@@ -1628,29 +1652,37 @@ ui <- function(request){
                            column(
                              width=6,
                              tabBox(title = "Enrichment", width = 12,
-                                    tabPanel(title="Gene Ontology",
+                                    tabPanel(title="Gene Ontology/ Pathway",
                                              box(uiOutput("contrast_dm_nr"), width = 6),
                                              box(
                                                selectInput("go_database_dm_nr", "GO database:",
                                                            c("Molecular Function"="GO_Molecular_Function_2017b",
                                                              "Cellular Component"="GO_Cellular_Component_2017b",
-                                                             "Biological Process"="GO_Biological_Process_2017b")),
+                                                             "Biological Process"="GO_Biological_Process_2017b",
+                                                             "KEGG"="KEGG_2016",
+                                                             "Reactome"="Reactome_2016")),
                                                width= 5),
                                              actionButton("go_analysis_dm_nr", "Run Enrichment"),
                                              plotOutput("go_enrichment_dm_nr"),
                                              downloadButton('downloadGO_dm_nr', 'Download Table')
                                              
                                     ),
-                                    tabPanel(title= "Pathway enrichment",
-                                             box(uiOutput("contrast_1_dm_nr"), width = 6),
-                                             box(
-                                               selectInput("pathway_database_dm_nr", "Pathway database:",
-                                                           c("KEGG"="KEGG_2016",
-                                                             "Reactome"="Reactome_2016")),
-                                               width= 5),
-                                             actionButton("pathway_analysis_dm_nr", "Run Enrichment"),
-                                             plotOutput("pathway_enrichment_dm_nr"),
-                                             downloadButton('downloadPA_dm_nr', 'Download Table')
+                                    tabPanel(title= "Kinase-Substrate enrichment ",
+                                             box(width = 12,
+                                                 column(12, 
+                                                        uiOutput("contrast_1_dm_nr")),
+                                                 column(6,
+                                                        numericInput("m.cutoff_dm_nr",
+                                                                     p("substrate count cutoff", style = 'color:#2E3440'),
+                                                                     min = 0, value = 5)),
+                                                 column(6,
+                                                        numericInput("p.cutoff_dm_nr",
+                                                                     p("p-value cutoff", style = 'color:#2E3440'),
+                                                                     min = 0, max = 1, value = 0.01))
+                                             ),
+                                             actionButton("KSEA_analysis_dm_nr", "Run Enrichment"),
+                                             plotOutput("KSEA_enrichment_dm_nr"),
+                                             downloadButton('downloadKSEA_dm_nr', 'Download Table')
                                     )
                                     
                              ) # Tab box close
