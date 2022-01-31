@@ -157,7 +157,9 @@ ui <- function(request){
                                             dataTableOutput("exp_phospho"),
                                             # verbatimTextOutput("print_phospho"),  # new
                                             downloadButton('download_exp', 'Download'),
-                                            actionButton("save_exp","Save")
+                                            actionButton("save_exp","Save"),
+                                            br(),
+                                            tags$b("Hint: Ctrl+Enter to finish editing, or Esc to cancel.")
                                             )
                                     ), 
                             
@@ -167,7 +169,9 @@ ui <- function(request){
                                             dataTableOutput("exp_protein"),
                                             # verbatimTextOutput("print_protein"),  # new
                                             downloadButton("download_exp_pr","Download"),
-                                            actionButton("save_exp_pr","Save")
+                                            actionButton("save_exp_pr","Save"),
+                                            br(),
+                                            tags$b("Hint: Ctrl+Enter to finish editing, or Esc to cancel.")
                                             )
                                     ), 
                             
@@ -265,7 +269,7 @@ ui <- function(request){
                                                                            )
                                                                   ),
                                                                   tags$p("Select phosphosite from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                  drag the mouse on plot to show expression of phosphosites in Table, ANOVA function only worked 
                                                                          for more than two groups.")
                                                                   #Add text line
                                                                   # tags$p("OR"),
@@ -492,8 +496,8 @@ ui <- function(request){
                                                                                             value = FALSE)
                                                                       )
                                                                   ),
-                                                                  tags$p("Select phosphosite from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                                  tags$p("Select protein from Results Table to highlight on the plot OR 
+                                                  drag the mouse on plot to show expression of proteins in Table, ANOVA function only worked 
                                                                          for more than two groups.")
                                                                   #Add text line
                                                                   # tags$p("OR"),
@@ -786,7 +790,7 @@ ui <- function(request){
                                                                       )
                                                                   ),
                                                                   tags$p("Select phosphosite from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                  drag the mouse on plot to show expression of phosphosites in Table, ANOVA function only worked 
                                                                          for more than two groups.")
                                                                   #Add text line
                                                                   # tags$p("OR"),
@@ -1020,7 +1024,7 @@ ui <- function(request){
                                         )
                                     ),
                                     tags$p("Select phosphosite from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                  drag the mouse on plot to show expression of phosphosites in Table, ANOVA function only worked 
                                                                          for more than two groups.")
                                     #Add text line
                                     # tags$p("OR"),
@@ -1239,8 +1243,8 @@ ui <- function(request){
                                                                        value = FALSE)
                                                  )
                                              ),
-                                             tags$p("Select phosphosite from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                             tags$p("Select protein from Results Table to highlight on the plot OR 
+                                                  drag the mouse on plot to show expression of proteins in Table, ANOVA function only worked 
                                                                          for more than two groups.")
                                              #Add text line
                                              # tags$p("OR"),
@@ -1529,7 +1533,7 @@ ui <- function(request){
                                           )
                                       ),
                                       tags$p("Select phosphosite from Results Table to highlight on the plot OR 
-                                                  drag the mouse on plot to show expression of phosphosite in Table, ANOVA function only worked 
+                                                  drag the mouse on plot to show expression of phosphosites in Table, ANOVA function only worked 
                                                                          for more than two groups.")
                                       #Add text line
                                       # tags$p("OR"),

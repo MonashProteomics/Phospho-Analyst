@@ -361,12 +361,16 @@ server <- function(input, output,session){
     data_ex <- data_ex %>% dplyr::filter(Localization.prob >= 0.75)
     peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
     data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
-    data_pre$Residue.Both <- map2(data_pre$Positions.within.proteins, data_pre$Amino.acid,create_Residue.Both_func)
+    # data_pre$Residue.Both <- map2(data_pre$Position, data_pre$Amino.acid,create_Residue.Both_func)
+    data_pre <- data_pre %>%
+      mutate(Residue.Both = paste(Amino.acid,Position,sep = ''))
+    
     data_pre$Gene.names <- data_pre$Gene.names %>% toupper()
+    data_pre$Gene.names <- data_pre$Gene.names %>%  gsub(';.*','',.) # only keep the first gene name
     
     # create unique name and ID columns for the data
     data_pre <- data_pre %>%
-      mutate(name = paste(Gene.names,Positions.within.proteins, Multiplicity,sep = '_'))
+      mutate(name = paste(Gene.names,Position, Multiplicity,sep = '_'))
     # data_pre <- data_pre %>% 
     #   mutate(name = paste(Protein,Positions.within.proteins, Multiplicity,sep = '_'))
     
@@ -5974,12 +5978,12 @@ server <- function(input, output,session){
 #     return()
 #   }
 # 
-#   data_missval <- processed_data()
+#   # data_missval <- processed_data()
 #   data_dep <- dep()
 #   # phospho_pre <- cleaned_data()
 #   # phospho_imp <- imputed_data()
-#   save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-#   # saveRDS(phospho_imp, file="phosphosite_demo_data4.Rds")
+#   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+#   saveRDS(data_dep, file="phosphosite_pharma.Rds")
 # 
 # })
 # 
@@ -5988,34 +5992,34 @@ server <- function(input, output,session){
 #       return()
 #     }
 # 
-#     data_missval_pr <- processed_data_pr()
+#     # data_missval_pr <- processed_data_pr()
 #     data_dep_pr <- dep_pr()
 #     # protein_pre <- cleaned_data_pr()
 #     # protein_imp <- imputed_data_pr()
-#     save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
-#     # saveRDS(protein_imp, file="proteinGroup_demo_data4.Rds")
+#     # save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
+#     saveRDS(data_dep_pr, file="proteinGroup_pharma.Rds")
 #   })
-# 
-# observeEvent(input$analyze ,{
-#   if(input$analyze==0 ){
-#     return()
-#   }
-# 
-#   exp_demo <- exp_design_input()
-#   save(exp_demo, file = "exp_demo_data.RData")
-# 
-# })
-# 
+# #
+# # # observeEvent(input$analyze ,{
+# # #   if(input$analyze==0 ){
+# # #     return()
+# # #   }
+# # #
+# # #   exp_demo <- exp_design_input()
+# # #   save(exp_demo, file = "exp_demo_data.RData")
+# # #
+# # # })
+# #
 # observeEvent(input$analyze ,{
 #   if(input$analyze==0 ){
 #     return()
 #   }
 # 
 #   # data_missval <- normalized_phospho_data()
-#   data_imputed_nr <- imputed_data_nr()
+#   # data_imputed_nr <- imputed_data_nr()
 #   data_dep_nr <- dep_nr()
-#   save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
-#   # saveRDS(data_dep_nr, file="phosphosite(corrected)_demo_data.Rds")
+#   # save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
+#   saveRDS(data_dep_nr, file="phosphosite(corrected)_pharma.Rds")
 # 
 # })
 
