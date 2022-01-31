@@ -1526,7 +1526,7 @@ server <- function(input, output,session){
     if(grepl('+',filtered_data$Only.identified.by.site)){
       filtered_data<-dplyr::filter(filtered_data,Only.identified.by.site!="+") 
     }
-    if(input$single_peptide==TRUE){
+    if(input$single_peptide_pr==TRUE){
       filtered_data <-filtered_data
     }
     else{filtered_data<-dplyr::filter(filtered_data,as.numeric(Razor...unique.peptides)>=2)}
@@ -1582,7 +1582,7 @@ server <- function(input, output,session){
   
   
   imputed_data_pr<-reactive({
-    DEP::impute(processed_data_pr(),input$imputation)
+    DEP::impute(processed_data_pr(),input$imputation_pr)
   })
   
   imputed_table_pr<-reactive({
@@ -1600,13 +1600,13 @@ server <- function(input, output,session){
   })
   
   dep_pr<-reactive({
-    if(input$fdr_correction=="BH"){
-      diff_all<-test_limma(imputed_data_pr(),type='all', paired = input$paired)
-      diff_all_rej <- add_rejections(diff_all,alpha = input$p, lfc= input$lfc)
+    if(input$fdr_correction_pr=="BH"){
+      diff_all<-test_limma(imputed_data_pr(),type='all', paired = input$paired_pr)
+      diff_all_rej <- add_rejections(diff_all,alpha = input$p_pr, lfc= input$lfc_pr)
     }
     else{
       diff_all<-test_diff(imputed_data_pr(),type='all')
-      diff_all_rej <- add_rejections(diff_all,alpha = input$p, lfc= input$lfc)
+      diff_all_rej <- add_rejections(diff_all,alpha = input$p_pr, lfc= input$lfc_pr)
     }
     
     if(length(unique(exp_design_input_1()$condition)) <= 2){
@@ -1638,11 +1638,11 @@ server <- function(input, output,session){
       
       # add anova p.value to row data
       rowData(anova_dep) <- merge(rowData(anova_dep), anova, by = 'name', sort = FALSE)
-      anova_dep_rej <- DEP::add_rejections(anova_dep,alpha = input$p, lfc= input$lfc)
+      anova_dep_rej <- DEP::add_rejections(anova_dep,alpha = input$p_pr, lfc= input$lfc_pr)
       
       # calculate adjusted anova p.value to data
       anova_adj <-anova
-      anova_adj$anova_p.adj <- p.adjust(anova_adj$anova_p.val,method = input$fdr_correction)
+      anova_adj$anova_p.adj <- p.adjust(anova_adj$anova_p.val,method = input$fdr_correction_pr)
       anova_adj <- anova_adj %>% select(-anova_p.val)
 
       # add adjusted anova p.value to row data
@@ -1837,7 +1837,7 @@ server <- function(input, output,session){
     ## convert contrast to x and padj to y
     diff_proteins <- grep(paste("^", input$volcano_cntrst_pr, "_log2", sep = ""),
                           colnames(proteins_selected))
-    if(input$p_adj=="FALSE"){
+    if(input$p_adj_pr=="FALSE"){
       padj_proteins <- grep(paste("^", input$volcano_cntrst_pr, "_p.val", sep = ""),
                             colnames(proteins_selected))
     }
@@ -2108,8 +2108,8 @@ server <- function(input, output,session){
       pg_width<- ncol(normalised_data_pr()) / 2.5
       # Set up parameters to pass to Rmd document
       params <- list(data = processed_data_pr,
-                     alpha = input$p,
-                     lfc = input$lfc,
+                     alpha = input$p_pr,
+                     lfc = input$lfc_pr,
                      num_signif= sig_proteins,
                      pg_width = pg_width,
                      tested_contrasts= tested_contrasts,
