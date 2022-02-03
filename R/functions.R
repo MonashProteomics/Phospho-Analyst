@@ -825,12 +825,12 @@ get_exp_design_pr <- function(df){
   return(df)
 }
 
-# # create residue.both column
-# create_Residue.Both_func <-function(protein_position,amino_acid){
-#   protein_position_list <- strsplit(protein_position, split=";")
-#   residue_list <- mapply(paste,amino_acid,protein_position_list,sep = '',SIMPLIFY=FALSE)
-#   residue <- paste(unlist(residue_list), collapse = ";")
-# }
+# create residue.both column
+create_Residue.Both_func <-function(protein_position,amino_acid){
+  protein_position_list <- strsplit(protein_position, split=";")
+  residue_list <- mapply(paste,amino_acid,protein_position_list,sep = '',SIMPLIFY=FALSE)
+  residue <- paste(unlist(residue_list), collapse = ";")
+}
 
 #### phosphosites corrected function ####
 phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr){

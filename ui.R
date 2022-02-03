@@ -130,8 +130,10 @@ ui <- function(request){
           convertMenuItem(
             menuItem('Demo', icon=icon("eye"), tabName = "demo"), tabName = "demo"),
           convertMenuItem(
+            menuItem('Datasets', icon=icon("file-alt"), tabName = "datasets"), tabName = "datasets"),
+          convertMenuItem(
             menuItem('User Guide', icon=icon("question"), 
-                     #href = "https://monashbioinformaticsplatform.github.io/LFQ-Analyst/", 
+                     # href = "https://monashbioinformaticsplatform.github.io/LFQ-Analyst/",
                      tabName = "info"), tabName = 'info' )
         )
       ), # sidebar close
@@ -162,6 +164,7 @@ ui <- function(request){
                       tags$ul(
                         tags$li(tags$b("Analysis: "),"perform your own analysis"), 
                         tags$li(tags$b("Demo: "),"familiarise yourself with Phospho-Analyst by browsing through pre-analysed results"),
+                        tags$li(tags$b("Datasets: "),"download example dataset files"),
                         tags$li(tags$b("User Guide: "), "download an in-depth manual") 
                       ),
                       width = 12,
@@ -212,7 +215,7 @@ ui <- function(request){
                                                                          advanced options and outputs."), 
                             tags$li(tags$b("Note: "), " The experimental design file is not the" , 
                                     tags$b("'mqpar.xml' "),"file 
-                                                                 from MaxQuant. Use the example file template provided.")
+                                                                 from MaxQuant. ", " Use the ", tags$b("Datasets ")," tab to download example files provided.")
                           ),
                           br(),
                           HTML('<center><img src="./Phospho_Analyst.svg" width="500px"></center>'),
@@ -431,7 +434,7 @@ ui <- function(request){
                                                                              column(6,
                                                                                     numericInput("p.cutoff",
                                                                                                  p("p-value cutoff", style = 'color:#2E3440'),
-                                                                                                 min = 0, max = 1, value = 0.01))
+                                                                                                 min = 0, max = 1, value = 0.05))
                                                                          ),
                                                                          actionButton("KSEA_analysis", "Run Enrichment"),
                                                                          plotOutput("KSEA_enrichment"),
@@ -958,7 +961,7 @@ ui <- function(request){
                                                                              column(6,
                                                                                     numericInput("p.cutoff_nr",
                                                                                                  p("p-value cutoff", style = 'color:#2E3440'),
-                                                                                                 min = 0, max = 1, value = 0.01))
+                                                                                                 min = 0, max = 1, value = 0.05))
                                                                          ),
                                                                          actionButton("KSEA_analysis_nr", "Run Enrichment"),
                                                                          plotOutput("KSEA_enrichment_nr"),
@@ -1188,7 +1191,7 @@ ui <- function(request){
                                                column(6,
                                                       numericInput("p.cutoff_dm",
                                                                    p("p-value cutoff", style = 'color:#2E3440'),
-                                                                   min = 0, max = 1, value = 0.01))
+                                                                   min = 0, max = 1, value = 0.05))
                                                ),
                                            actionButton("KSEA_analysis_dm", "Run Enrichment"),
                                            plotOutput("KSEA_enrichment_dm"),
@@ -1703,7 +1706,7 @@ ui <- function(request){
                                                  column(6,
                                                         numericInput("p.cutoff_dm_nr",
                                                                      p("p-value cutoff", style = 'color:#2E3440'),
-                                                                     min = 0, max = 1, value = 0.01))
+                                                                     min = 0, max = 1, value = 0.05))
                                              ),
                                              actionButton("KSEA_analysis_dm_nr", "Run Enrichment"),
                                              plotOutput("KSEA_enrichment_dm_nr"),
@@ -1721,6 +1724,36 @@ ui <- function(request){
                    
           ),
           
+          #### user guide ui ####
+          tabItem(tabName = "datasets",
+                  fluidRow( 
+                    box(
+                      title = "Example Datasets",
+                      h3("Dowanloadable Example datasets:"),
+                      #                    div(p(HTML(paste0('A detail online user manual can be accessed ',
+                      # 			a(href = 'https://monashbioinformaticsplatform.github.io/Phospho-Analyst/', 
+                      #                                       target='_blank', 'here'))))),
+                      div(p(HTML(paste0("The datasets are the raw data files used in Demo Tab"
+                                        # a(href = './Phospho-Analyst_manual.pdf', 
+                                        # target='_blank', tags$b("here."))
+                      )))),
+                      tags$ul(
+                        tags$li(a("Example Phosphoproteomics data", target= "_blank",
+                                  href="data/Phospho (STY)Sites_example.txt", 
+                                  download="Phospho (STY)Sites_example.txt")),
+                        tags$li(a("Example ProteinGroup data", target= "_blank",
+                                  href="data/proteinGroups_example.txt", 
+                                  download="proteinGroups_example.txt")),
+                        tags$li(a("Example Experimental Design file", target= "_blank",
+                                  href="data/experimental_design_example.txt", 
+                                  download="experimental_design_example.txt"))
+                      ),
+                      width = 12,
+                      solidHeader = TRUE,
+                      status = "primary"
+                    ) #includeMarkdown("www/Info.md")
+                  )
+          ),# example dataset tab close
           
           #### user guide ui ####
           tabItem(tabName = "info",
@@ -1735,19 +1768,6 @@ ui <- function(request){
                                         # a(href = './Phospho-Analyst_manual.pdf', 
                                           # target='_blank', tags$b("here."))
                                         )))),  
-                      
-                      h4("Example input files"),
-                      tags$ul(
-                        tags$li(a("Example Phosphoproteomics data", target= "_blank",
-                                   href="data/Phospho (STY)Sites_example.txt", 
-                                   download="Phospho (STY)Sites_example.txt")),
-                        tags$li(a("Example ProteinGroup data", target= "_blank",
-                                  href="data/proteinGroups_example.txt", 
-                                  download="proteinGroups_example.txt")),
-                        tags$li(a("Example Experimental Design file", target= "_blank",
-                                  href="data/experimental_design_example.txt", 
-                                  download="experimental_design_example.txt"))
-                        ),
                       
                       h4("Contact Us"),
                       p("For any feedback or question regarding Phospho-Analyst, please contact the 
