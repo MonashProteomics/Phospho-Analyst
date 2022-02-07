@@ -1,5 +1,5 @@
 ---
-title: "Phospho-Analyst(normalization) report"
+title: "Phospho-Analyst(phosphosite-corrected) report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 params:
   data: NA
@@ -60,6 +60,9 @@ print(params$pca_input())
 \pagebreak
 
 #### Sample Correlation matrix
+Correlation plot is similar to a heatmap, to visualise the relationship among different samples. The darker the stronger relevance between each sample. 
+
+
 
 ```{r correlation_heatmap, echo=FALSE, fig.keep='first'}
 print(params$correlation_input())
@@ -73,38 +76,38 @@ print(params$cvs_input())
 ```
 \pagebreak
 
-### Proteomics Experiment Summary
+<!-- ### Proteomics Experiment Summary -->
 
-Phosphosite quantified per sample (after pre-processing).
+<!-- Phosphosite quantified per sample (after pre-processing). -->
 
-```{r numbers, echo=FALSE, warning=FALSE, results='hide', message=FALSE }
-print(params$numbers_input())
-```
-\pagebreak
+<!-- ```{r numbers, echo=FALSE, warning=FALSE, results='hide', message=FALSE } -->
+<!-- print(params$numbers_input()) -->
+<!-- ``` -->
+<!-- \pagebreak -->
 
-Phosphosite overlap in all samples.
-
-
-```{r coverage, echo=FALSE, warning=FALSE}
-print(params$coverage_input())
-```
-\pagebreak
+<!-- Phosphosite overlap in all samples. -->
 
 
+<!-- ```{r coverage, echo=FALSE, warning=FALSE} -->
+<!-- print(params$coverage_input()) -->
+<!-- ``` -->
+<!-- \pagebreak -->
 
-## Missing Value handling
-
-#### Missing value heatmap
-A heatmap for phosphosites with missing value in each dataset. Each row represent a phosphosite with missing value in one or more replicate. Each replicate is clustered based on presence of missing values in the sample. 
 
 
-```{r missing_value_heatmap, echo=FALSE, message=FALSE, results='hide',warning=FALSE, tidy=TRUE}
-params$missval_input()
-```
-\pagebreak
+<!-- ## Missing Value handling -->
 
-#### Missing value distribution
-Phosphosite expression distribution before and after imputation. The plot showing the effect of imputation on phosphosite expression distribution.
+<!-- #### Missing value heatmap -->
+<!-- A heatmap for phosphosites with missing value in each dataset. Each row represent a phosphosite with missing value in one or more replicate. Each replicate is clustered based on presence of missing values in the sample.  -->
+
+
+<!-- ```{r missing_value_heatmap, echo=FALSE, message=FALSE, results='hide',warning=FALSE, tidy=TRUE} -->
+<!-- params$missval_input() -->
+<!-- ``` -->
+<!-- \pagebreak -->
+
+#### Phosphosite expression imputation
+Phosphosite expression distribution before and after correction. The plot showing the effect of imputation on phosphosite expression distribution.
 
 ```{r imputation_effect, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
 print(params$imputation_input())

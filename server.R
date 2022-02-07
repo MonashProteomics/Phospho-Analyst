@@ -1220,7 +1220,7 @@ server <- function(input, output,session){
   )
   
   output$download_num_svg<-downloadHandler(
-    filename = function() { "Proteins_plot.svg" }, 
+    filename = function() { "Phosphosites_plot.svg" }, 
     content = function(file) {
       svg(file)
       print(numbers_input())
@@ -3521,16 +3521,16 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  #####===== Download Report (normalized phosphosite)=====#####
+  #####===== Download Report (phosphosite_corrected)=====#####
   output$downloadReport_nr <- downloadHandler(
     # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(normalization)report.pdf",
+    filename = "Phospho-Analyst(phosphosite-corrected)report.pdf",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "Normalised_phosphosite_report.Rmd")
-      file.copy("Normalised_phosphosite_report.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), "Phosphosite_corrected_report.Rmd")
+      file.copy("Phosphosite_corrected_report.Rmd", tempReport, overwrite = TRUE)
       
       sig_proteins<-dep_nr() %>%
         .[SummarizedExperiment::rowData(.)$significant, ] %>%
@@ -3541,19 +3541,19 @@ server <- function(input, output,session){
                                                                                   colnames(SummarizedExperiment::rowData(dep_nr())))])
       pg_width<- ncol(normalised_data_nr()) / 2.5
       # Set up parameters to pass to Rmd document
-      params <- list(data = normalized_phospho_data,
+      params <- list(data = imputed_data_nr,
                      alpha = input$p,
                      lfc = input$lfc,
                      num_signif= sig_proteins,
                      pg_width = pg_width,
                      tested_contrasts= tested_contrasts,
-                     numbers_input= numbers_input_nr,
-                     detect_input = detect_input_nr,
+                     # numbers_input= numbers_input_nr,
+                     # detect_input = detect_input_nr,
                      imputation_input = imputation_input_nr,
-                     missval_input = missval_input_nr,
-                     p_hist_input = p_hist_input_nr,
+                     # missval_input = missval_input_nr,
+                     # p_hist_input = p_hist_input_nr,
                      pca_input = pca_input_nr,
-                     coverage_input= coverage_input_nr,
+                     # coverage_input= coverage_input_nr,
                      correlation_input =correlation_input_nr,
                      heatmap_input = heatmap_input_nr,
                      cvs_input= cvs_input_nr,
@@ -4347,13 +4347,13 @@ server <- function(input, output,session){
   #####===== Download Report (demo phosphosite)=====#####
   output$downloadReport_dm <- downloadHandler(
     # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(normalization)report.pdf",
+    filename = "Phospho-Analyst(phosphosite)report.pdf",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "Normalised_phosphosite_report.Rmd")
-      file.copy("Normalised_phosphosite_report.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), "Phosphosite_report.Rmd")
+      file.copy("Phosphosite_report.Rmd", tempReport, overwrite = TRUE)
       
       sig_proteins<-dep_dm() %>%
         .[SummarizedExperiment::rowData(.)$significant, ] %>%
@@ -4364,7 +4364,7 @@ server <- function(input, output,session){
                                                                                      colnames(SummarizedExperiment::rowData(dep_dm())))])
       pg_width<- ncol(normalised_data_dm()) / 2.5
       # Set up parameters to pass to Rmd document
-      params <- list(data = normalized_phospho_data,
+      params <- list(data = processed_data_dm,
                      alpha = input$p,
                      lfc = input$lfc,
                      num_signif= sig_proteins,
@@ -4421,7 +4421,7 @@ server <- function(input, output,session){
   )
   
   output$download_num_svg_dm<-downloadHandler(
-    filename = function() { "Proteins_plot.svg" }, 
+    filename = function() { "Phosphosites_plot.svg" }, 
     content = function(file) {
       svg(file)
       print(numbers_input_dm())
@@ -5132,13 +5132,13 @@ server <- function(input, output,session){
   #####===== Download Report (demo protein group)=====#####
   output$downloadReport_dm_pr <- downloadHandler(
     # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(demo)report.pdf",
+    filename = "Phospho-Analyst(proteinGroup)report.pdf",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "ProteinGroup_demo_report.Rmd")
-      file.copy("ProteinGroup_demo_report.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), "ProteinGroup_report.Rmd")
+      file.copy("ProteinGroup_report.Rmd", tempReport, overwrite = TRUE)
       
       sig_proteins<-dep_dm_pr() %>%
         .[SummarizedExperiment::rowData(.)$significant, ] %>%
@@ -5149,9 +5149,9 @@ server <- function(input, output,session){
                                                                                      colnames(SummarizedExperiment::rowData(dep_dm_pr())))])
       pg_width<- ncol(normalised_data_dm_pr()) / 2.5
       # Set up parameters to pass to Rmd document
-      params <- list(data = normalized_phospho_data,
-                     alpha = input$p,
-                     lfc = input$lfc,
+      params <- list(data = processed_data_dm_pr,
+                     alpha = input$p_pr,
+                     lfc = input$lfc_pr,
                      num_signif= sig_proteins,
                      pg_width = pg_width,
                      tested_contrasts= tested_contrasts,
@@ -6261,16 +6261,16 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  #####===== Download Report (normalized phosphosite)=====#####
+  #####===== Download Report (demo phosphosite_corrected)=====#####
   output$downloadReport_dm_nr <- downloadHandler(
     # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(normalization)report.pdf",
+    filename = "Phospho-Analyst(phosphosite-corrected)report.pdf",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
       # can happen when deployed).
-      tempReport <- file.path(tempdir(), "Normalised_phosphosite_report.Rmd")
-      file.copy("Normalised_phosphosite_report.Rmd", tempReport, overwrite = TRUE)
+      tempReport <- file.path(tempdir(), "Phosphosite_corrected_report.Rmd")
+      file.copy("Phosphosite_corrected_report.Rmd", tempReport, overwrite = TRUE)
 
       sig_proteins<-dep_dm_nr() %>%
         .[SummarizedExperiment::rowData(.)$significant, ] %>%
@@ -6281,19 +6281,19 @@ server <- function(input, output,session){
                                                                                      colnames(SummarizedExperiment::rowData(dep_dm_nr())))])
       pg_width<- ncol(normalised_data_dm_nr()) / 2.5
       # Set up parameters to pass to Rmd document
-      params <- list(data = processed_data_dm_nr,
+      params <- list(data = imputed_data_dm_nr,
                      alpha = input$p,
                      lfc = input$lfc,
                      num_signif= sig_proteins,
                      pg_width = pg_width,
                      tested_contrasts= tested_contrasts,
-                     numbers_input= numbers_input_dm_nr,
-                     detect_input = detect_input_dm_nr,
+                     # numbers_input= numbers_input_dm_nr,
+                     # detect_input = detect_input_dm_nr,
                      imputation_input = imputation_input_dm_nr,
-                     missval_input = missval_input_dm_nr,
-                     p_hist_input = p_hist_input_dm_nr,
+                     # missval_input = missval_input_dm_nr,
+                     # p_hist_input = p_hist_input_dm_nr,
                      pca_input = pca_input_dm_nr,
-                     coverage_input= coverage_input_dm_nr,
+                     # coverage_input= coverage_input_dm_nr,
                      correlation_input =correlation_input_dm_nr,
                      heatmap_input = heatmap_input_dm_nr,
                      cvs_input= cvs_input_dm_nr,

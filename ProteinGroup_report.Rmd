@@ -60,6 +60,9 @@ print(params$pca_input())
 \pagebreak
 
 #### Sample Correlation matrix
+Correlation plot is similar to a heatmap, to visualise the relationship among different samples. The darker the stronger relevance between each sample. 
+
+
 
 ```{r correlation_heatmap, echo=FALSE, fig.keep='first'}
 print(params$correlation_input())
