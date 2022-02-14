@@ -680,12 +680,8 @@ ui <- function(request){
                                                                        uiOutput("downloadreport_comp")
                                                                        ),
                                                               ),
-                                                              column(12, plotOutput("scatter_plot", height=600))
-                                                              # box(width = 6,'Unnormalized Phospho volcano',
-                                                              #     plotOutput('volcano_phospho')),
-                                                              # box(width = 6,'Normalized Phospho volcano by protein',
-                                                              #     plotOutput('volcano_phospho_2'))
-                                                              
+                                                              column(12, plotOutput("scatter_plot", height=600)),
+                                                              downloadButton('download_scatter_svg', "Save svg")  
                                                           )
                                                  ), # fluid colsed
                                                  tags$style(type='text/css', "#downloadreport_comp { width:100%; vertical-align- middle; margin-top: 5px;}"),
@@ -696,7 +692,8 @@ ui <- function(request){
                                                               solidHeader = TRUE,
                                                               tabBox(title = "QC Plots", width = 12,
                                                                      tabPanel(title = "PCA Plot",
-                                                                              plotOutput("pca_plot_c", height=600)
+                                                                              plotOutput("pca_plot_c", height=600),
+                                                                              downloadButton('download_pca_svg_c', "Save svg")
                                                                      ),
                                                                      # tabPanel(title = "Scatter plot",
                                                                      #          plotOutput("scatter_plot", height=600)
@@ -704,33 +701,46 @@ ui <- function(request){
                                                                      tabPanel(title="Sample Correlation",
                                                                               # plotOutput("sample_corr_c", height = 600)
                                                                               fluidRow(height=600,
-                                                                                       column(6,'Phosphosite',plotOutput("sample_corr_c1", height = 600)),
-                                                                                       column(6,'Protein',plotOutput("sample_corr_c2", height = 600))
+                                                                                       column(6,'Phosphosite',
+                                                                                              plotOutput("sample_corr_c1", height = 600),
+                                                                                              downloadButton('download_corr_svg_c', "Save svg")),
+                                                                                       column(6,'Protein',
+                                                                                              plotOutput("sample_corr_c2", height = 600),
+                                                                                              downloadButton('download_corr_svg_c_1', "Save svg"))
                                                                               )
                                                                               
                                                                      ),
                                                                      tabPanel(title= "Sample CVs",
-                                                                              plotOutput("sample_cvs_c", height = 600)
+                                                                              plotOutput("sample_cvs_c", height = 600),
+                                                                              downloadButton('download_cvs_svg_c', "Save svg")
                                                                      ),
                                                                      tabPanel(title = "Numbers",
-                                                                              plotOutput("numbers_c", height = 600)
+                                                                              plotOutput("numbers_c", height = 600),
+                                                                              downloadButton('download_num_svg_c', "Save svg")
                                                                      ),
                                                                      
                                                                      tabPanel(title = "Sample coverage",
-                                                                              plotOutput("coverage_c", height = 600)
+                                                                              plotOutput("coverage_c", height = 600),  
+                                                                              downloadButton('download_cov_svg_c', "Save svg")
                                                                      ),
                                                                      tabPanel(title = "Normalization",
-                                                                              plotOutput("norm_c", height = 600)
+                                                                              plotOutput("norm_c", height = 600),
+                                                                              downloadButton('download_norm_svg_c', "Save svg")
                                                                      ),
                                                                      tabPanel(title = "Missing values - Heatmap",
                                                                               # plotOutput("missval_c", height = 600)
                                                                               fluidRow(height=600,
-                                                                                       column(6,'Phosphosite',plotOutput("missval_c1", height = 600)),
-                                                                                       column(6,'Protein',plotOutput("missval_c2", height = 600))
+                                                                                       column(6,'Phosphosite',
+                                                                                              plotOutput("missval_c1", height = 600),
+                                                                                              downloadButton('download_missval_svg_c', "Save svg")),
+                                                                                       column(6,'Protein',
+                                                                                              plotOutput("missval_c2", height = 600),
+                                                                                              downloadButton('download_missval_svg_c_1', "Save svg"))
                                                                               ) 
                                                                      ),
                                                                      tabPanel(title = "Imputation",
-                                                                              plotOutput("imputation_c", height = 600)
+                                                                              plotOutput("imputation_c", height = 600),
+                                                                              downloadButton('download_imp_svg_c', "Save svg") 
                                                                      )
                                                               ) # Tab box close
                                                           )
@@ -743,9 +753,11 @@ ui <- function(request){
                                                               uiOutput('selected_gene'),
                                                               tabBox(width = 12,
                                                                      tabPanel(title= "Interaction plot",
-                                                                              plotOutput("combined_inter", height = 600)),
+                                                                              plotOutput("combined_inter", height = 600),
+                                                                              downloadButton('download_inter_svg_c', "Save svg")),
                                                                      tabPanel(title= "Bubble plot",
-                                                                              plotOutput("combined_point", height = 600))
+                                                                              plotOutput("combined_point", height = 600),
+                                                                              downloadButton('download_point_svg_c', "Save svg"))
                                                               )
                                                           )
                                                  )
@@ -1435,7 +1447,8 @@ ui <- function(request){
                                                 #                value = FALSE)
                                                 ),
                                   ),
-                                  column(12, plotOutput("scatter_plot_dm", height=600))
+                                  column(12, plotOutput("scatter_plot_dm", height=600)),
+                                  downloadButton('download_scatter_svg_dm', "Save svg")
                               )
                      ), # fluid colsed
                      tags$style(type='text/css', "#downloadreport_comp_dm { width:100%; vertical-align- middle; margin-top: 5px;}"),
@@ -1446,36 +1459,51 @@ ui <- function(request){
                                   solidHeader = TRUE,
                                   tabBox(title = "QC Plots", width = 12,
                                          tabPanel(title = "PCA Plot",
-                                                  plotOutput("pca_plot_c_dm", height=600)
+                                                  plotOutput("pca_plot_c_dm", height=600),
+                                                  downloadButton('download_pca_svg_c_dm', "Save svg")
                                          ),
                                          tabPanel(title="Sample Correlation",
                                                   fluidRow(height=600,
-                                                           column(6,'Phosphosite',plotOutput("sample_corr_c1_dm", height = 600)),
-                                                           column(6,'Protein',plotOutput("sample_corr_c2_dm", height = 600))
+                                                           column(6,'Phosphosite',
+                                                                  plotOutput("sample_corr_c1_dm", height = 600),
+                                                                  downloadButton('download_corr_svg_c_dm', "Save svg")),
+                                                           column(6,'Protein',
+                                                                  plotOutput("sample_corr_c2_dm", height = 600),
+                                                                  downloadButton('download_corr_svg_c_dm_1', "Save svg"))
                                                   )
+                                                  # downloadButton('download_corr_pdf_c_dm', "Save pdf")
                                                   
                                          ),
                                          tabPanel(title= "Sample CVs",
-                                                  plotOutput("sample_cvs_c_dm", height = 600)
+                                                  plotOutput("sample_cvs_c_dm", height = 600),
+                                                  downloadButton('download_cvs_svg_c_dm', "Save svg")
                                          ),
                                          tabPanel(title = "Numbers",
-                                                  plotOutput("numbers_c_dm", height = 600)
+                                                  plotOutput("numbers_c_dm", height = 600),
+                                                  downloadButton('download_num_svg_c_dm', "Save svg")
                                          ),
                                          
                                          tabPanel(title = "Sample coverage",
-                                                  plotOutput("coverage_c_dm", height = 600)
+                                                  plotOutput("coverage_c_dm", height = 600),
+                                                  downloadButton('download_cov_svg_c_dm', "Save svg")
                                          ),
                                          tabPanel(title = "Normalization",
-                                                  plotOutput("norm_c_dm", height = 600)
+                                                  plotOutput("norm_c_dm", height = 600),
+                                                  downloadButton('download_norm_svg_c_dm', "Save svg")
                                          ),
                                          tabPanel(title = "Missing values - Heatmap",
                                                   fluidRow(height=600,
-                                                           column(6,'Phosphosite',plotOutput("missval_c1_dm", height = 600)),
-                                                           column(6,'Protein',plotOutput("missval_c2_dm", height = 600))
-                                                  ) 
+                                                           column(6,'Phosphosite',
+                                                                  plotOutput("missval_c1_dm", height = 600),
+                                                                  downloadButton('download_missval_svg_c_dm', "Save svg")),
+                                                           column(6,'Protein',
+                                                                  plotOutput("missval_c2_dm", height = 600),
+                                                                  downloadButton('download_missval_svg_c_dm_1', "Save svg"))
+                                                  )
                                          ),
                                          tabPanel(title = "Imputation",
-                                                  plotOutput("imputation_c_dm", height = 600)
+                                                  plotOutput("imputation_c_dm", height = 600),
+                                                  downloadButton('download_imp_svg_c_dm', "Save svg")   
                                          )
                                   ) # Tab box close
                               )
@@ -1488,9 +1516,11 @@ ui <- function(request){
                                   uiOutput('selected_gene_dm'),
                                   tabBox(width = 12,
                                     tabPanel(title= "Interaction plot",
-                                             plotOutput("combined_inter_dm", height = 600)),
+                                             plotOutput("combined_inter_dm", height = 600),
+                                             downloadButton('download_inter_svg_c_dm', "Save svg")),
                                     tabPanel(title= "Bubble plot",
-                                             plotOutput("combined_point_dm", height = 600))
+                                             plotOutput("combined_point_dm", height = 600),
+                                             downloadButton('download_point_svg_c_dm', "Save svg"))
                                   )
                               )
                      )
