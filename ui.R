@@ -496,7 +496,8 @@ ui <- function(request){
                                                      DT::dataTableOutput("contents_pr"),
                                                      #  actionButton("clear", "Deselect Rows"),
                                                      actionButton("original_pr", "Refresh Table"),
-                                                     width = 6,height = 800,
+                                                     width = 6,
+                                                     # height = 800,
                                                      status = "success",
                                                      #color=""
                                                      solidHeader = TRUE
@@ -676,10 +677,8 @@ ui <- function(request){
                                                                 column(6,uiOutput("volcano_comp")),
                                                                 column(6,
                                                                        br(),
-                                                                       br(),
-                                                                       prettyCheckbox("check_anova_comp",
-                                                                                        "Apply ANOVA",
-                                                                                        value = FALSE)),
+                                                                       uiOutput("downloadreport_comp")
+                                                                       ),
                                                               ),
                                                               column(12, plotOutput("scatter_plot", height=600))
                                                               # box(width = 6,'Unnormalized Phospho volcano',
@@ -689,6 +688,7 @@ ui <- function(request){
                                                               
                                                           )
                                                  ), # fluid colsed
+                                                 tags$style(type='text/css', "#downloadreport_comp { width:100%; vertical-align- middle; margin-top: 5px;}"),
                                                  fluidRow(width = 12,
                                                           box(width = 12,
                                                               title = 'Whole experiment-level comparison',
@@ -789,7 +789,8 @@ ui <- function(request){
                                                      DT::dataTableOutput("contents_nr"),
                                                      #  actionButton("clear", "Deselect Rows"),
                                                      actionButton("original_nr", "Refresh Table"),
-                                                     width = 6,height = 800,
+                                                     width = 6,
+                                                     # height = 800,
                                                      status = "success",
                                                      #color=""
                                                      solidHeader = TRUE
@@ -1023,7 +1024,8 @@ ui <- function(request){
                        DT::dataTableOutput("contents_dm"),
                        #  actionButton("clear", "Deselect Rows"),
                        actionButton("original_dm", "Refresh Table"),
-                       width = 6,height = 800,
+                       width = 6,
+                       # height = 800,
                        status = "success",
                        #color=""
                        solidHeader = TRUE
@@ -1243,7 +1245,8 @@ ui <- function(request){
                                 DT::dataTableOutput("contents_dm_pr"),
                                 #  actionButton("clear", "Deselect Rows"),
                                 actionButton("original_dm_pr", "Refresh Table"),
-                                width = 6,height = 800,
+                                width = 6,
+                                # height = 800,
                                 status = "success",
                                 #color=""
                                 solidHeader = TRUE
@@ -1426,14 +1429,16 @@ ui <- function(request){
                                          column(6,uiOutput("volcano_comp_dm")),
                                          column(6,
                                                 br(),
-                                                br(),
-                                                prettyCheckbox("check_anova_comp_dm",
-                                                               "Apply ANOVA",
-                                                               value = FALSE)),
+                                                uiOutput("downloadreport_comp_dm")
+                                                # prettyCheckbox("check_anova_comp_dm",
+                                                #                "Apply ANOVA",
+                                                #                value = FALSE)
+                                                ),
                                   ),
                                   column(12, plotOutput("scatter_plot_dm", height=600))
                               )
                      ), # fluid colsed
+                     tags$style(type='text/css', "#downloadreport_comp_dm { width:100%; vertical-align- middle; margin-top: 5px;}"),
                      fluidRow(width = 12,
                               box(width = 12,
                                   title = 'Whole experiment-level comparison',
@@ -1532,7 +1537,8 @@ ui <- function(request){
                          DT::dataTableOutput("contents_dm_nr"),
                          #  actionButton("clear", "Deselect Rows"),
                          actionButton("original_dm_nr", "Refresh Table"),
-                         width = 6,height = 800,
+                         width = 6,
+                         # height = 800,
                          status = "success",
                          #color=""
                          solidHeader = TRUE

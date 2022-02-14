@@ -800,9 +800,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep(),FALSE) %>% dplyr::select (-Residue.Both,-Protein)
+      get_results_phospho(dep(),FALSE)
     } else {
-      get_results_phospho(dep(),TRUE) %>% dplyr::select (-Residue.Both,-Protein)
+      get_results_phospho(dep(),TRUE)
     }
   })
   
@@ -2225,6 +2225,12 @@ server <- function(input, output,session){
     }
   })
   
+  output$downloadreport_comp <- renderUI({
+    if(!is.null(dep()) & !is.null(dep_pr())){
+      downloadButton('downloadReport_comp', 'Download Report')
+    }
+  })
+  
   output$selected_gene <- renderUI({
     if (!is.null(gene_names())){
       df <- gene_names()
@@ -2440,189 +2446,7 @@ server <- function(input, output,session){
     }
   })
   
-  # # volcano plots input
-  # volcano_phospho <- reactive({
-  #   df <- combined_df() 
-  #   print(colnames(df))  # test
-  #   if(length(unique(exp_design_input()$condition)) <= 2) {
-  #     pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-  #   } else {
-  #     if (input$check_anova_comp =="FALSE") {
-  #       pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-  #     } else {
-  #       pval <- grep("ANOVA_p.val.x",colnames(df))
-  #     }
-  #   }
-  #   print(pval) # test
-  #   name1 <- gsub("_vs_.*", "", input$volcano_comp)
-  #   name2 <- gsub(".*_vs_", "", input$volcano_comp)
-  #   
-  #   df <- df %>% dplyr::mutate(p_values = as.numeric(df[, pval]))
-  #   
-  #   df %>% ggplot(aes(x = phospho_diff, y = -log10(p_values))) +
-  #     geom_point(aes(color = p_value_desc)) +
-  #     geom_text(data = data.frame(), aes(x = c(Inf, -Inf),
-  #                                        y = c(-Inf, -Inf),
-  #                                        hjust = c(1, 0),
-  #                                        vjust = c(-1, -1),
-  #                                        label = c(name1, name2),
-  #                                        size = 5,
-  #                                        fontface = "bold")) +
-  #     labs(x = 'Phosphosite log fold change',
-  #          y = '-log10(p-value)') +
-  #     geom_text_repel(
-  #       data=df %>% filter(p_value_desc != 'Not Sig'), # Filter data first
-  #       aes(label=phospho_id),
-  #       nudge_x = 0.5, nudge_y = 0,
-  #       size = 4) +
-  #     theme(plot.title = element_text(hjust = 0.5)) +
-  #     scale_color_manual(values = c("#003399", "#999999", "#b30000")) 
-  # })
-  # 
-  # volcano_phospho_2 <- reactive({
-  #   df <- combined_df() 
-  #   if(length(unique(exp_design_input()$condition)) <= 2) {
-  #     pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-  #   } else {
-  #     if (input$check_anova_comp =="FALSE") {
-  #       pval <- grep(paste(input$volcano_comp, "_p.val.x", sep = ""),colnames(df))
-  #     } else {
-  #       pval <- grep("ANOVA_p.val.x",colnames(df))
-  #     }
-  #   }
-  #   
-  #   name1 <- gsub("_vs_.*", "", input$volcano_comp)
-  #   name2 <- gsub(".*_vs_", "", input$volcano_comp)
-  #   
-  #   df$p_values <- as.numeric(df[, pval])
-  #   
-  #   df %>% 
-  #     # filter(!is.na(protein_diff)) %>%
-  #     ggplot(aes(x = normalized_diff, y = -log10(p_values))) +
-  #     geom_point(aes(color = n_p_value_desc)) +
-  #     geom_text(data = data.frame(), aes(x = c(Inf, -Inf),
-  #                                        y = c(-Inf, -Inf),
-  #                                        hjust = c(1, 0),
-  #                                        vjust = c(-1, -1),
-  #                                        label = c(name1, name2),
-  #                                        size = 5,
-  #                                        fontface = "bold")) +
-  #     labs(x = 'Phosphosite log fold change',
-  #          y = '-log10(p-value)') +
-  #     geom_text_repel(
-  #       data=df %>% filter(n_p_value_desc != 'Not Sig'), # Filter data first
-  #       aes(label=phospho_id),
-  #       nudge_x = 0.5, nudge_y = 0,
-  #       size = 4)+
-  #     scale_color_manual(values = c("#003399", "#999999", "#b30000"))
-  # })
-  
-  # Phosphosite and protein log fold change scatter plot input
-  scatter_plot <- reactive({
-    if(!is.null(input$volcano_comp) & !is.null(combined_df())){
-      df <- combined_df()
-      df %>% filter(!is.na(protein_diff))  %>% 
-        ggplot(aes(x=phospho_diff, y=protein_diff)) + 
-        geom_point(size = 2, alpha = 0.8) +
-        geom_text_repel( 
-          data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
-                               protein_diff>2| protein_diff < -2), # Filter data first
-          aes(label=phospho_id),
-          nudge_x = 0.5, nudge_y = 0,
-          size = 4) + 
-        labs(title = paste(input$volcano_comp,'Comparison between phospho and protein log fold change', sep = "\n"),
-             x = 'Phosphosite log fold change', y = 'Protein log fold change') +
-        # theme(plot.title = element_text(hjust = 0.5)) +
-        theme_DEP2()
-    }
-  })
-  
-  # Output plots
-  # output$volcano_phospho <-renderPlot({
-  #   withProgress(message = 'Volcano Plot calculations are in progress',
-  #                detail = 'Please wait for a while', value = 0, {
-  #                  for (i in 1:15) {
-  #                    incProgress(1/15)
-  #                    Sys.sleep(0.25)
-  #                  }
-  #                })
-  #   volcano_phospho()
-  # })
-  # output$volcano_phospho_2 <-renderPlot({
-  #   withProgress(message = 'Volcano Plot calculations are in progress',
-  #                detail = 'Please wait for a while', value = 0, {
-  #                  for (i in 1:15) {
-  #                    incProgress(1/15)
-  #                    Sys.sleep(0.25)
-  #                  }
-  #                })
-  #   volcano_phospho_2()
-  # })
-  
-  
-  # Output combined QC plots
-  output$pca_plot_c <- renderPlot({
-    ggarrange(pca_input() + labs(title = 'Phospho'), 
-              pca_input_pr() + labs(title = "Protein"), 
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-  
-  output$scatter_plot <- renderPlot({
-    scatter_plot()
-  })
-  
-  output$sample_corr_c1 <- renderPlot({
-    correlation_input()
-  })
-  
-  output$sample_corr_c2 <- renderPlot({
-    correlation_input_pr()
-  })
-  
-  output$sample_cvs_c <- renderPlot({
-    ggarrange(cvs_input() + labs(title = 'Phospho'), 
-              cvs_input_pr() + labs(title = "Protein"),
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })    
-  
-  output$numbers_c <- renderPlot({
-    ggarrange(numbers_input() + labs(title = 'Phospho'), 
-              numbers_input_pr() + labs(title = "Protein"),
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-  
-  output$coverage_c <- renderPlot({
-    ggarrange(coverage_input() + labs(title = 'Phospho'), 
-              coverage_input_pr() + labs(title = "Protein")) 
-  })
-  
-  output$norm_c <- renderPlot({
-    ggarrange(norm_input() + labs(title = 'Phospho'), 
-              norm_input_pr() + labs(title = "Protein") ,
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-  
-  
-  output$missval_c1 <- renderPlot({
-    missval_input()
-  })
-  
-  output$missval_c2 <- renderPlot({
-    missval_input_pr()
-  })
-  
-  output$imputation_c <- renderPlot({
-    ggarrange(imputation_input() + labs(title = 'Phospho'), 
-              imputation_input_pr() + labs(title = "Protein"),
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-  
-  # Output interactive plots
-  output$combined_inter <- renderPlot({
-    combined_inter()
-  })
-  
-  output$combined_point <- renderPlot({
+  combined_point <- reactive({
     if (!is.null(phospho_df())){
       exp_design<- exp_design_input()
       conditions <- exp_design$condition %>% unique()
@@ -2655,6 +2479,163 @@ server <- function(input, output,session){
         theme_DEP2()
     }
   })
+  
+  # Phosphosite and protein log fold change scatter plot input
+  scatter_plot <- reactive({
+    if(!is.null(input$volcano_comp) & !is.null(combined_df())){
+      df <- combined_df()
+      df %>% filter(!is.na(protein_diff))  %>% 
+        ggplot(aes(x=phospho_diff, y=protein_diff)) + 
+        geom_point(size = 2, alpha = 0.8) +
+        geom_text_repel( 
+          data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
+                               protein_diff>2| protein_diff < -2), # Filter data first
+          aes(label=phospho_id),
+          nudge_x = 0.5, nudge_y = 0,
+          size = 4) + 
+        labs(title = paste(input$volcano_comp,'Comparison between phospho and protein log fold change', sep = "\n"),
+             x = 'Phosphosite log fold change', y = 'Protein log fold change') +
+        # theme(plot.title = element_text(hjust = 0.5)) +
+        theme_DEP2()
+    }
+  })
+  
+  # Output scatter plot
+  output$scatter_plot <- renderPlot({
+    scatter_plot()
+  })
+  
+  # QC inputs
+  pca_input_c <- reactive({
+    ggarrange(pca_input() + labs(title = 'Phospho'), 
+              pca_input_pr() + labs(title = "Protein"), 
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  sample_cvs_input_c <- reactive({
+    ggarrange(cvs_input() + labs(title = 'Phospho'), 
+              cvs_input_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  numbers_input_c <- reactive({
+    ggarrange(numbers_input() + labs(title = 'Phospho'), 
+              numbers_input_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  coverage_input_c <- reactive({
+    ggarrange(coverage_input() + labs(title = 'Phospho'), 
+              coverage_input_pr() + labs(title = "Protein")) 
+  })
+  
+  norm_input_c <- reactive({
+    ggarrange(norm_input() + labs(title = 'Phospho'), 
+              norm_input_pr() + labs(title = "Protein") ,
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  imputation_input_c <- reactive({
+    ggarrange(imputation_input() + labs(title = 'Phospho'), 
+              imputation_input_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  # Output combined QC plots
+  output$pca_plot_c <- renderPlot({
+    pca_input_c()
+  })
+
+  output$sample_corr_c1 <- renderPlot({
+    correlation_input()
+  })
+  
+  output$sample_corr_c2 <- renderPlot({
+    correlation_input_pr()
+  })
+  
+  output$sample_cvs_c <- renderPlot({
+    sample_cvs_input_c()
+  })    
+  
+  output$numbers_c <- renderPlot({
+    numbers_input_c()
+  })
+  
+  output$coverage_c <- renderPlot({
+    coverage_input_c()
+  })
+  
+  output$norm_c <- renderPlot({
+    norm_input_c()
+  })
+  
+  
+  output$missval_c1 <- renderPlot({
+    missval_input()
+  })
+  
+  output$missval_c2 <- renderPlot({
+    missval_input_pr()
+  })
+  
+  output$imputation_c <- renderPlot({
+    imputation_input_c()
+  })
+  
+  # Output interactive plots
+  output$combined_inter <- renderPlot({
+    combined_inter()
+  })
+  
+  output$combined_point <- renderPlot({
+    combined_point()
+  })
+  
+  #####===== Download Report (Comparison)=====##### 
+  output$downloadReport_comp <- downloadHandler(
+    # For PDF output, change this to "report.pdf"
+    filename = "Phospho-Analyst(Comparison)report.pdf",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "Comparison_report.Rmd")
+      file.copy("Comparison_report.Rmd", tempReport, overwrite = TRUE)
+      
+      selected_contrast <- input$volcano_comp
+      
+      selected_gene <- gene_names()$Gene.names[1]
+      
+      # Set up parameters to pass to Rmd document
+      params <- list(data = combined_df,
+                     alpha = input$p,
+                     lfc = input$lfc,
+                     # pg_width = pg_width,
+                     selected_contrast= selected_contrast,
+                     selected_gene = selected_gene,
+                     scatter_plot = scatter_plot,
+                     numbers_input= numbers_input_c,
+                     imputation_input = imputation_input_c,
+                     missval_input = missval_input,
+                     missval_input_1 = missval_input_pr,
+                     pca_input = pca_input_c,
+                     coverage_input= coverage_input_c,
+                     correlation_input =correlation_input,
+                     correlation_input_1 = correlation_input_pr,
+                     cvs_input= sample_cvs_input_c,
+                     combined_inter = combined_inter,
+                     combined_point = combined_point,
+                     dep = dep
+      )
+      
+      # Knit the document, passing in the `params` list
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
 
   
   #### Phosphosite(corrected) page logic ========== #############
@@ -4046,7 +4027,8 @@ server <- function(input, output,session){
   },
   options = list(scrollX = TRUE,
                  autoWidth=TRUE,
-                 columnDefs= list(list(width = '400px', targets = c(-1))))
+                 columnDefs= list(list(width = '400px', targets = c(-1)),
+                                  list(width = '400px', targets = 21)))
   )
   
   ## Deselect all rows button
@@ -4063,7 +4045,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = 21)))
     )
   })
   
@@ -4089,7 +4072,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = 21)))
     )
     
     proteins_selected<-data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_dm(), ] #
@@ -4147,7 +4131,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = 21)))
     )
     
     output$volcano_dm <- renderPlot({
@@ -5271,6 +5256,12 @@ server <- function(input, output,session){
                      choices = gsub("_significant", "", colnames(df)[cols]))
     }
   })
+  
+  output$downloadreport_comp_dm <- renderUI({
+    if(!is.null(dep_dm_pr())){
+      downloadButton('downloadReport_comp_dm', 'Download Report')
+    }
+  })
 
   output$selected_gene_dm = renderUI({
     if (!is.null(gene_names_dm())){
@@ -5460,89 +5451,8 @@ server <- function(input, output,session){
                 widths=c(1,4), common.legend = TRUE, legend = 'right')
     }
   })
-
-  # Phosphosite and protein log fold change scatter plot input
-  scatter_plot_dm <- reactive({
-    if(!is.null(input$volcano_comp_dm) & !is.null(combined_df_dm())){
-      df <- combined_df_dm()
-      df %>% filter(!is.na(protein_diff))  %>%
-        ggplot(aes(x=phospho_diff, y=protein_diff)) +
-        geom_point(size = 2, alpha = 0.8) +
-        geom_text_repel(
-          data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
-                               protein_diff>2| protein_diff < -2), # Filter data first
-          aes(label=phospho_id),
-          nudge_x = 0.5, nudge_y = 0,
-          size = 4) +
-        labs(title = paste(input$volcano_comp_dm,'Comparison between phospho and protein log fold change', sep = "\n"),
-             x = 'Phosphosite log fold change', y = 'Protein log fold change') +
-        theme_DEP1()
-    }
-  })
-
-  # Output combined QC plots
-  output$pca_plot_c_dm <- renderPlot({
-    ggarrange(pca_input_dm() + labs(title = 'Phospho'),
-              pca_input_dm_pr() + labs(title = "Protein"),
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-
-  output$scatter_plot_dm <- renderPlot({
-    scatter_plot_dm()
-  })
-
-  output$sample_corr_c1_dm <- renderPlot({
-    correlation_input_dm()
-  })
-
-  output$sample_corr_c2_dm <- renderPlot({
-    correlation_input_dm_pr()
-  })
-
-  output$sample_cvs_c_dm <- renderPlot({
-    ggarrange(cvs_input_dm() + labs(title = 'Phospho'),
-              cvs_input_dm_pr() + labs(title = "Protein"),
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-
-  output$numbers_c_dm <- renderPlot({
-    ggarrange(numbers_input_dm() + labs(title = 'Phospho'),
-              numbers_input_dm_pr() + labs(title = "Protein"),
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-
-  output$coverage_c_dm <- renderPlot({
-    ggarrange(coverage_input_dm() + labs(title = 'Phospho'),
-              coverage_input_dm_pr() + labs(title = "Protein"))
-  })
-
-  output$norm_c_dm <- renderPlot({
-    ggarrange(norm_input_dm() + labs(title = 'Phospho'),
-              norm_input_dm_pr() + labs(title = "Protein") ,
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-
-
-  output$missval_c1_dm <- renderPlot({
-    missval_input_dm()
-  })
-
-  output$missval_c2_dm <- renderPlot({
-    missval_input_dm_pr()
-  })
-
-  output$imputation_c_dm <- renderPlot({
-    ggarrange(imputation_input_dm() + labs(title = 'Phospho'),
-              imputation_input_dm_pr() + labs(title = "Protein"),
-              widths=c(1,1), common.legend = TRUE, legend = 'right')
-  })
-
-  # Output interactive plots
-  output$combined_inter_dm <- renderPlot({
-    combined_inter_dm()
-  })
-
-  output$combined_point_dm <- renderPlot({
+  
+  combined_point_dm <- reactive({
     if(!is.null(phospho_df_dm())){
       exp_design<- exp_design_demo()
       conditions <- exp_design$condition %>% unique()
@@ -5576,6 +5486,166 @@ server <- function(input, output,session){
         theme_DEP2()
     }
   })
+
+  # Phosphosite and protein log fold change scatter plot input
+  scatter_plot_dm <- reactive({
+    if(!is.null(input$volcano_comp_dm) & !is.null(combined_df_dm())){
+      df <- combined_df_dm()
+      df %>% filter(!is.na(protein_diff))  %>%
+        ggplot(aes(x=phospho_diff, y=protein_diff)) +
+        geom_point(size = 2, alpha = 0.8) +
+        geom_text_repel(
+          data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
+                               protein_diff>2| protein_diff < -2), # Filter data first
+          aes(label=phospho_id),
+          nudge_x = 0.5, nudge_y = 0,
+          size = 4) +
+        labs(title = paste(input$volcano_comp_dm,'Comparison between phospho and protein log fold change', sep = "\n"),
+             x = 'Phosphosite log fold change', y = 'Protein log fold change') +
+        theme_DEP1()
+    }
+  })
+  
+  ## Output scatter plot
+  output$scatter_plot_dm <- renderPlot({
+    scatter_plot_dm()
+  })
+  
+  ## QC Inputs
+  pca_input_c_dm <- reactive({
+    ggarrange(pca_input_dm() + labs(title = 'Phospho'),
+              pca_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  sample_cvs_input_c_dm <- reactive({
+    ggarrange(cvs_input_dm() + labs(title = 'Phospho'),
+              cvs_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  numbers_input_c_dm <- reactive({
+    ggarrange(numbers_input_dm() + labs(title = 'Phospho'), 
+              numbers_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  coverage_input_c_dm <- reactive({
+    ggarrange(coverage_input_dm() + labs(title = 'Phospho'), 
+              coverage_input_dm_pr() + labs(title = "Protein")) 
+  })
+  
+  norm_input_c_dm <- reactive({
+    ggarrange(norm_input_dm() + labs(title = 'Phospho'), 
+              norm_input_dm_pr() + labs(title = "Protein") ,
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+  
+  imputation_input_c_dm <- reactive({
+    ggarrange(imputation_input_dm() + labs(title = 'Phospho'), 
+              imputation_input_dm_pr() + labs(title = "Protein"),
+              widths=c(1,1), common.legend = TRUE, legend = 'right')
+  })
+
+  # Output combined QC plots
+  output$pca_plot_c_dm <- renderPlot({
+    pca_input_c_dm()
+  })
+
+  output$sample_corr_c1_dm <- renderPlot({
+    correlation_input_dm()
+  })
+
+  output$sample_corr_c2_dm <- renderPlot({
+    correlation_input_dm_pr()
+  })
+
+  output$sample_cvs_c_dm <- renderPlot({
+    sample_cvs_input_c_dm()
+  })
+
+  output$numbers_c_dm <- renderPlot({
+    numbers_input_c_dm()
+  })
+
+  output$coverage_c_dm <- renderPlot({
+    coverage_input_c_dm()
+  })
+
+  output$norm_c_dm <- renderPlot({
+    norm_input_c_dm()
+  })
+
+
+  output$missval_c1_dm <- renderPlot({
+    missval_input_dm()
+  })
+
+  output$missval_c2_dm <- renderPlot({
+    missval_input_dm_pr()
+  })
+
+  output$imputation_c_dm <- renderPlot({
+    imputation_input_c_dm()
+  })
+
+  # Output interactive plots
+  output$combined_inter_dm <- renderPlot({
+    combined_inter_dm()
+  })
+
+  output$combined_point_dm <- renderPlot({
+    combined_point_dm()
+  })
+  
+  #####===== Download Report (demo Comparison)=====##### 
+  output$downloadReport_comp_dm <- downloadHandler(
+    # For PDF output, change this to "report.pdf"
+    filename = "Phospho-Analyst(Comparison)report.pdf",
+    content = function(file) {
+      # Copy the report file to a temporary directory before processing it, in
+      # case we don't have write permissions to the current working dir (which
+      # can happen when deployed).
+      tempReport <- file.path(tempdir(), "Comparison_report.Rmd")
+      file.copy("Comparison_report.Rmd", tempReport, overwrite = TRUE)
+      
+      selected_contrast <- input$volcano_comp_dm
+      
+      selected_gene <- gene_names_dm()$Gene.names[1]
+      
+      # Set up parameters to pass to Rmd document
+      params <- list(data = combined_df_dm,
+                     alpha = input$p,
+                     lfc = input$lfc,
+                     # pg_width = pg_width,
+                     selected_contrast= selected_contrast,
+                     selected_gene = selected_gene,
+                     scatter_plot = scatter_plot_dm,
+                     numbers_input= numbers_input_c_dm,
+                     imputation_input = imputation_input_c_dm,
+                     missval_input = missval_input_dm,
+                     missval_input_1 = missval_input_dm_pr,
+                     # p_hist_input = p_hist_input_c,
+                     pca_input = pca_input_c_dm,
+                     coverage_input= coverage_input_c_dm,
+                     correlation_input =correlation_input_dm,
+                     correlation_input_1 = correlation_input_dm_pr,
+                     cvs_input= sample_cvs_input_c_dm,
+                     combined_inter = combined_inter_dm,
+                     combined_point = combined_point_dm,
+                     dep = dep_dm
+      )
+      
+      # Knit the document, passing in the `params` list
+      rmarkdown::render(tempReport, output_file = file,
+                        params = params,
+                        envir = new.env(parent = globalenv())
+      )
+    }
+  )
+  
+  
+  
   
   #### Demo logic: Phosphosite(corrected) ========== #############
   ####======= Render Functions
@@ -5968,7 +6038,8 @@ server <- function(input, output,session){
   },
   options = list(scrollX = TRUE,
                  autoWidth=TRUE,
-                 columnDefs= list(list(width = '400px', targets = c(-1))))
+                 columnDefs= list(list(width = '400px', targets = c(-1)),
+                                  list(width = '400px', targets = 21)))
   )
 
   ## Deselect all rows button
@@ -5985,7 +6056,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = 21)))
     )
   })
 
@@ -6011,7 +6083,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = 21)))
     )
 
     proteins_selected<-data_result_dm_nr()[data_result_dm_nr()[["Phosphosite"]] %in% protein_name_brush_dm_nr(), ] #
@@ -6068,7 +6141,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = 21)))
     )
 
     output$volcano_dm_nr <- renderPlot({
@@ -6362,11 +6436,13 @@ server <- function(input, output,session){
 #   }
 # 
 #   # data_missval <- processed_data()
-#   data_dep <- dep()
+#   # data_dep <- dep()
+#   result <- data_result()
 #   # phospho_pre <- cleaned_data()
 #   # phospho_imp <- imputed_data()
 #   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-#   saveRDS(data_dep, file="phosphosite_pharma.Rds")
+#   # saveRDS(data_dep, file="phosphosite_benchmark.Rds")
+#   saveRDS(result, file="benchmark_result.Rds")
 # 
 # })
 # 

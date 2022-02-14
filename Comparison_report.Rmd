@@ -1,0 +1,139 @@
+---
+title: "Phospho-Analyst(Comparison) report"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+params:
+  data: NA
+  alpha: NA
+  lfc: NA
+  num_signif: NA
+  selected_contrast: NA
+  selected_gene: NA
+  scatter_plot: NA
+  numbers_input: NA
+  coverage_input: NA
+  pca_input: NA
+  correlation_input: NA
+  correlation_input_1 : NA
+  missval_input: NA
+  missval_input_1: NA
+  detect_input: NA
+  imputation_input: NA
+  p_hist_input: NA
+  dep: NA
+  pg_width: NA
+  cvs_input: NA
+  combined_inter: NA
+  combined_point: NA
+output: 
+  pdf_document:
+    fig_caption: yes
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(opts.label="kill_prefix") # Remove line number and Comment "##" from printing
+```
+
+
+
+### Quick summary of parameters used:
+
+* Selected comparison = <span style="color:blue">`r params$selected_contrast`</span>  
+* Selected gene = <span style="color:blue">`r params$selected_gene`</span>  
+* Adjusted _p-value_ cutoff <= <span style="color:blue">`r params$alpha`</span>  
+* Log fold change cutoff >= <span style="color:blue">`r params$lfc`</span>  
+
+## Comparison of phosphosite and proteinGroup log fold change
+  
+```{r scatter_plot,  echo=FALSE, warning=FALSE, comment=NA}
+print(params$scatter_plot())
+```
+\pagebreak
+
+## Exploratory Analysis (QC Plots)
+
+#### Principle Component Analysis (PCA) plot
+
+  A plot used the PCA method to emphasize the variation.
+    
+```{r pca_plot, echo=FALSE, fig.height= 4,out.width="100%", warning=FALSE, message=FALSE}
+print(params$pca_input())
+```
+\pagebreak
+
+#### Sample Correlation matrix
+  Correlation plot is similar to a heatmap, to visualise the relationship among different samples. The darker the stronger relevance between each sample. (Left: Phospho; Right: Protein)
+
+
+
+```{r, correlation_heatmaps, echo=FALSE, fig.show="hold", fig.height= 7,out.width="50%", warning=FALSE}
+params$correlation_input()
+params$correlation_input_1()
+```
+\pagebreak
+
+#### Sample Coefficient of variation (CVs)
+  
+  Also called relative standard deviation (RSD), it is present as a histogram plot, and illustrates the degree of variation relative to the overall mean.
+  
+```{r sample_cv,  echo=FALSE, warning=FALSE, results='hide', message=FALSE}
+print(params$cvs_input())
+```
+\pagebreak
+
+### Proteomics Experiment Summary
+
+Phosphosite and Protein quantified per sample (after pre-processing).
+  
+```{r numbers, echo=FALSE, warning=FALSE, results='hide', message=FALSE }
+print(params$numbers_input())
+```
+\pagebreak
+
+Phosphosite and Protein overlap in all samples.
+  
+  
+```{r coverage, echo=FALSE, warning=FALSE}
+print(params$coverage_input())
+```
+\pagebreak
+
+
+
+## Missing Value handling
+
+#### Missing value heatmap
+Heatmaps for phosphosites and proteins with missing value in each dataset. Each row represent a phosphosite/protein with missing value in one or more replicate. Each replicate is clustered based on presence of missing values in the sample. (Left: Phospho; Right: Protein)
+
+
+```{r, missing_value_heatmaps, echo=FALSE, fig.show="hold", fig.height= 7, out.width="50%", warning=FALSE}
+params$missval_input()
+params$missval_input_1()
+```
+\pagebreak
+
+#### Missing value distribution
+Phosphosite and Protein expression distribution before and after imputation. The plot showing the effect of imputation on phosphosite and protein expression distribution.
+
+```{r imputation_effect, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+print(params$imputation_input())
+```
+\pagebreak
+
+## Individual Protein plots
+
+#### Interaction plot
+  A plot representing the interaction between replicates on protein and its related phosphosite data.
+
+ 
+```{r combined_inter,  echo=FALSE, warning=FALSE}
+print(params$combined_inter())
+```
+
+\pagebreak
+
+#### Bubble plot
+  A plot representing the phosphosite intensity values (size of points) of a selected protein group.
+
+ 
+```{r combined_point,  echo=FALSE, warning=FALSE, results='hide'}
+print(params$combined_point())
+```

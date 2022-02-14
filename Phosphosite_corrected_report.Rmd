@@ -53,8 +53,9 @@ Statistical analysis was performed using an in-house generated R script based on
 
 #### Principle Component Analysis (PCA) plot
 
-
-```{r pca_plot, echo=FALSE, fig.height= 4}
+  A plot used the PCA method to emphasize the variation.
+    
+```{r pca_plot, echo=FALSE, warning=FALSE, results='hide'}
 print(params$pca_input())
 ```
 \pagebreak
@@ -64,52 +65,24 @@ Correlation plot is similar to a heatmap, to visualise the relationship among di
 
 
 
-```{r correlation_heatmap, echo=FALSE, fig.keep='first'}
+```{r correlation_heatmap, echo=FALSE, fig.height= 7, fig.keep='first', warning=FALSE}
 print(params$correlation_input())
 ```
 \pagebreak
 
 #### Sample Coefficient of variation (CVs)
-
-```{r sample_cv,  echo=FALSE, warning=FALSE }
+  
+  Also called relative standard deviation (RSD), it is present as a histogram plot, and illustrates the degree of variation relative to the overall mean.
+  
+```{r sample_cv,  echo=FALSE, warning=FALSE, results='hide', message=FALSE }
 print(params$cvs_input())
 ```
 \pagebreak
 
-<!-- ### Proteomics Experiment Summary -->
-
-<!-- Phosphosite quantified per sample (after pre-processing). -->
-
-<!-- ```{r numbers, echo=FALSE, warning=FALSE, results='hide', message=FALSE } -->
-<!-- print(params$numbers_input()) -->
-<!-- ``` -->
-<!-- \pagebreak -->
-
-<!-- Phosphosite overlap in all samples. -->
-
-
-<!-- ```{r coverage, echo=FALSE, warning=FALSE} -->
-<!-- print(params$coverage_input()) -->
-<!-- ``` -->
-<!-- \pagebreak -->
-
-
-
-<!-- ## Missing Value handling -->
-
-<!-- #### Missing value heatmap -->
-<!-- A heatmap for phosphosites with missing value in each dataset. Each row represent a phosphosite with missing value in one or more replicate. Each replicate is clustered based on presence of missing values in the sample.  -->
-
-
-<!-- ```{r missing_value_heatmap, echo=FALSE, message=FALSE, results='hide',warning=FALSE, tidy=TRUE} -->
-<!-- params$missval_input() -->
-<!-- ``` -->
-<!-- \pagebreak -->
-
 #### Phosphosite expression imputation
 Phosphosite expression distribution before and after correction. The plot showing the effect of imputation on phosphosite expression distribution.
 
-```{r imputation_effect, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+```{r imputation_effect, echo=FALSE, warning=FALSE, results='hide', message=FALSE }
 print(params$imputation_input())
 ```
 \pagebreak
@@ -123,9 +96,11 @@ print(params$imputation_input())
 ```{r heatmap_2,  echo=FALSE, warning=FALSE, results='hide', fig.keep='all'}
 print(params$heatmap_input())
 ```
-
+\pagebreak
+  
 #### Volcano Plots
-
+  Plots illustrate statistically significant (P value) versus change magnitude (fold change) in different contrasts.
+  
 ```{r volcano,  echo=FALSE, warning=FALSE, comment=NA}
 for(i in params$tested_contrasts){
  # print(paste0('volcano_plot_',i,sep=""))
