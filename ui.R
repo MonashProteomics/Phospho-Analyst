@@ -54,6 +54,9 @@ ui <- function(request){
                                             checkboxInput("paired",
                                                           p("Paired test", style = 'color:#2E3440'), FALSE),
                                             
+                                            checkboxInput("limma_norm",
+                                                          p("Limma normalisation", style = 'color:#2E3440'), FALSE),
+                                            
                                             prettyRadioButtons("imputation",
                                                                p("Imputation type", style = 'color:#2E3440'),
                                                                choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],

@@ -426,7 +426,12 @@ server <- function(input, output,session){
   })
   
   normalised_data<-reactive({
-    normalize_vsn(imputed_data())
+    if(input$limma_norm == "TRUE"){
+      limma_norm_function(imputed_data())
+    }
+    else{
+      normalize_vsn(imputed_data())
+    }
   })
   
   imputed_table<-reactive({
@@ -2940,7 +2945,12 @@ server <- function(input, output,session){
   })
   
   normalised_data_nr<-reactive({
-    normalize_vsn(imputed_data_nr())
+    if(input$limma_norm == "TRUE"){
+      limma_norm_function(imputed_data_nr())
+    }
+    else{
+      normalize_vsn(imputed_data_nr())
+    }
   })
   
   imputed_table_nr<-reactive({

@@ -897,3 +897,13 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   return(phospho_imp)
   
 }
+
+#### ===== limma Normalisation ===== #####
+limma_norm_function <- function(imputed_data){
+  imputed_assay<-assay(imputed_data)
+  median_normalised_assay<-normalizeBetweenArrays(imputed_assay, "scale")
+  median_normalised_se<-SummarizedExperiment(assay= median_normalised_assay,
+                                             rowData = rowData(imputed_data),
+                                             colData = colData(imputed_data))
+  return(median_normalised_se)
+}
