@@ -529,6 +529,7 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
                   dplyr::ends_with("p.adj"),
                   dplyr::ends_with("significant")) %>%
     tibble::rownames_to_column()
+  pval <- pval %>%  dplyr::select(-dplyr::starts_with("anova")) 
   pval[, grep("p.adj", colnames(pval))] <-
     pval[, grep("p.adj", colnames(pval))] %>%
     signif(digits = 3)
@@ -559,7 +560,6 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   if (apply_anova){
     colnames(table)[3]<-c("ANOVA_p.val")
     colnames(table)[4]<-c("ANOVA_p.adj")
-    table<- table %>% dplyr::select(-anova_p.val.y,-anova_p.adj.y)
   } 
   
   return(table)

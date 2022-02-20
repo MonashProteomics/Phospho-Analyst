@@ -199,7 +199,8 @@ server <- function(input, output,session){
                                           edit = list(target = "all", 
                                                       disable = list(columns = c(0,1)),
                                                       numeric = list(columns = 3)),
-                                          class = "display"
+                                          class = "display",
+                                          options = list(pageLength = 50)
   )
   
   # proxy_exp <- DT::dataTableProxy("exp_phospho")
@@ -272,7 +273,8 @@ server <- function(input, output,session){
     edit = list(target = "all", 
                 disable = list(columns = c(0,1)),
                 numeric = list(columns = 3)),
-    class = "display"
+    class = "display",
+    options = list(pageLength = 50)
     )
   
   proxy_pr <- DT::dataTableProxy("exp_protein")
@@ -805,9 +807,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep(),FALSE)
+      get_results_phospho(dep(),FALSE) %>% dplyr::select (-Residue.Both,-Protein)
     } else {
-      get_results_phospho(dep(),TRUE)
+      get_results_phospho(dep(),TRUE) %>% dplyr::select (-Residue.Both,-Protein)
     }
   })
   
@@ -1031,11 +1033,19 @@ server <- function(input, output,session){
   
   ##### Download Functions
   datasetInput <- reactive({
-    switch(input$dataset,
-           "Results" = get_results_phospho(dep()),
-           "Original_matrix"= unimputed_table(),
-           "Imputed_matrix" = imputed_table(),
-           "Full_dataset" = get_df_wide(dep()))
+    if(length(unique(exp_design_input()$condition)) <= 2){
+      switch(input$dataset,
+             "Results" = get_results_phospho(dep(), FALSE),
+             "Original_matrix"= unimputed_table(),
+             "Imputed_matrix" = imputed_table(),
+             "Full_dataset" = get_df_wide(dep()))
+    } else {
+      switch(input$dataset,
+             "Results" = get_results_phospho(dep(), TRUE),
+             "Original_matrix"= unimputed_table(),
+             "Imputed_matrix" = imputed_table(),
+             "Full_dataset" = get_df_wide(dep()))
+    }
   })
   
   output$downloadData <- downloadHandler(
@@ -3545,9 +3555,15 @@ server <- function(input, output,session){
   
   ##### Download Functions
   datasetInput_nr <- reactive({
-    switch(input$dataset_nr,
-           "Results" = get_results_phospho(dep_nr()),
-           "Full dataset" = get_df_wide(dep_nr()))
+    if(length(unique(exp_design_input()$condition)) <= 2){
+      switch(input$dataset_nr,
+             "Results" = get_results_phospho(dep_nr(), FALSE),
+             "Full dataset" = get_df_wide(dep_nr()))
+    } else {
+      switch(input$dataset_nr,
+             "Results" = get_results_phospho(dep_nr(), TRUE),
+             "Full dataset" = get_df_wide(dep_nr()))
+    }
   })
   
   output$downloadData_nr <- downloadHandler(
@@ -4370,11 +4386,11 @@ server <- function(input, output,session){
   
   ##### Download Functions
   datasetInput_dm <- reactive({
-    switch(input$dataset_dm,
-           "Results" = get_results_phospho(dep_dm()),
-           "Original_matrix"= unimputed_table_dm(),
-           "Imputed_matrix" = imputed_table_dm(),
-           "Full dataset" = get_df_wide(dep_dm()))
+      switch(input$dataset_dm,
+             "Results" = get_results_phospho(dep_dm(), TRUE),
+             "Original_matrix"= unimputed_table_dm(),
+             "Imputed_matrix" = imputed_table_dm(),
+             "Full dataset" = get_df_wide(dep_dm()))
   })
   
   output$downloadData_dm <- downloadHandler(
@@ -6515,9 +6531,9 @@ server <- function(input, output,session){
   
   ##### Download Functions
   datasetInput_dm_nr <- reactive({
-    switch(input$dataset_dm_nr,
-           "Results" = get_results_phospho(dep_dm_nr()),
-           "Full dataset" = get_df_wide(dep_dm_nr()))
+      switch(input$dataset_dm_nr,
+             "Results" = get_results_phospho(dep_dm_nr(), TRUE),
+             "Full dataset" = get_df_wide(dep_dm_nr()))
   })
 
   output$downloadData_dm_nr <- downloadHandler(
