@@ -119,7 +119,7 @@ Install & start Docker demon on your PC
 
 ```
 ## Clone the repository
-git clone https://github.com/MonashProteomics/MaxQuant-phosphoproteomics-analysis.git
+git clone https://github.com/MonashProteomics/Phospho-Analyst.git
 
 ## Move to the folder
 cd Phospho-Analyst
