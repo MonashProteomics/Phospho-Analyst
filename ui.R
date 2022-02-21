@@ -74,7 +74,7 @@ ui <- function(request){
                                                          min = 1, max = 20, value = 6)
                                    ),
                                    tags$hr(style = 'border-top: 4px double #2E3440'),
-                                   menuItem(strong("ProteinGroup Files",style = 'color:#2E3440'),tabName="proteinGroup",icon = icon("file-upload"),
+                                   menuItem(strong("Total Proteome (Optional)",style = 'color:#2E3440'),tabName="proteinGroup",icon = icon("file-upload"),
                                             fileInput('file2',
                                                       p('Upload MaxQuant ProteinGroup.txt (Optional)', style = 'color:#2E3440'),
                                                       accept=c('text/csv',
@@ -82,7 +82,7 @@ ui <- function(request){
                                                                '.csv')),
                                             tags$hr(),
                                             fileInput('file4',
-                                                      p('Protein Experimental Design (Optional)', style = 'color:#2E3440'),
+                                                      p('Protein Experimental Design (Optional)',  tags$br(),'Either upload a text file:', style = 'color:#2E3440'),
                                                       # p('Either upload a text file', style = 'color:#2E3440'),
                                                       accept=c('text/csv',
                                                                'text/comma-separated-values,text/plain',
@@ -1785,7 +1785,7 @@ ui <- function(request){
                         tags$li(a("Example ProteinGroup data", target= "_blank",
                                   href="data/proteinGroups_example.txt", 
                                   download="proteinGroups_example.txt")),
-                        tags$li(a("Example Experimental Design file", target= "_blank",
+                        tags$li(a("Example Experimental Design file (applicable for both)", target= "_blank",
                                   href="data/experimental_design_example.txt", 
                                   download="experimental_design_example.txt"))
                       ),
