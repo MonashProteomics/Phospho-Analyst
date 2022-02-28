@@ -1765,7 +1765,7 @@ ui <- function(request){
                   
           ),
           
-          #### user guide ui ####
+          #### example datasets ui ####
           tabItem(tabName = "datasets",
                   fluidRow( 
                     box(
@@ -1805,9 +1805,9 @@ ui <- function(request){
                       #                    div(p(HTML(paste0('A detail online user manual can be accessed ',
                       # 			a(href = 'https://monashbioinformaticsplatform.github.io/Phospho-Analyst/', 
                       #                                       target='_blank', 'here'))))),
-                      div(p(HTML(paste0("A detailed user manual can be accessed in the near future."
-                                        # a(href = './Phospho-Analyst_manual.pdf', 
-                                        # target='_blank', tags$b("here."))
+                      div(p(HTML(paste0('A detail online user manual can be accessed ',
+                                        a(href = './Phospho-Analyst-manual.pdf',
+                                        target='_blank', tags$b("here."))
                       )))),  
                       
                       h4("Contact Us"),
