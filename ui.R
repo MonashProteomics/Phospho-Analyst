@@ -76,13 +76,13 @@ ui <- function(request){
                                    tags$hr(style = 'border-top: 4px double #2E3440'),
                                    menuItem(strong("Total Proteome (Optional)",style = 'color:#2E3440'),tabName="proteinGroup",icon = icon("file-upload"),
                                             fileInput('file2',
-                                                      p('Upload MaxQuant ProteinGroup.txt (Optional)', style = 'color:#2E3440'),
+                                                      p('Upload MaxQuant ProteinGroup.txt', style = 'color:#2E3440'),
                                                       accept=c('text/csv',
                                                                'text/comma-separated-values,text/plain',
                                                                '.csv')),
                                             tags$hr(),
                                             fileInput('file4',
-                                                      p('Protein Experimental Design (Optional)',  tags$br(),'Either upload a text file:', style = 'color:#2E3440'),
+                                                      p('Protein Experimental Design',  tags$br(),'Either upload a text file:', style = 'color:#2E3440'),
                                                       # p('Either upload a text file', style = 'color:#2E3440'),
                                                       accept=c('text/csv',
                                                                'text/comma-separated-values,text/plain',
@@ -464,7 +464,7 @@ ui <- function(request){
                                                  
                                                  
                                         ),
-                                        tabPanel("ProteinGroup",
+                                        tabPanel("Protein",
                                                  fluidRow(
                                                    column(4,
                                                           column(7,uiOutput("downloadTable_pr"),offset = 1),
@@ -1233,7 +1233,7 @@ ui <- function(request){
                                          )) # fluidrow qc close
                               ), # phosphosite demo panel close
                               
-                              tabPanel("ProteinGroup",
+                              tabPanel("Protein",
                                        fluidRow(
                                          column(4,
                                                 column(7,uiOutput("downloadTable_dm_pr"),offset = 1),

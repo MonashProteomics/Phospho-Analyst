@@ -898,7 +898,7 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   
 }
 
-#### ===== limma Normalisation ===== #####
+#### ===== median Normalisation ===== #####
 limma_norm_function <- function(imputed_data){
   imputed_assay<-assay(imputed_data)
   median_normalised_assay<-normalizeBetweenArrays(imputed_assay, "scale")
@@ -906,4 +906,24 @@ limma_norm_function <- function(imputed_data){
                                              rowData = rowData(imputed_data),
                                              colData = colData(imputed_data))
   return(median_normalised_se)
+}
+
+#### ===== median Normalisation ===== #####
+phosphomatics_input <- function(phospho_data_input, exp_design) {
+  # get all intensity columns
+  intensity_total <- grep("^Intensity[.]", colnames(phospho_data_input)) 
+  # get the multiplicity intensity columns
+  intensity_mult <- grep("^Intensity.+___\\d", colnames(phospho_data_input))
+  # get the main intensity columns
+  intensity_ints <- setdiff(intensity_total, intensity_mult)
+  intensity_main <- colnames( phospho_data_input[,intensity_ints])
+  # select required columns
+  phosphomatics_input <- phospho_data_input %>% select('Protein', 'Position', 'Amino.acid', c(intensity_main))
+  # ensure the format of intensities are correct
+  phosphomatics_input[,intensity_main] <- sapply(phosphomatics_input[,intensity_main],as.numeric)
+  # create column names
+  intensity_main <- intensity_main %>% gsub('Intensity[._]', '',.)
+  intensity_names <- paste0('QUANT_', exp_design$condition[match(intensity_main, exp_design$label)], sep = '')
+  colnames(phosphomatics_input) <- c('ID', 'Position', 'Residue', intensity_names)
+  return(phosphomatics_input)
 }

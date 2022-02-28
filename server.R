@@ -20,7 +20,7 @@ server <- function(input, output,session){
     }
     
     if (is.null(input$file2)){
-      hideTab(inputId = "panel_list", target = "ProteinGroup")
+      hideTab(inputId = "panel_list", target = "Protein")
       hideTab(inputId = "panel_list", target = "Comparison")
       hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
     }
@@ -57,12 +57,42 @@ server <- function(input, output,session){
   })
   
   observe({
-    if (input$tabs_selected=="demo"){
+    if (input$analyze==1 & input$panel_list!=0){
+      shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+                appear on the screen", type="info",
+                 closeOnClickOutside = TRUE,
+                 closeOnEsc = TRUE,
+                 timer = 25000) 
+    }
+  })
+  # 
+  # observeEvent(input$panel_list_dm ,{
+  #   if(input$panel_list_dm==0 ){
+  #     return()
+  #   } shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+  #               appear on the screen", type="info",
+  #                closeOnClickOutside = TRUE,
+  #                closeOnEsc = TRUE,
+  #                timer = 25000) 
+  # })
+  
+  # observe({
+  #   if (input$tabs_selected=="demo"){
+  #     shinyalert("Demo results loading!...", "Wait until table and plots
+  #               appear on the screen", type="info",
+  #                closeOnClickOutside = TRUE,
+  #                closeOnEsc = TRUE,
+  #                timer = 6000)
+  #   }
+  # })
+  
+  observe({
+    if (input$tabs_selected=="demo" & input$panel_list_dm !=0){
       shinyalert("Demo results loading!...", "Wait until table and plots
                 appear on the screen", type="info",
                  closeOnClickOutside = TRUE,
                  closeOnEsc = TRUE,
-                 timer = 6000)
+                 timer = 10000) 
     }
   })
   
@@ -105,7 +135,8 @@ server <- function(input, output,session){
                      "Choose a dataset to save" ,
                      c("Results","Original_matrix",
                        "Imputed_matrix",
-                       "Full_dataset"))
+                       "Full_dataset",
+                       "Phosphomatics_input"))
     }
   })
   
@@ -1038,13 +1069,15 @@ server <- function(input, output,session){
              "Results" = get_results_phospho(dep(), FALSE),
              "Original_matrix"= unimputed_table(),
              "Imputed_matrix" = imputed_table(),
-             "Full_dataset" = get_df_wide(dep()))
+             "Full_dataset" = get_df_wide(dep()),
+             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()))
     } else {
       switch(input$dataset,
              "Results" = get_results_phospho(dep(), TRUE),
              "Original_matrix"= unimputed_table(),
              "Imputed_matrix" = imputed_table(),
-             "Full_dataset" = get_df_wide(dep()))
+             "Full_dataset" = get_df_wide(dep()),
+             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()))
     }
   })
   
