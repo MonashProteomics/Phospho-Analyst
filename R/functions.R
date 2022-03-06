@@ -810,8 +810,9 @@ get_exp_design <- function(df){
   intensity_cols <- grep("Intensity[.]", colnames(df))
   intensity_names <- colnames( df[,intensity_cols])
   intensity_names <- intensity_names %>% gsub("Intensity[.]", "", .) %>% gsub("___\\d", "", .) %>% unique()
+  intensity_names <- stringr::str_sort(intensity_names, numeric = TRUE) # sort the intensity columns
   df <- data.frame(label = intensity_names) %>% 
-    add_column(condition = NA, replicate = 0)
+    add_column(condition = NA, replicate = NA)
   return(df)
 }
 
@@ -821,7 +822,7 @@ get_exp_design_pr <- function(df){
   intensity_names <- colnames( df[,intensity_cols])
   intensity_names <- intensity_names %>% gsub("LFQ.intensity[.]", "", .) %>% unique()
   df <- data.frame(label = intensity_names) %>% 
-    add_column(condition = NA, replicate = 0)
+    add_column(condition = NA, replicate = NA)
   return(df)
 }
 
@@ -917,13 +918,13 @@ phosphomatics_input <- function(phospho_data_input, exp_design) {
   # get the main intensity columns
   intensity_ints <- setdiff(intensity_total, intensity_mult)
   intensity_main <- colnames( phospho_data_input[,intensity_ints])
+  intensity_main <- stringr::str_sort(intensity_main, numeric = TRUE) # sort the intensity columns
   # select required columns
   phosphomatics_input <- phospho_data_input %>% select('Protein', 'Position', 'Amino.acid', c(intensity_main))
   # ensure the format of intensities are correct
   phosphomatics_input[,intensity_main] <- sapply(phosphomatics_input[,intensity_main],as.numeric)
   # create column names
-  intensity_main <- intensity_main %>% gsub('Intensity[._]', '',.)
-  intensity_names <- paste0('QUANT_', exp_design$condition[match(intensity_main, exp_design$label)], sep = '')
-  colnames(phosphomatics_input) <- c('ID', 'Position', 'Residue', intensity_names)
+  intensity_main <- intensity_main %>% gsub('Intensity[._]', 'QUANT_',.)
+  colnames(phosphomatics_input) <- c('ID', 'Position', 'Residue', intensity_main)
   return(phosphomatics_input)
 }

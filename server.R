@@ -3847,7 +3847,8 @@ server <- function(input, output,session){
                      "Choose a dataset to save" ,
                      c("Results","Original_matrix",
                        "Imputed_matrix",
-                       "Full_dataset"))
+                       "Full_dataset",
+                       "Phosphomatics_input"))
     }
   })
   
@@ -4423,7 +4424,8 @@ server <- function(input, output,session){
            "Results" = get_results_phospho(dep_dm(), TRUE),
            "Original_matrix"= unimputed_table_dm(),
            "Imputed_matrix" = imputed_table_dm(),
-           "Full dataset" = get_df_wide(dep_dm()))
+           "Full dataset" = get_df_wide(dep_dm()),
+           "Phosphomatics_input" = read.csv("www/Phosphomatics_input.csv"))
   })
   
   output$downloadData_dm <- downloadHandler(
