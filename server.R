@@ -32,59 +32,15 @@ server <- function(input, output,session){
     if(input$analyze==0 ){
       return()
     }
-    shinyalert("In Progress!", "Data analysis has started, wait until table and plots
-                appear on the screen", type="info",
-               closeOnClickOutside = TRUE,
-               closeOnEsc = TRUE,
-               timer = 25000) # timer in miliseconds (10 sec)
     
-    # if(phospho_exp_data$Data$condition != protein_exp_data$Data_pr$condition){
-    #   shinyalert("Warning!","The conditions in phosphosite and protein experimental design table are different,
-    #              please check it.", type="warning",
-    #              closeOnClickOutside = TRUE,
-    #              closeOnEsc = TRUE)
-    #   # httpuv:::service()
-    #   # continue <<- !isTRUE(session$input$stopThis)
-    # }
-    # else(
-    #   shinyalert("In Progress!", "Data analysis has started, wait until table and plots
-    #             appear on the screen", type="info",
-    #              closeOnClickOutside = TRUE,
-    #              closeOnEsc = TRUE,
-    #              timer = 25000) # timer in miliseconds (10 sec)
-    # )
-    
-  })
-  
-  observe({
-    if (input$analyze==1 & input$panel_list!=0){
+    else if (input$analyze==1 & input$panel_list!=0){
       shinyalert("In Progress!", "Data analysis has started, wait until table and plots
                 appear on the screen", type="info",
                  closeOnClickOutside = TRUE,
                  closeOnEsc = TRUE,
-                 timer = 25000) 
+                 timer = 25000)  # timer in miliseconds (10 sec)
     }
   })
-  # 
-  # observeEvent(input$panel_list_dm ,{
-  #   if(input$panel_list_dm==0 ){
-  #     return()
-  #   } shinyalert("In Progress!", "Data analysis has started, wait until table and plots
-  #               appear on the screen", type="info",
-  #                closeOnClickOutside = TRUE,
-  #                closeOnEsc = TRUE,
-  #                timer = 25000) 
-  # })
-  
-  # observe({
-  #   if (input$tabs_selected=="demo"){
-  #     shinyalert("Demo results loading!...", "Wait until table and plots
-  #               appear on the screen", type="info",
-  #                closeOnClickOutside = TRUE,
-  #                closeOnEsc = TRUE,
-  #                timer = 6000)
-  #   }
-  # })
   
   observe({
     if (input$tabs_selected=="demo" & input$panel_list_dm !=0){
@@ -195,55 +151,43 @@ server <- function(input, output,session){
   })
   
   ####======= interactive exp_design (phosphosite)=======####
-  phospho_exp_data <- reactiveValues(Data = NULL)
-  
-  observe({
+  # Creates handsontable template table
+  phospho_exp_data1 <- reactive({
     req(input$file1)
-    # read file
-    tryCatch(
-      {
-        Data <- read.delim(input$file1$datapath,
-                           header = TRUE,
-                           fill= TRUE, # to fill any missing data
-                           sep = "\t")
-        
-      },
-      error = function(e) {
-        # return a safeError if a parsing error occurs
-        stop(safeError(e))
-      }
-    )
+    df <- read.delim(input$file1$datapath,
+                     header = TRUE,
+                     fill= TRUE, # to fill any missing data
+                     sep = "\t")
     
-    # set value to created exp_design table
-    phospho_exp_data$Data <- get_exp_design(Data)
+    tempTable =  get_exp_design(df)
+    rhandsontable(tempTable) %>% 
+      hot_col("label", readOnly = T) 
   })
   
-  # overview changes in exp_design table
-  output$print_phospho <- renderPrint({
-    phospho_exp_data$Data
+  # Outputs the template table
+  output$exp_phospho<- renderRHandsontable({phospho_exp_data1()})
+  
+  # Changes the handsontable back into a dataframe 
+  phospho_exp_data2<-reactive({NULL})
+  phospho_exp_data2 <- eventReactive(input$save_exp, {
+    hot_to_r(input$exp_phospho)
   })
   
-  # editable exp_design table
-  output$exp_phospho<-DT::renderDataTable(phospho_exp_data$Data,
-                                          selection = 'none',
-                                          # rownames = FALSE,
-                                          edit = list(target = "all", 
-                                                      disable = list(columns = c(0,1)),
-                                                      numeric = list(columns = 3)),
-                                          class = "display",
-                                          options = list(pageLength = 50)
-  )
-  
-  # proxy_exp <- DT::dataTableProxy("exp_phospho")
-  
-  observeEvent(input$exp_phospho_cell_edit, {
-    phospho_exp_data$Data <<- editData(phospho_exp_data$Data, input$exp_phospho_cell_edit, 'exp_phospho')
+  observeEvent(input$save_exp, {
+    output$save_message <- renderText({
+      if (sum(is.na(phospho_exp_data2())) != 0) {
+        "Warning: Cells can not be empty"
+      }
+      else {
+        "Experiment design table saved"
+      }
+    })
   })
   
   # download edited exp_design table
   output$download_exp <- downloadHandler("phosphosite_exp_design.csv",
                                          content = function(file){
-                                           write.csv(phospho_exp_data$Data, file, row.names = F)
+                                           write.csv(phospho_exp_data2(), file, row.names = F)
                                          },
                                          contentType = "text/csv")
   
@@ -251,7 +195,7 @@ server <- function(input, output,session){
   exp_design_input<-eventReactive(input$analyze,{
     inFile<-input$file3
     if (is.null(inFile) ||input$save_exp>0){
-      temp_df <- phospho_exp_data$Data
+      temp_df <- phospho_exp_data2()
       
     }
     else{
@@ -269,75 +213,71 @@ server <- function(input, output,session){
   })
   
   ####======= interactive exp_design (protein)=======####
-  protein_exp_data <- reactiveValues(Data_pr = NULL)
-  
-  observe({
+  # Creates handsontable template table
+  protein_exp_data1 <- reactive({
     req(input$file2)
+    df <- read.delim(input$file2$datapath,
+                     header = TRUE,
+                     fill= TRUE, # to fill any missing data
+                     sep = "\t")
     
-    # read file
-    tryCatch(
-      {
-        Data_pr <- read.delim(input$file2$datapath,
-                              header = TRUE,
-                              fill= TRUE, # to fill any missing data
-                              sep = "\t")
-        
-      },
-      error = function(e) {
-        # return a safeError if a parsing error occurs
-        stop(safeError(e))
-      }
-    )
-    
-    # set value to created exp_design table
-    protein_exp_data$Data_pr <- get_exp_design_pr(Data_pr)
+    tempTable =  get_exp_design_pr(df)
+    rhandsontable(tempTable) %>% 
+      hot_col("label", readOnly = T) 
   })
   
-  # # overview changes in exp_design table
-  # output$print_protein <- renderPrint({
-  #   protein_exp_data$Data_pr
-  # })
+  # Outputs the template table
+  output$exp_protein<- renderRHandsontable({protein_exp_data1()})
   
-  # editable exp_design table
-  output$exp_protein<-DT::renderDataTable(
-    protein_exp_data$Data_pr,selection = 'none', 
-    edit = list(target = "all", 
-                disable = list(columns = c(0,1)),
-                numeric = list(columns = 3)),
-    class = "display",
-    options = list(pageLength = 50)
-  )
+  # Changes the handsontable back into a dataframe 
+  protein_exp_data2<-reactive({NULL})
+  protein_exp_data2 <- eventReactive(input$save_exp_pr, {
+    hot_to_r(input$exp_protein)
+  })
   
-  proxy_pr <- DT::dataTableProxy("exp_protein")
-  
-  observeEvent(input$exp_protein_cell_edit, {
-    protein_exp_data$Data_pr <<- editData(protein_exp_data$Data_pr, input$exp_protein_cell_edit, 'exp_protein')
+  observeEvent(input$save_exp_pr, {
+    output$save_message_pr <- renderText({
+      if (sum(is.na(protein_exp_data2())) != 0) {
+        "Warning: Cells can not be empty"
+      }
+      
+      else {
+        if (!is.null(phospho_exp_data2()) & !is.null(protein_exp_data2())) {
+          phospho_condition <- phospho_exp_data2()$condition %>% unique()
+          protein_concition <- protein_exp_data2()$condition %>% unique()
+          if(setequal(phospho_condition, protein_concition) != TRUE){
+            "The named conditions are different from Phosphosite Experimental Design Table"
+          }
+          else {
+            "Experiment design table saved"
+          }
+        }
+        else {
+          "Experiment design table saved"
+        }
+      }
+
+    })
   })
   
   # download edited exp_design table
-  output$download_exp_pr <- downloadHandler("protein_exp_design.csv", 
-                                            content = function(file){
-                                              write.csv(protein_exp_data$Data_pr, file, row.names = F)
-                                            },
-                                            contentType = "text/csv")
+  output$download_exp_pr <- downloadHandler("protein_exp_design.csv",
+                                         content = function(file){
+                                           write.csv(protein_exp_data2(), file, row.names = F)
+                                         },
+                                         contentType = "text/csv")
   
   # proteinGroup exp_desgin file
   exp_design_input_1<-eventReactive(input$analyze,{
-    inFile<-input$file3
     inFile_1 <-input$file4
     if (is.null(inFile_1)){
-      if(!is.null(inFile)||input$save_exp==0){
-        temp_df<-read.delim(inFile$datapath,
-                            header = TRUE,
-                            sep="\t",
-                            stringsAsFactors = FALSE)
+      if(input$save_exp_pr==0){
+        temp_df <- exp_design_input()
       }
       else{
-        temp_df <- protein_exp_data$Data_pr
-      }
-      
-      
+        temp_df <- protein_exp_data2()}
     }
+
     else{
       temp_df<-read.delim(inFile_1$datapath,
                           header = TRUE,

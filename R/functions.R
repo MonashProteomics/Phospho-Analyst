@@ -812,7 +812,9 @@ get_exp_design <- function(df){
   intensity_names <- intensity_names %>% gsub("Intensity[.]", "", .) %>% gsub("___\\d", "", .) %>% unique()
   intensity_names <- stringr::str_sort(intensity_names, numeric = TRUE) # sort the intensity columns
   df <- data.frame(label = intensity_names) %>% 
-    add_column(condition = NA, replicate = NA)
+    add_column(condition = "", replicate = "")
+  # change the replicate to numeric
+  df$replicate = as.integer(df$replicate)
   return(df)
 }
 
@@ -821,8 +823,11 @@ get_exp_design_pr <- function(df){
   intensity_cols <- grep("LFQ.intensity[.]", colnames(df))
   intensity_names <- colnames( df[,intensity_cols])
   intensity_names <- intensity_names %>% gsub("LFQ.intensity[.]", "", .) %>% unique()
+  intensity_names <- stringr::str_sort(intensity_names, numeric = TRUE) # sort the intensity columns
   df <- data.frame(label = intensity_names) %>% 
-    add_column(condition = NA, replicate = NA)
+    add_column(condition = "", replicate = "")
+  # change the replicate to numeric
+  df$replicate = as.integer(df$replicate)
   return(df)
 }
 
