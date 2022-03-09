@@ -33,14 +33,30 @@ server <- function(input, output,session){
       return()
     }
     
-    else if (input$analyze==1 & input$panel_list!=0){
-      shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+     else if (input$panel_list !=0){
+        shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+                  appear on the screen", type="info",
+                   closeOnClickOutside = TRUE,
+                   closeOnEsc = TRUE,
+                   timer = 10000)  # timer in miliseconds (10 sec)
+      }
+    
+    shinyalert("In Progress!", "Data analysis has started, wait until table and plots
                 appear on the screen", type="info",
                  closeOnClickOutside = TRUE,
                  closeOnEsc = TRUE,
                  timer = 25000)  # timer in miliseconds (10 sec)
-    }
   })
+  
+  # observe({
+  #   if (input$tabs_selected=="analysis" & input$panel_list !=0){
+  #     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+  #               appear on the screen", type="info",
+  #                closeOnClickOutside = TRUE,
+  #                closeOnEsc = TRUE,
+  #                timer = 10000)  # timer in miliseconds (10 sec)
+  #   }
+  # })
   
   observe({
     if (input$tabs_selected=="demo" & input$panel_list_dm !=0){
@@ -402,7 +418,11 @@ server <- function(input, output,session){
     if(input$normalisation == "median"){
       limma_norm_function(imputed_data())
     }
-    else{
+    else if (input$normalisation == "median_sub") {
+      median_sub_function(imputed_data())
+    }
+    
+    else {
       normalize_vsn(imputed_data())
     }
   })
@@ -437,7 +457,7 @@ server <- function(input, output,session){
     else if(length(unique(exp_design_input()$condition)) >= 3){
       anova_dep <- diff_all
       # get assay data
-      intensity <- assay(anova_dep)
+      intensity <- assay(anova_dep) %>% as.matrix()
       exp_design <- exp_design_input()
       exp_design_rename<-exp_design
       exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
@@ -2238,21 +2258,11 @@ server <- function(input, output,session){
       phospho_row <- column_to_rownames(phospho_row, 'rowname')
       phospho_intensity <- assay(dep())  %>% as.data.frame()
       phospho_df <- merge(phospho_row, phospho_intensity, by = 0) # Merge data according to row names
-      if(length(unique(exp_design_input()$condition)) <= 2) {
-        col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
+      
+      col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
                           paste(input$volcano_comp, "_log2 fold change", sep = ""),
                           paste(input$volcano_comp, "_p.val", sep = ""))
-      } else {
-        if (input$check_anova_comp =="FALSE") {
-          col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
-                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                            paste(input$volcano_comp, "_p.val", sep = ""))
-        } else {
-          col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
-                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                            "ANOVA_p.val")
-        }
-      }
+        
       phospho_df_1 <- phospho_df %>% 
         subset(select = col_selected) %>% 
         dplyr::rename(phospho_id = Phosphosite, phospho_diff = paste(input$volcano_comp, "_log2 fold change", sep = ""))
@@ -2271,21 +2281,11 @@ server <- function(input, output,session){
       protein_intensity <- assay(dep_pr()) %>% as.data.frame()
       protein_df <- merge(protein_row, protein_intensity, by = 0) # Merge data according to row names
       print(colnames(protein_df))
-      if(length(unique(exp_design_input_1()$condition)) <= 2) {
-        col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
+      
+      col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
                           paste(input$volcano_comp, "_log2 fold change", sep = ""),
                           paste(input$volcano_comp, "_p.val", sep = ""))
-      } else {
-        if (input$check_anova_comp =="FALSE") {
-          col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
-                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                            paste(input$volcano_comp, "_p.val", sep = ""))
-        } else {
-          col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
-                            paste(input$volcano_comp, "_log2 fold change", sep = ""),
-                            "ANOVA_p.val")
-        }
-      }
+        
       protein_df_1 <- protein_df %>% 
         subset(select = col_selected) %>% 
         dplyr::rename(protein_diff = paste(input$volcano_comp, "_log2 fold change", sep = "") )
@@ -6690,22 +6690,22 @@ server <- function(input, output,session){
     }
   )
   
-  # # used for save demo data
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  # 
-  #   # data_missval <- processed_data()
-  #   # data_dep <- dep()
-  #   result <- data_result()
-  #   # phospho_pre <- cleaned_data()
-  #   # phospho_imp <- imputed_data()
-  #   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-  #   # saveRDS(data_dep, file="phosphosite_benchmark.Rds")
-  #   saveRDS(result, file="benchmark_result.Rds")
-  # 
-  # })
+  # used for save demo data
+  observeEvent(input$analyze ,{
+    if(input$analyze==0 ){
+      return()
+    }
+
+    # data_missval <- processed_data()
+    data_dep <- dep()
+    # result <- data_result()
+    # phospho_pre <- cleaned_data()
+    # phospho_imp <- imputed_data()
+    # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+    saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
+    # saveRDS(result, file="benchmark_result.Rds")
+
+  })
   # 
   #   observeEvent(input$analyze ,{
   #     if(input$analyze==0 ){

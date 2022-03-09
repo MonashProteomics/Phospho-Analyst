@@ -56,7 +56,7 @@ ui <- function(request){
                                             
                                             prettyRadioButtons("normalisation",
                                                                p("Normalisation type", style = 'color:#2E3440'), 
-                                                               choices = c("vsn", "median"),
+                                                               choices = c("vsn", "median", "median subraction" = "median_sub"),
                                                                selected = "vsn"),
                                             
                                             prettyRadioButtons("imputation",

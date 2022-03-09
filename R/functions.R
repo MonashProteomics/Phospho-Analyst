@@ -914,7 +914,7 @@ limma_norm_function <- function(imputed_data){
   return(median_normalised_se)
 }
 
-#### ===== median Normalisation ===== #####
+#### ===== generate input data for Phosphomatics ===== #####
 phosphomatics_input <- function(phospho_data_input, exp_design) {
   # get all intensity columns
   intensity_total <- grep("^Intensity[.]", colnames(phospho_data_input)) 
@@ -932,4 +932,16 @@ phosphomatics_input <- function(phospho_data_input, exp_design) {
   intensity_main <- intensity_main %>% gsub('Intensity[._]', 'QUANT_',.)
   colnames(phosphomatics_input) <- c('ID', 'Position', 'Residue', intensity_main)
   return(phosphomatics_input)
+}
+
+#### ===== median subtraction Normalisation ===== #####
+median_sub_function <- function(imputed_data){
+  phospho_intensity <- assay(imputed_data) %>% data.frame() 
+  phospho_intensity_1 <- phospho_intensity-colMedians(as.matrix(phospho_intensity), na.rm = TRUE)[col(phospho_intensity)]
+  
+  # change to SE object
+  normalised_data<-SummarizedExperiment(assay= phospho_intensity_1,
+                                        rowData = rowData(imputed_data),
+                                        colData = colData(imputed_data))
+  return(normalised_data)
 }
