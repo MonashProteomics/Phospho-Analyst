@@ -6697,12 +6697,12 @@ server <- function(input, output,session){
     }
 
     # data_missval <- processed_data()
-    data_dep <- dep()
+   # data_dep <- dep()
     # result <- data_result()
     # phospho_pre <- cleaned_data()
     # phospho_imp <- imputed_data()
     # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-    saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
+   # saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
     # saveRDS(result, file="benchmark_result.Rds")
 
   })
