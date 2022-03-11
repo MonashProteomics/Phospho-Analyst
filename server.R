@@ -6692,9 +6692,9 @@ server <- function(input, output,session){
   
   # used for save demo data
   observeEvent(input$analyze ,{
-    if(input$analyze==0 ){
-      return()
-    }
+   # if(input$analyze==0 ){
+   #   return()
+   # }
 
     # data_missval <- processed_data()
    # data_dep <- dep()
