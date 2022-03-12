@@ -798,9 +798,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep(),FALSE) %>% dplyr::select (-Residue.Both,-Protein)
+      get_results_phospho(dep(),FALSE) %>% dplyr::select (-Protein)
     } else {
-      get_results_phospho(dep(),TRUE) %>% dplyr::select (-Residue.Both,-Protein)
+      get_results_phospho(dep(),TRUE) %>% dplyr::select (-Protein)
     }
   })
   
@@ -819,7 +819,8 @@ server <- function(input, output,session){
   },
   options = list(scrollX = TRUE,
                  autoWidth=TRUE,
-                 columnDefs= list(list(width = '450px', targets = c(-1))))
+                 columnDefs= list(list(width = '400px', targets = c(-1)),
+                                  list(width = '400px', targets = match("Protein.names", names(data_result())))))
   )
   
   ## Deselect all rows button
@@ -836,7 +837,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '450px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = match("Protein.names", names(data_result())))))
     )
   })
   
@@ -929,7 +931,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '450px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = match("Protein.names", names(data_result())))))
     )
     
     output$volcano <- renderPlot({
@@ -3296,9 +3299,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result_nr<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep_nr(),FALSE) %>% dplyr::select (-Residue.Both,-Protein)
+      get_results_phospho(dep_nr(),FALSE) %>% dplyr::select (-Protein)
     } else {
-      get_results_phospho(dep_nr(),TRUE) %>% dplyr::select (-Residue.Both,-Protein)
+      get_results_phospho(dep_nr(),TRUE) %>% dplyr::select (-Protein)
     }
   })
   
@@ -3317,7 +3320,8 @@ server <- function(input, output,session){
   },
   options = list(scrollX = TRUE,
                  autoWidth=TRUE,
-                 columnDefs= list(list(width = '400px', targets = c(-1))))
+                 columnDefs= list(list(width = '400px', targets = c(-1)),
+                                  list(width = '400px', targets = match("Protein.names", names(data_result_nr())))))
   )
   
   ## Deselect all rows button
@@ -3334,7 +3338,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_nr())))))
     )
   })
   
@@ -3360,7 +3365,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_nr())))))
     )
     
     proteins_selected<-data_result_nr()[data_result_nr()[["Phosphosite"]] %in% protein_name_brush_nr(), ] #
@@ -3425,7 +3431,8 @@ server <- function(input, output,session){
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
-                   columnDefs= list(list(width = '400px', targets = c(-1))))
+                   columnDefs= list(list(width = '400px', targets = c(-1)),
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_nr())))))
     )
     
     output$volcano_nr <- renderPlot({
@@ -4134,7 +4141,7 @@ server <- function(input, output,session){
   
   ##### Get results dataframe from Summarizedexperiment object
   data_result_dm<-reactive({
-    get_results_phospho(dep_dm(),TRUE) %>% dplyr::select (-Residue.Both,-Protein)
+    get_results_phospho(dep_dm(),TRUE) %>% dplyr::select (-Protein)
   })
   
   
@@ -4153,7 +4160,7 @@ server <- function(input, output,session){
   options = list(scrollX = TRUE,
                  autoWidth=TRUE,
                  columnDefs= list(list(width = '400px', targets = c(-1)),
-                                  list(width = '400px', targets = 21)))
+                                  list(width = '400px', targets = match("Protein.names", names(data_result_dm())))))
   )
   
   ## Deselect all rows button
@@ -4171,7 +4178,7 @@ server <- function(input, output,session){
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = 21)))
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_dm())))))
     )
   })
   
@@ -4198,7 +4205,7 @@ server <- function(input, output,session){
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = 21)))
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_dm())))))
     )
     
     proteins_selected<-data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_dm(), ] #
@@ -4257,7 +4264,7 @@ server <- function(input, output,session){
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = 21)))
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_dm())))))
     )
     
     output$volcano_dm <- renderPlot({
@@ -6281,7 +6288,7 @@ server <- function(input, output,session){
   
   ##### Get results dataframe from Summarizedexperiment object
   data_result_dm_nr<-reactive({
-    get_results_phospho(dep_dm_nr(),TRUE) %>% dplyr::select (-Residue.Both,-Protein)
+    get_results_phospho(dep_dm_nr(),TRUE) %>% dplyr::select (-Protein)
   })
   
   
@@ -6300,7 +6307,7 @@ server <- function(input, output,session){
   options = list(scrollX = TRUE,
                  autoWidth=TRUE,
                  columnDefs= list(list(width = '400px', targets = c(-1)),
-                                  list(width = '400px', targets = 21)))
+                                  list(width = '400px', targets = match("Protein.names", names(data_result_dm_nr())))))
   )
   
   ## Deselect all rows button
@@ -6318,7 +6325,7 @@ server <- function(input, output,session){
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = 21)))
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_dm_nr())))))
     )
   })
   
@@ -6345,7 +6352,7 @@ server <- function(input, output,session){
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = 21)))
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_dm_nr())))))
     )
     
     proteins_selected<-data_result_dm_nr()[data_result_dm_nr()[["Phosphosite"]] %in% protein_name_brush_dm_nr(), ] #
@@ -6403,7 +6410,7 @@ server <- function(input, output,session){
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = 21)))
+                                    list(width = '400px', targets = match("Protein.names", names(data_result_dm_nr())))))
     )
     
     output$volcano_dm_nr <- renderPlot({
@@ -6691,21 +6698,21 @@ server <- function(input, output,session){
   )
   
   # used for save demo data
-  observeEvent(input$analyze ,{
-    if(input$analyze==0 ){
-      return()
-    }
-
-    # data_missval <- processed_data()
-    data_dep <- dep()
-    # result <- data_result()
-    # phospho_pre <- cleaned_data()
-    # phospho_imp <- imputed_data()
-    # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-    saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
-    # saveRDS(result, file="benchmark_result.Rds")
-
-  })
+  # observeEvent(input$analyze ,{
+  #   if(input$analyze==0 ){
+  #     return()
+  #   }
+  # 
+  #   # data_missval <- processed_data()
+  #   data_dep <- dep()
+  #   # result <- data_result()
+  #   # phospho_pre <- cleaned_data()
+  #   # phospho_imp <- imputed_data()
+  #   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+  #   saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
+  #   # saveRDS(result, file="benchmark_result.Rds")
+  # 
+  # })
   # 
   #   observeEvent(input$analyze ,{
   #     if(input$analyze==0 ){
