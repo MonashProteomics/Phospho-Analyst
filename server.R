@@ -224,6 +224,8 @@ server <- function(input, output,session){
       temp_df$condition<-trimws(temp_df$condition, which = "left")
       temp_df$label <- temp_df$label %>% gsub('[-]', '.',.)
       temp_df$condition <- temp_df$condition %>% gsub('[-]', '.',.)
+      # temp_df$label <- temp_df$label %>% gsub("Pharmacological_", "", .) 
+      # temp_df$condition <- temp_df$condition %>% gsub("Pharmacological_", "", .) 
     }
     return(temp_df)
   })
@@ -304,6 +306,8 @@ server <- function(input, output,session){
       temp_df$condition<-trimws(temp_df$condition, which = "left")
       temp_df$label <- temp_df$label %>% gsub('[-]', '.',.)
       temp_df$condition <- temp_df$condition %>% gsub('[-]', '.',.)
+      # temp_df$label <- temp_df$label %>% gsub("Pharmacological_", "", .)
+      # temp_df$condition <- temp_df$condition %>% gsub("Pharmacological_", "", .)
     }
     return(temp_df)
   })
@@ -379,6 +383,10 @@ server <- function(input, output,session){
     data_unique_names <- DEP::make_unique(data_pre, 'name','ID', delim = ";")
     
     intensity_ints <- grep("^Intensity.", colnames(data_unique_names))
+    
+    # # rename intensity column names
+    # int_names <- colnames( data_unique_names[,intensity_ints]) %>% gsub("Pharmacological_", "", .)
+    # names(data_unique_names)[intensity_ints] <- c(int_names)
     
     #test_match_lfq_column_design(data_unique,intensity_ints, exp_design())
     data_se <- DEP::make_se(data_unique_names, intensity_ints, exp_design())
@@ -1551,6 +1559,10 @@ server <- function(input, output,session){
     data_pre <- cleaned_data_pr()
     data_unique<- DEP::make_unique(data_pre,"Gene.names","Protein.IDs",delim=";")
     lfq_columns<-grep("LFQ.", colnames(data_unique))
+    
+    # # rename intensity column names
+    # int_names <- colnames( data_unique[,lfq_columns]) %>% gsub("Pharmacological_", "", .)
+    # names(data_unique)[lfq_columns] <- c(int_names)
     
     ## Check for matching columns in maxquant and experiment design file
     test_match_lfq_column_design(data_unique,lfq_columns, exp_design())
@@ -5376,8 +5388,16 @@ server <- function(input, output,session){
     LoadToEnvironment("data/exp_demo_data.RData", env = globalenv())
   })
   
+  env_dm_c_1<-reactive({
+    LoadToEnvironment("data/exp_demo_data_1.RData", env = globalenv())
+  })
+  
   exp_design_demo<-reactive({
     env_dm_c()[["exp_demo"]]
+  })
+  
+  exp_design_demo_1<-reactive({
+    env_dm_c_1()[["exp_demo_1"]]
   })
   
   output$volcano_comp_dm <- renderUI({
@@ -5513,7 +5533,7 @@ server <- function(input, output,session){
     if (!is.null(phospho_df_dm()) & !is.null(protein_df_dm())){
       combined_df <- phospho_df_dm() %>%
         inner_join(., protein_df_dm(), by = "Gene.names")
-      exp_design <- exp_design_demo()
+      exp_design <- exp_design_demo_1()
       # protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
       protein_cols <- colnames(combined_df %>% select((ncol(phospho_df_dm())+1):ncol(combined_df)))
       protein_cols_1 <- exp_design$label
@@ -6697,19 +6717,19 @@ server <- function(input, output,session){
     }
   )
   
-  # used for save demo data
+  # # used for save demo data
   # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
   #     return()
   #   }
   # 
-  #   # data_missval <- processed_data()
+  #   data_missval <- processed_data()
   #   data_dep <- dep()
   #   # result <- data_result()
   #   # phospho_pre <- cleaned_data()
   #   # phospho_imp <- imputed_data()
-  #   # save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-  #   saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
+  #   save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+  #   # saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
   #   # saveRDS(result, file="benchmark_result.Rds")
   # 
   # })
@@ -6719,34 +6739,45 @@ server <- function(input, output,session){
   #       return()
   #     }
   # 
-  #     # data_missval_pr <- processed_data_pr()
+  #     data_missval_pr <- processed_data_pr()
   #     data_dep_pr <- dep_pr()
   #     # protein_pre <- cleaned_data_pr()
   #     # protein_imp <- imputed_data_pr()
-  #     # save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
-  #     saveRDS(data_dep_pr, file="proteinGroup_pharma.Rds")
+  #     save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
+  #     # saveRDS(data_dep_pr, file="proteinGroup_pharma.Rds")
   #   })
-  # #
-  # # # observeEvent(input$analyze ,{
-  # # #   if(input$analyze==0 ){
-  # # #     return()
-  # # #   }
-  # # #
-  # # #   exp_demo <- exp_design_input()
-  # # #   save(exp_demo, file = "exp_demo_data.RData")
-  # # #
-  # # # })
-  # #
+  # 
+  # observeEvent(input$analyze ,{
+  #   if(input$analyze==0 ){
+  #     return()
+  #   }
+  # 
+  #   exp_demo <- exp_design_input()
+  #   save(exp_demo, file = "exp_demo_data.RData")
+  # 
+  # })
+  # 
+  # observeEvent(input$analyze ,{
+  #   if(input$analyze==0 ){
+  #     return()
+  #   }
+  # 
+  #   exp_demo_1 <- exp_design_input_1()
+  #   save(exp_demo_1, file = "exp_demo_data_1.RData")
+  # 
+  # })
+  # 
+  # 
   # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
   #     return()
   #   }
   # 
   #   # data_missval <- normalized_phospho_data()
-  #   # data_imputed_nr <- imputed_data_nr()
+  #   data_imputed_nr <- imputed_data_nr()
   #   data_dep_nr <- dep_nr()
-  #   # save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
-  #   saveRDS(data_dep_nr, file="phosphosite(corrected)_pharma.Rds")
+  #   save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
+  #   # saveRDS(data_dep_nr, file="phosphosite(corrected)_pharma.Rds")
   # 
   # })
   

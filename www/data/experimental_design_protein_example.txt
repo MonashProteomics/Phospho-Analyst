@@ -1,0 +1,16 @@
+"label"	"condition"	"replicate"
+"Proteome_Pharmacological_CTRL_1"	"Pharmacological_CTRL"	1
+"Proteome_Pharmacological_CTRL_2"	"Pharmacological_CTRL"	2
+"Proteome_Pharmacological_CTRL_3"	"Pharmacological_CTRL"	3
+"Proteome_Pharmacological_L41-10um_1"	"Pharmacological_L41-10um"	1
+"Proteome_Pharmacological_L41-10um_2"	"Pharmacological_L41-10um"	2
+"Proteome_Pharmacological_L41-10um_3"	"Pharmacological_L41-10um"	3
+"Proteome_Pharmacological_L41-1um_1"	"Pharmacological_L41-1um"	1
+"Proteome_Pharmacological_L41-1um_2"	"Pharmacological_L41-1um"	2
+"Proteome_Pharmacological_L41-1um_3"	"Pharmacological_L41-1um"	3
+"Proteome_Pharmacological_ALG-10um_1"	"Pharmacological_ALG-10um"	1
+"Proteome_Pharmacological_ALG-10um_2"	"Pharmacological_ALG-10um"	2
+"Proteome_Pharmacological_ALG-10um_3"	"Pharmacological_ALG-10um"	3
+"Proteome_Pharmacological_ALG-1um_1"	"Pharmacological_ALG-1um"	1
+"Proteome_Pharmacological_ALG-1um_2"	"Pharmacological_ALG-1um"	2
+"Proteome_Pharmacological_ALG-1um_3"	"Pharmacological_ALG-1um"	3

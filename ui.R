@@ -1789,9 +1789,12 @@ ui <- function(request){
                         tags$li(a("Example ProteinGroup data", target= "_blank",
                                   href="data/proteinGroups_example.txt", 
                                   download="proteinGroups_example.txt")),
-                        tags$li(a("Example Experimental Design file (applicable for both)", target= "_blank",
+                        tags$li(a("Example Experimental Design file (Phosphosite)", target= "_blank",
                                   href="data/experimental_design_example.txt", 
-                                  download="experimental_design_example.txt"))
+                                  download="experimental_design_example.txt")),
+                        tags$li(a("Example Experimental Design file (Proteome)", target= "_blank",
+                                  href="data/experimental_design_protein_example.txt", 
+                                  download="experimental_design_protein_example.txt"))
                       ),
                       width = 12,
                       solidHeader = TRUE,
