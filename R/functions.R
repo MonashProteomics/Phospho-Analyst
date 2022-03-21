@@ -539,11 +539,11 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   
   # Join into a results table
   if (apply_anova){
-    ids <- as.data.frame(row_data) %>% dplyr::select(name, ID,anova_p.val,anova_p.adj)
+    ids <- as.data.frame(row_data) %>% dplyr::select(peptide.sequence, name, Protein,Amino.acid, Localization.prob, anova_p.val,anova_p.adj)
     ids$anova_p.val <- round(ids$anova_p.val, digits = 6)
     ids$anova_p.adj <- round(ids$anova_p.adj, digits = 6)
   } else {
-    ids <- as.data.frame(row_data) %>% dplyr::select(name, ID)
+    ids <- as.data.frame(row_data) %>% dplyr::select(peptide.sequence, name, Protein,Amino.acid, Localization.prob)
   }
   
   table<-dplyr::left_join(ids,ratio, by=c("name"="rowname"))
@@ -551,15 +551,15 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   # table <- dplyr::left_join(table, centered, by = c("name" = "rowname")) %>%
   #   dplyr::arrange(desc(significant))
   table<-as.data.frame(row_data) %>% 
-    dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names,Residue.Both,peptide.sequence,Protein) %>%
+    dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names,Residue.Both, ID) %>%
     dplyr::left_join(table, ., by = "name")
   table<-table %>% dplyr::arrange(desc(significant))
-  colnames(table)[1]<-c("Phosphosite")
-  colnames(table)[2]<-c("Phosphosite ID")
+  colnames(table)[2]<-c("Phosphosite")
+  colnames(table)[3]<-c("Protein ID")
   
   if (apply_anova){
-    colnames(table)[3]<-c("ANOVA_p.val")
-    colnames(table)[4]<-c("ANOVA_p.adj")
+    colnames(table)[6]<-c("ANOVA_p.val")
+    colnames(table)[7]<-c("ANOVA_p.adj")
   } 
   
   return(table)

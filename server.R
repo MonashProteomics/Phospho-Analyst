@@ -806,9 +806,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep(),FALSE) %>% dplyr::select (-Protein)
+      get_results_phospho(dep(),FALSE) %>% dplyr::select (-Residue.Both, -ID)
     } else {
-      get_results_phospho(dep(),TRUE) %>% dplyr::select (-Protein)
+      get_results_phospho(dep(),TRUE) %>% dplyr::select (-Residue.Both, -ID)
     }
   })
   
@@ -2025,7 +2025,7 @@ server <- function(input, output,session){
            "Results" = get_results_proteins(dep_pr()),
            "Original_matrix"= unimputed_table_pr(),
            "Imputed_matrix" = imputed_table_pr(),
-           "Full dataset" = get_df_wide(dep_pr()))
+           "Full_dataset" = get_df_wide(dep_pr()))
   })
   
   output$downloadData_pr <- downloadHandler(
@@ -3311,9 +3311,9 @@ server <- function(input, output,session){
   ##### Get results dataframe from Summarizedexperiment object
   data_result_nr<-reactive({
     if(length(unique(exp_design_input()$condition)) <= 2){
-      get_results_phospho(dep_nr(),FALSE) %>% dplyr::select (-Protein)
+      get_results_phospho(dep_nr(),FALSE) %>% dplyr::select (-Residue.Both, -ID)
     } else {
-      get_results_phospho(dep_nr(),TRUE) %>% dplyr::select (-Protein)
+      get_results_phospho(dep_nr(),TRUE) %>% dplyr::select (-Residue.Both, -ID)
     }
   })
   
@@ -3550,11 +3550,11 @@ server <- function(input, output,session){
     if(length(unique(exp_design_input()$condition)) <= 2){
       switch(input$dataset_nr,
              "Results" = get_results_phospho(dep_nr(), FALSE),
-             "Full dataset" = get_df_wide(dep_nr()))
+             "Full_dataset" = get_df_wide(dep_nr()))
     } else {
       switch(input$dataset_nr,
              "Results" = get_results_phospho(dep_nr(), TRUE),
-             "Full dataset" = get_df_wide(dep_nr()))
+             "Full_dataset" = get_df_wide(dep_nr()))
     }
   })
   
@@ -4153,7 +4153,7 @@ server <- function(input, output,session){
   
   ##### Get results dataframe from Summarizedexperiment object
   data_result_dm<-reactive({
-    get_results_phospho(dep_dm(),TRUE) %>% dplyr::select (-Protein)
+    get_results_phospho(dep_dm(),TRUE) %>% dplyr::select (-Residue.Both, -ID)
   })
   
   
@@ -4383,7 +4383,7 @@ server <- function(input, output,session){
            "Results" = get_results_phospho(dep_dm(), TRUE),
            "Original_matrix"= unimputed_table_dm(),
            "Imputed_matrix" = imputed_table_dm(),
-           "Full dataset" = get_df_wide(dep_dm()),
+           "Full_dataset" = get_df_wide(dep_dm()),
            "Phosphomatics_input" = read.csv("www/Phosphomatics_input.csv"))
   })
   
@@ -5171,7 +5171,7 @@ server <- function(input, output,session){
            "Results" = get_results_proteins(dep_dm_pr()),
            "Original_matrix"= unimputed_table_dm_pr(),
            "Imputed_matrix" = imputed_table_dm_pr(),
-           "Full dataset" = get_df_wide(dep_dm_pr()))
+           "Full_dataset" = get_df_wide(dep_dm_pr()))
   })
   
   output$downloadData_dm_pr <- downloadHandler(
@@ -6308,7 +6308,7 @@ server <- function(input, output,session){
   
   ##### Get results dataframe from Summarizedexperiment object
   data_result_dm_nr<-reactive({
-    get_results_phospho(dep_dm_nr(),TRUE) %>% dplyr::select (-Protein)
+    get_results_phospho(dep_dm_nr(),TRUE) %>% dplyr::select (-Residue.Both, -ID)
   })
   
   
@@ -6535,7 +6535,7 @@ server <- function(input, output,session){
   datasetInput_dm_nr <- reactive({
     switch(input$dataset_dm_nr,
            "Results" = get_results_phospho(dep_dm_nr(), TRUE),
-           "Full dataset" = get_df_wide(dep_dm_nr()))
+           "Full_dataset" = get_df_wide(dep_dm_nr()))
   })
   
   output$downloadData_dm_nr <- downloadHandler(
