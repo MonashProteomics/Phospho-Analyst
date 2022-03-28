@@ -201,9 +201,12 @@ server <- function(input, output,session){
   })
   
   # download edited exp_design table
-  output$download_exp <- downloadHandler("phosphosite_exp_design.csv",
+  output$download_exp <- downloadHandler("Phospho-Analyst_experimental_design(Phosphosite).txt",
                                          content = function(file){
-                                           write.csv(phospho_exp_data2(), file, row.names = F)
+                                           write.table(phospho_exp_data2(),  file, 
+                                                     sep = "\t", 
+                                                     row.names = F,
+                                                     quote = F)
                                          },
                                          contentType = "text/csv")
   
@@ -279,10 +282,13 @@ server <- function(input, output,session){
   })
   
   # download edited exp_design table
-  output$download_exp_pr <- downloadHandler("protein_exp_design.csv",
-                                         content = function(file){
-                                           write.csv(protein_exp_data2(), file, row.names = F)
-                                         },
+  output$download_exp_pr <- downloadHandler("Phospho-Analyst_experimental_design(Proteome).txt",
+                                            content = function(file){
+                                              write.table(phospho_exp_data2(),  file, 
+                                                          sep = "\t", 
+                                                          row.names = F,
+                                                          quote = F)
+                                            },
                                          contentType = "text/csv")
   
   # proteinGroup exp_desgin file
