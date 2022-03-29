@@ -27,25 +27,26 @@ server <- function(input, output,session){
     
   })
   
-  
-  observeEvent(input$analyze ,{
+  observeEvent(input$analyze ,{ 
     if(input$analyze==0 ){
       return()
     }
     
-     else if (input$panel_list !=0){
-        shinyalert("In Progress!", "Data analysis has started, wait until table and plots
-                  appear on the screen", type="info",
-                   closeOnClickOutside = TRUE,
-                   closeOnEsc = TRUE,
-                   timer = 10000)  # timer in miliseconds (10 sec)
-      }
-    
     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+                appear on the screen", type="info",
+               closeOnClickOutside = TRUE,
+               closeOnEsc = TRUE,
+               timer = 25000)  # timer in miliseconds (10 sec)
+  })
+  
+  observe({
+    if (input$panel_list !="Phosphosite"){
+      shinyalert("In Progress!", "Data analysis has started, wait until table and plots
                 appear on the screen", type="info",
                  closeOnClickOutside = TRUE,
                  closeOnEsc = TRUE,
-                 timer = 25000)  # timer in miliseconds (10 sec)
+                 timer = 10000) 
+    }
   })
   
   # observe({
@@ -192,7 +193,7 @@ server <- function(input, output,session){
   observeEvent(input$save_exp, {
     output$save_message <- renderText({
       if (sum(is.na(phospho_exp_data2())) != 0) {
-        "Warning: Cells can not be empty"
+        stop(safeError("Warning: Cells can not be empty"))
       }
       else {
         "Experiment design table saved"
@@ -259,7 +260,7 @@ server <- function(input, output,session){
   observeEvent(input$save_exp_pr, {
     output$save_message_pr <- renderText({
       if (sum(is.na(protein_exp_data2())) != 0) {
-        "Warning: Cells can not be empty"
+        stop(safeError("Warning: Cells can not be empty"))
       }
       
       else {
@@ -267,7 +268,8 @@ server <- function(input, output,session){
           phospho_condition <- phospho_exp_data2()$condition %>% unique()
           protein_concition <- protein_exp_data2()$condition %>% unique()
           if(setequal(phospho_condition, protein_concition) != TRUE){
-            "The named conditions are different from Phosphosite Experimental Design Table"
+            stop(safeError("The named conditions are different from Phosphosite Experimental Design Table"))
+            
           }
           else {
             "Experiment design table saved"

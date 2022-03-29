@@ -197,7 +197,7 @@ ui <- function(request){
                                             tags$b(textOutput("save_message", container = span)),
                                             br(),
                                             br(),
-                                            p("(Hint: Drag the mouse to copy the same input)", style = 'color: red;')
+                                            p("(Hint: Drag the mouse to copy the same input)")
                                     )
                             ), 
                             
@@ -211,7 +211,7 @@ ui <- function(request){
                                             tags$b(textOutput("save_message_pr", container = span)),
                                             br(),
                                             br(),
-                                            p("(Hint: Drag the mouse to copy the same input)", style = 'color: red;')
+                                            p("(Hint: Drag the mouse to copy the same input)")
                                     )
                             ), 
                             
