@@ -659,7 +659,7 @@ server <- function(input, output,session){
   })
   
   protein_input<-reactive({ 
-    protein_selected  <- data_result()[input$contents_rows_selected,1]
+    protein_selected  <- data_result()[input$contents_rows_selected,2]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep())$replicate))) <= 8){
       plot_protein(dep(), protein_selected, as.character(input$type))
@@ -765,7 +765,7 @@ server <- function(input, output,session){
     
     result_df <- get_results_phospho(dep(),FALSE)
     print(input$contrast_1)  #test
-    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+    col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1, "_p.val", sep = ""),
                       paste(input$contrast_1, "_log2 fold change", sep = ""))
     print(col_selected) #test
@@ -3169,7 +3169,7 @@ server <- function(input, output,session){
   
   protein_input_nr<-reactive({ 
     
-    protein_selected  <- data_result_nr()[input$contents_nr_rows_selected,1]
+    protein_selected  <- data_result_nr()[input$contents_nr_rows_selected,2]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep_nr())$replicate))) <= 8){
       plot_protein(dep_nr(), protein_selected, as.character(input$type_nr))
@@ -3271,7 +3271,7 @@ server <- function(input, output,session){
     
     result_df <- get_results_phospho(dep_nr(),FALSE)
     print(input$contrast_1_nr)  #test
-    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+    col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1_nr, "_p.val", sep = ""),
                       paste(input$contrast_1_nr, "_log2 fold change", sep = ""))
     print(col_selected) #test
@@ -4010,7 +4010,7 @@ server <- function(input, output,session){
   
   protein_input_dm<-reactive({ 
     
-    protein_selected  <- data_result_dm()[input$contents_dm_rows_selected,1]
+    protein_selected  <- data_result_dm()[input$contents_dm_rows_selected,2]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 8){
       plot_protein(dep_dm(), protein_selected, as.character(input$type_dm))
@@ -4103,7 +4103,7 @@ server <- function(input, output,session){
     
     result_df <- get_results_phospho(dep_dm(),FALSE)
     print(input$contrast_1_dm)  #test
-    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+    col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1_dm, "_p.val", sep = ""),
                       paste(input$contrast_1_dm, "_log2 fold change", sep = ""))
     print(col_selected) #test
@@ -6177,7 +6177,7 @@ server <- function(input, output,session){
   
   protein_input_dm_nr<-reactive({
     
-    protein_selected  <- data_result_dm_nr()[input$contents_dm_nr_rows_selected,1]
+    protein_selected  <- data_result_dm_nr()[input$contents_dm_nr_rows_selected,2]
     protein_selected <-as.character(protein_selected)
     if(length(levels(as.factor(colData(dep_dm_nr())$replicate))) <= 8){
       plot_protein(dep_dm_nr(), protein_selected, as.character(input$type_dm_nr))
@@ -6269,7 +6269,7 @@ server <- function(input, output,session){
     
     result_df <- get_results_phospho(dep_dm_nr(),FALSE)
     print(input$contrast_1_dm_nr)  #test
-    col_selected <- c('Protein','Gene.names','peptide.sequence', 'Residue.Both',
+    col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1_dm_nr, "_p.val", sep = ""),
                       paste(input$contrast_1_dm_nr, "_log2 fold change", sep = ""))
     print(col_selected) #test
