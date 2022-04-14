@@ -211,6 +211,20 @@ server <- function(input, output,session){
                                          },
                                          contentType = "text/csv")
   
+  # # rewrite exp_design table
+  # observeEvent(input$showTable ,{ 
+  #   if(input$showTable==0){
+  #     return()
+  #   }
+  #   shinyjs::hide("panels")
+  #   shinyjs::hide("qc_tab")
+  #   shinyjs::show("quickstart_info")
+  # })
+  # 
+  # observeEvent(input$original_exp,{
+  #   output$exp_phospho<- renderRHandsontable({phospho_exp_data1()})
+  #   })
+  
   # phosphosite exp_desgin file
   exp_design_input<-eventReactive(input$analyze,{
     inFile<-input$file3
@@ -396,7 +410,7 @@ server <- function(input, output,session){
     # int_names <- colnames( data_unique_names[,intensity_ints]) %>% gsub("Pharmacological_", "", .)
     # names(data_unique_names)[intensity_ints] <- c(int_names)
     
-    #test_match_lfq_column_design(data_unique,intensity_ints, exp_design())
+    test_match_lfq_column_design(data_unique_names,intensity_ints, exp_design())
     data_se <- DEP::make_se(data_unique_names, intensity_ints, exp_design())
     
     as.numeric(rowData(data_se)$Score.diff) # add test
