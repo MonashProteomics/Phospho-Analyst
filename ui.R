@@ -1008,7 +1008,39 @@ ui <- function(request){
                                                  
                                                  
                                                  
-                                        )) # tabPanel list closed
+                                        ),
+                                        tabPanel("Phosphosite Occurrences",
+                                                 br(),
+                                                 fluidRow(
+                                                   box(width =3,
+                                                       title = "Options",
+                                                       tags$h4("Select Range of Replicate Count"),
+                                                       tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"), # hide minor ticks of a sliderInput
+                                                       uiOutput('sidebar'),
+                                                       br(),
+                                                       tags$hr(),
+                                                       tags$h4("Subset Results Table"),
+                                                       prettyCheckboxGroup("filtered_condition",
+                                                                           HTML("Filter Condition<br/>Remove"),
+                                                                           choices = c("Reverse sequences",
+                                                                                       "Potential contaminants", 
+                                                                                       "Peptides Localization prob >= 0.75"
+                                                                           ),
+                                                                           shape = "round",
+                                                                           selected = NULL, 
+                                                       ),
+                                                       status = "success",
+                                                       solidHeader = TRUE
+                                                   ),
+                                                   box(width = 9,
+                                                       title = "Results Table",
+                                                       DT::dataTableOutput("contents_occ"),
+                                                       downloadButton('download_attendance', 'Download Table'),
+                                                       status = "success",
+                                                       solidHeader = TRUE
+                                                   )
+                                                 ) # fuildrow close
+                                                 )) # tabPanel list closed
                         ) # panelBox closed
                     ) 
                     

@@ -17,6 +17,7 @@ server <- function(input, output,session){
       hideTab(inputId = "panel_list", target = "Phosphosite")
       hideTab(inputId = "panel_list", target = "Comparison")
       hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
+      hideTab(inputId = "panel_list", target = "Phosphosite Occurrences")
     }
     
     if (is.null(input$file2)){
@@ -3787,6 +3788,155 @@ server <- function(input, output,session){
       dev.off()
     }
   )
+  
+  #### Phosphosite Occurrence page logic ========== #############
+  data_attendance<-reactive({
+    peptide_data <- phospho_data_input()
+    
+    # get the required intensity columns
+    intensity_cols <- grep("^Intensity.+___\\d", colnames(peptide_data))
+    intensity_names <- colnames( peptide_data[,intensity_cols])
+    
+    ## Expand Site table
+    # get all intensity columns
+    intensity <- grep("^Intensity.+|Intensity", colnames(peptide_data)) 
+    # get the required intensity columns
+    intensity_cols <- grep("^Intensity.+___\\d", colnames(peptide_data))
+    intensity_names <- colnames( peptide_data[,intensity_cols])
+    # ensure all intensity columns are numeric type
+    peptide_data[,intensity_cols] <- sapply(peptide_data[,intensity_cols],as.numeric)
+    
+    # get the intensity columns need to be dropped
+    drop_cols <- setdiff(intensity, intensity_cols)
+    # drop columns
+    data_new <- subset(peptide_data, select = -drop_cols)
+    
+    # add required columns
+    peptide.sequence <- data_new$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
+    data_new <- dplyr::mutate(data_new,peptide.sequence, .after = "Phospho..STY..Score.diffs")
+    
+    data_new$Gene.names <- data_new$Gene.names %>% toupper()
+    data_new$Gene.names <- data_new$Gene.names %>%  gsub(';.*','',.) # only keep the first gene name
+    
+    data_new <- data_new %>% select("peptide.sequence", "Protein", "Amino.acid",
+                                    "Localization.prob",all_of(intensity_names),"Gene.names","Protein.names","Position","Reverse", "Potential.contaminant")
+    
+    # expand site table
+    data_ex <- data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
+                                                names_to = c('.value','Multiplicity'),
+                                                names_pattern = '(.*)___(.)',
+                                                values_drop_na = TRUE)
+    
+    # create Phosphosite name
+    data_ex <- data_ex %>%
+      mutate(Phosphosite = paste(Gene.names,Position, Multiplicity,sep = '_'))
+    
+    # new intensity column names
+    intensity_names_new <- colnames(data_ex[,grep("^Intensity.", colnames(data_ex))])
+    
+    # select result table columns
+    df <- data_ex  %>% select("peptide.sequence", "Phosphosite", "Protein", "Amino.acid",
+                              "Localization.prob",all_of(intensity_names_new),"Gene.names","Protein.names","Reverse", "Potential.contaminant")
+    
+    # get conditions
+    exp_design <- exp_design_input()
+    conditions <- exp_design$condition %>% unique()
+    
+    # replace intensity column names
+    replace_peptide <- paste('LFQ_intensity',exp_design$condition, exp_design$replicate,sep = "_") %>% unique()
+    colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(colnames(df), intensity_names_new, nomatch = 0)]
+    
+    # filter if all intensity are 0
+    df <- df[rowSums(df[,grep("^LFQ_", colnames(df))]) != 0,]
+    
+    for (i in 1:length(conditions)) {
+      condition <- conditions[i]
+      pattern <- paste(condition,"[[:digit:]]",sep = "_")
+      df[paste0("#Occurences",sep = "_",condition)] <- rowSums(df %>% select(grep(pattern, colnames(df))) != 0)
+      
+      # change column order
+      df <- dplyr::relocate(df, paste0("#Occurences",sep = "_",condition), .before = paste("LFQ_intensity", conditions[1],"1",sep = "_"), .after = NULL)
+      # print(colnames(df))
+      cols <- grep(paste0(condition, "$"),colnames(df))
+      
+      if (!is.null(input[[paste0("",condition)]])){
+        df <- df %>%
+          dplyr::filter(df[[cols]] >=input[[paste0("",condition)]][1] & df[[cols]] <=input[[paste0("",condition)]][2])
+      }
+      
+    }
+    
+    return(df)
+  })
+  
+  data_attendance_filtered <- reactive({
+    filtered_data <- data_attendance()
+    if (is.null(input$filtered_condition)) {
+      filtered_data <- filtered_data
+    }
+    else {
+      if(("Reverse" %in% colnames(filtered_data)) & ("Reverse sequences" %in% input$filtered_condition)){
+        filtered_data<-dplyr::filter(filtered_data,Reverse!="+")
+      }
+      else{filtered_data <-filtered_data}
+      if(("Potential.contaminant" %in% colnames(filtered_data)) & ("Potential contaminants" %in% input$filtered_condition)){
+        filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
+      }
+      else{filtered_data <-filtered_data}
+      if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides Localization prob >= 0.75" %in% input$filtered_condition)){
+        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= 0.75)
+      }
+      else{filtered_data <-filtered_data}
+    }
+    
+    drop_cols <- c("Reverse", "Potential.contaminant")
+    filtered_data<- filtered_data[, !(colnames(filtered_data) %in% drop_cols)]
+    return(filtered_data)
+  })
+  
+  #### Data table
+  output$contents_occ <- DT::renderDataTable({
+    df<- data_attendance_filtered()
+    return(df)},
+    options = list(scrollX = TRUE,
+                   scroller = TRUE,
+                   autoWidth=TRUE,
+                   # columnDefs= list(list(width = "10%", targets = c(1)),
+                   #                  list(width = "400px", targets = grep("Protein.names", names(df)))
+                   #                  )
+                   columnDefs= list(list(width = '400px', targets = c(-1)))
+    )
+  )
+  
+  make_sliderInput <- function(n= 1){
+    exp_design_input <- exp_design_input()
+    conditions <- exp_design_input$condition %>% unique()
+    
+    sliderInput(paste0("",conditions[n]),
+                label=paste0("",conditions[n]),
+                min = min(0), 
+                max = max(exp_design_input$replicate),
+                value = c(0, max(exp_design_input$replicate)),
+                step = 1)}
+  
+  slider_bars <- reactive({
+    exp_design <- exp_design_input()
+    lapply(X = 1:length(unique(exp_design$condition)), FUN = make_sliderInput)
+  })
+  
+  output$sidebar <- renderUI({
+    tagList(slider_bars())
+  })
+  
+  output$download_attendance <- downloadHandler("Occurrences_results_table.csv",
+                                                content = function(file){
+                                                  write.table(data_attendance_filtered(),  
+                                                              file,
+                                                              col.names = TRUE,
+                                                              row.names = FALSE,
+                                                              sep =",")
+                                                },
+                                                contentType = "text/csv")
   
   #### Demo logic (Phosphosite)========== #############
   
