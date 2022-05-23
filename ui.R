@@ -1009,12 +1009,12 @@ ui <- function(request){
                                                  
                                                  
                                         ),
-                                        tabPanel("Phosphosite Occurrences",
+                                        tabPanel("Phosphosite Absence/Presence",
                                                  br(),
                                                  fluidRow(
                                                    box(width =3,
                                                        title = "Options",
-                                                       tags$h4("Select Range of Replicate Count"),
+                                                       tags$h4("Number of replicates present"),
                                                        tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"), # hide minor ticks of a sliderInput
                                                        uiOutput('sidebar'),
                                                        br(),
