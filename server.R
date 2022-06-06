@@ -37,7 +37,7 @@ server <- function(input, output,session){
                 appear on the screen", type="info",
                closeOnClickOutside = TRUE,
                closeOnEsc = TRUE,
-               timer = 25000)  # timer in miliseconds (10 sec)
+               timer = 0)  # not close the modal automatically 
   })
   
   observe({
@@ -46,7 +46,7 @@ server <- function(input, output,session){
                 appear on the screen", type="info",
                  closeOnClickOutside = TRUE,
                  closeOnEsc = TRUE,
-                 timer = 10000) 
+                 timer = 0) # not close the modal automatically 
     }
   })
   
@@ -178,6 +178,7 @@ server <- function(input, output,session){
                      sep = "\t")
     
     tempTable =  get_exp_design(df)
+    tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
       hot_col("label", readOnly = T) 
   })
@@ -243,8 +244,8 @@ server <- function(input, output,session){
       temp_df$condition<-trimws(temp_df$condition, which = "left")
       temp_df$label <- temp_df$label %>% gsub('[-]', '.',.)
       temp_df$condition <- temp_df$condition %>% gsub('[-]', '.',.)
-      # temp_df$label <- temp_df$label %>% gsub("Pharmacological_", "", .) 
-      # temp_df$condition <- temp_df$condition %>% gsub("Pharmacological_", "", .) 
+      temp_df$label[grepl("^[[:digit:]]", temp_df$label)] <- paste("X",temp_df$label,sep = '')
+      temp_df$condition[grepl("^[[:digit:]]", temp_df$condition)] <- paste("X",temp_df$condition,sep = '')
     }
     return(temp_df)
   })
