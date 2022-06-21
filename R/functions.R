@@ -554,6 +554,10 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
     dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names,Residue.Both, ID) %>%
     dplyr::left_join(table, ., by = "name")
   table<-table %>% dplyr::arrange(desc(significant))
+  # table$Gene.names[is.null(table$Gene.names)] <- "NoGeneNameAvailable"
+  # table$Protein.names[is.null(table$Protein.names)] <- "NoProteinNameAvailable"
+  table$Gene.names[table["Gene.names"]==""] <- "NoGeneNameAvailable"
+  table$Protein.names[table["Protein.names"]==""] <- "NoProteinNameAvailable"
   colnames(table)[2]<-c("Phosphosite")
   colnames(table)[3]<-c("Protein ID")
   
@@ -640,6 +644,8 @@ get_results_proteins <- function(dep, apply_anova = FALSE) {
     dplyr::select(name, imputed, num_NAs, Protein.names) %>%
     dplyr::left_join(table, ., by = "name")
   table<-table %>% dplyr::arrange(desc(significant))
+  table$name[table["name"]==""] <- "NoGeneNameAvailable"
+  table$Protein.names[table["Protein.names"]==""] <- "NoProteinNameAvailable"
   colnames(table)[1]<-c("Gene Name")
   colnames(table)[2]<-c("Protein ID")
 

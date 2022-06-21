@@ -54,17 +54,17 @@ ui <- function(request){
                                             checkboxInput("paired",
                                                           p("Paired test", style = 'color:#2E3440'), FALSE),
                                             
-                                            prettyRadioButtons("normalisation",
+                                            shinyWidgets::prettyRadioButtons("normalisation",
                                                                p("Normalisation type", style = 'color:#2E3440'), 
                                                                choices = c("vsn", "median", "median subtraction" = "median_sub"),
                                                                selected = "vsn"),
                                             
-                                            prettyRadioButtons("imputation",
+                                            shinyWidgets::prettyRadioButtons("imputation",
                                                                p("Imputation type", style = 'color:#2E3440'),
                                                                choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],
                                                                selected = "man"),
                                             
-                                            prettyRadioButtons("fdr_correction",
+                                            shinyWidgets::prettyRadioButtons("fdr_correction",
                                                                p("Type of FDR correction", style = 'color:#2E3440'),
                                                                choices =  c("Benjamini Hochberg"="BH",
                                                                             "t-statistics-based"="fdrtool"
@@ -101,12 +101,12 @@ ui <- function(request){
                                                      checkboxInput("paired_pr",
                                                                    p("Paired test", style = 'color:#2E3440'), FALSE),
                                                      
-                                                     prettyRadioButtons("imputation_pr",
+                                                     shinyWidgets::prettyRadioButtons("imputation_pr",
                                                                         p("Imputation type", style = 'color:#2E3440'),
                                                                         choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],
                                                                         selected = "man"),
                                                      
-                                                     prettyRadioButtons("fdr_correction_pr",
+                                                     shinyWidgets::prettyRadioButtons("fdr_correction_pr",
                                                                         p("Type of FDR correction", style = 'color:#2E3440'),
                                                                         choices =  c("Benjamini Hochberg"="BH",
                                                                                      "t-statistics-based"="fdrtool"
@@ -298,13 +298,13 @@ ui <- function(request){
                                                                       column(8,uiOutput("volcano_cntrst")),
                                                                       
                                                                       column(4,
-                                                                             prettyCheckbox("check_anova",
+                                                                             shinyWidgets::prettyCheckbox("check_anova",
                                                                                             "Apply ANOVA",
                                                                                             value = FALSE),
-                                                                             prettyCheckbox("check_names",
+                                                                             shinyWidgets::prettyCheckbox("check_names",
                                                                                             "Display names",
                                                                                             value = FALSE),
-                                                                             prettyCheckbox("p_adj",
+                                                                             shinyWidgets::prettyCheckbox("p_adj",
                                                                                             "Adjusted p values",
                                                                                             value = FALSE)
                                                                       )
@@ -343,7 +343,7 @@ ui <- function(request){
                                                        ),
                                                        tabPanel(title = "Individual Plot",
                                                                 fluidRow(
-                                                                  box(prettyRadioButtons("type",
+                                                                  box(shinyWidgets::prettyRadioButtons("type",
                                                                                          "Plot type",
                                                                                          choices = c("Box Plot"= "boxplot",
                                                                                                      "Violin Plot"="violin", 
@@ -527,13 +527,13 @@ ui <- function(request){
                                                                       column(8,uiOutput("volcano_cntrst_pr")),
                                                                       
                                                                       column(4,
-                                                                             prettyCheckbox("check_anova_pr",
+                                                                             shinyWidgets::prettyCheckbox("check_anova_pr",
                                                                                             "Apply ANOVA",
                                                                                             value = FALSE),
-                                                                             prettyCheckbox("check_names_pr",
+                                                                             shinyWidgets::prettyCheckbox("check_names_pr",
                                                                                             "Display names",
                                                                                             value = FALSE),
-                                                                             prettyCheckbox("p_adj_pr",
+                                                                             shinyWidgets::prettyCheckbox("p_adj_pr",
                                                                                             "Adjusted p values",
                                                                                             value = FALSE)
                                                                       )
@@ -572,7 +572,7 @@ ui <- function(request){
                                                        ),
                                                        tabPanel(title = "Individual Plot",
                                                                 fluidRow(
-                                                                  box(prettyRadioButtons("type_pr",
+                                                                  box(shinyWidgets::prettyRadioButtons("type_pr",
                                                                                          "Plot type",
                                                                                          choices = c("Box Plot"= "boxplot",
                                                                                                      "Violin Plot"="violin", 
@@ -832,13 +832,13 @@ ui <- function(request){
                                                                       column(8,uiOutput("volcano_cntrst_nr")),
                                                                       
                                                                       column(4,
-                                                                             prettyCheckbox("check_anova_nr",
+                                                                             shinyWidgets::prettyCheckbox("check_anova_nr",
                                                                                             "Apply ANOVA",
                                                                                             value = FALSE),
-                                                                             prettyCheckbox("check_names_nr",
+                                                                             shinyWidgets::prettyCheckbox("check_names_nr",
                                                                                             "Display names",
                                                                                             value = FALSE),
-                                                                             prettyCheckbox("p_adj_nr",
+                                                                             shinyWidgets::prettyCheckbox("p_adj_nr",
                                                                                             "Adjusted p values",
                                                                                             value = FALSE)
                                                                       )
@@ -877,7 +877,7 @@ ui <- function(request){
                                                        ),
                                                        tabPanel(title = "Individual Plot",
                                                                 fluidRow(
-                                                                  box(prettyRadioButtons("type_nr",
+                                                                  box(shinyWidgets::prettyRadioButtons("type_nr",
                                                                                          "Plot type",
                                                                                          choices = c("Box Plot"= "boxplot",
                                                                                                      "Violin Plot"="violin", 
@@ -1020,7 +1020,7 @@ ui <- function(request){
                                                        br(),
                                                        tags$hr(),
                                                        tags$h4("Subset Results Table"),
-                                                       prettyCheckboxGroup("filtered_condition",
+                                                       shinyWidgets::prettyCheckboxGroup("filtered_condition",
                                                                            HTML("Filter Condition<br/>Remove"),
                                                                            choices = c("Reverse sequences",
                                                                                        "Potential contaminants", 
@@ -1099,13 +1099,13 @@ ui <- function(request){
                                                             column(8,uiOutput("volcano_cntrst_dm")),
                                                             
                                                             column(4,
-                                                                   prettyCheckbox("check_anova_dm",
+                                                                   shinyWidgets::prettyCheckbox("check_anova_dm",
                                                                                   "Apply ANOVA",
                                                                                   value = FALSE),
-                                                                   prettyCheckbox("check_names_dm",
+                                                                   shinyWidgets::prettyCheckbox("check_names_dm",
                                                                                   "Display names",
                                                                                   value = FALSE),
-                                                                   prettyCheckbox("p_adj_dm",
+                                                                   shinyWidgets::prettyCheckbox("p_adj_dm",
                                                                                   "Adjusted p values",
                                                                                   value = FALSE)
                                                             )
@@ -1144,7 +1144,7 @@ ui <- function(request){
                                              ),
                                              tabPanel(title = "Individual Plot",
                                                       fluidRow(
-                                                        box(prettyRadioButtons("type_dm",
+                                                        box(shinyWidgets::prettyRadioButtons("type_dm",
                                                                                "Plot type",
                                                                                choices = c("Box Plot"= "boxplot",
                                                                                            "Violin Plot"="violin", 
@@ -1320,13 +1320,13 @@ ui <- function(request){
                                                             column(8,uiOutput("volcano_cntrst_dm_pr")),
                                                             
                                                             column(4,
-                                                                   prettyCheckbox("check_anova_dm_pr",
+                                                                   shinyWidgets::prettyCheckbox("check_anova_dm_pr",
                                                                                   "Apply ANOVA",
                                                                                   value = FALSE),
-                                                                   prettyCheckbox("check_names_dm_pr",
+                                                                   shinyWidgets::prettyCheckbox("check_names_dm_pr",
                                                                                   "Display names",
                                                                                   value = FALSE),
-                                                                   prettyCheckbox("p_adj_dm_pr",
+                                                                   shinyWidgets::prettyCheckbox("p_adj_dm_pr",
                                                                                   "Adjusted p values",
                                                                                   value = FALSE)
                                                             )
@@ -1365,7 +1365,7 @@ ui <- function(request){
                                              ),
                                              tabPanel(title = "Individual Plot",
                                                       fluidRow(
-                                                        box(prettyRadioButtons("type_dm_pr",
+                                                        box(shinyWidgets::prettyRadioButtons("type_dm_pr",
                                                                                "Plot type",
                                                                                choices = c("Box Plot"= "boxplot",
                                                                                            "Violin Plot"="violin", 
@@ -1630,13 +1630,13 @@ ui <- function(request){
                                                      column(8,uiOutput("volcano_cntrst_dm_nr")),
                                                      
                                                      column(4,
-                                                            prettyCheckbox("check_anova_dm_nr",
+                                                            shinyWidgets::prettyCheckbox("check_anova_dm_nr",
                                                                            "Apply ANOVA",
                                                                            value = FALSE),
-                                                            prettyCheckbox("check_names_dm_nr",
+                                                            shinyWidgets::prettyCheckbox("check_names_dm_nr",
                                                                            "Display names",
                                                                            value = FALSE),
-                                                            prettyCheckbox("p_adj_dm_nr",
+                                                            shinyWidgets::prettyCheckbox("p_adj_dm_nr",
                                                                            "Adjusted p values",
                                                                            value = FALSE)
                                                      )
@@ -1675,7 +1675,7 @@ ui <- function(request){
                                       ),
                                       tabPanel(title = "Individual Plot",
                                                fluidRow(
-                                                 box(prettyRadioButtons("type_dm_nr",
+                                                 box(shinyWidgets::prettyRadioButtons("type_dm_nr",
                                                                         "Plot type",
                                                                         choices = c("Box Plot"= "boxplot",
                                                                                     "Violin Plot"="violin", 

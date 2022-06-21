@@ -17,7 +17,7 @@ server <- function(input, output,session){
       hideTab(inputId = "panel_list", target = "Phosphosite")
       hideTab(inputId = "panel_list", target = "Comparison")
       hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
-      hideTab(inputId = "panel_list", target = "Phosphosite Occurrences")
+      hideTab(inputId = "panel_list", target = "Phosphosite Absence/Presence")
     }
     
     if (is.null(input$file2)){
@@ -27,6 +27,19 @@ server <- function(input, output,session){
     }
     
   })
+  
+  # Hide LFQ page if only have one replicate in each sample
+  observeEvent(input$analyze ,{ 
+    exp <- exp_design_input()
+    if (max(exp$replicate)==1){
+      hideTab(inputId = "panel_list", target = "Phosphosite")
+      hideTab(inputId = "panel_list", target = "Comparison")
+      hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
+      hideTab(inputId = "panel_list", target = "Protein")
+    } 
+    
+  })
+  
   
   observeEvent(input$analyze ,{ 
     if(input$analyze==0 ){
@@ -41,7 +54,7 @@ server <- function(input, output,session){
   })
   
   observe({
-    if (input$panel_list !="Phosphosite"){
+    if (input$panel_list !="Phosphosite" & input$panel_list !="Phosphosite Absence/Presence"){
       shinyalert("In Progress!", "Data analysis has started, wait until table and plots
                 appear on the screen", type="info",
                  closeOnClickOutside = TRUE,
@@ -344,11 +357,11 @@ server <- function(input, output,session){
       phospho_data <- reactive({phospho_data_input()})
     }
     
-    if(grepl('+',phospho_data()$Reverse)){
+    if("TRUE" %in% grepl('+',phospho_data()$Reverse)){
       filtered_data<-dplyr::filter(phospho_data(),Reverse!="+")
     }
     else{filtered_data<-phospho_data()}
-    if(grepl('+',filtered_data$Potential.contaminant)){
+    if("TRUE" %in% grepl('+',filtered_data$Potential.contaminant)){
       filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
     }
     
@@ -1553,14 +1566,14 @@ server <- function(input, output,session){
       protein_data <- reactive({protein_data_input()})
     }
     
-    if(grepl('+',protein_data()$Reverse)){
+    if("TRUE" %in% grepl('+',protein_data()$Reverse)){
       filtered_data<-dplyr::filter(protein_data(),Reverse!="+")
     }
     else{filtered_data<-protein_data()}
-    if(grepl('+',filtered_data$Potential.contaminant)){
+    if("TRUE" %in% grepl('+',filtered_data$Potential.contaminant)){
       filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
     }
-    if(grepl('+',filtered_data$Only.identified.by.site)){
+    if("TRUE" %in% grepl('+',filtered_data$Only.identified.by.site)){
       filtered_data<-dplyr::filter(filtered_data,Only.identified.by.site!="+") 
     }
     if(input$single_peptide_pr==TRUE){
@@ -3847,6 +3860,8 @@ server <- function(input, output,session){
     replace_peptide <- paste('LFQ_intensity',exp_design$condition, exp_design$replicate,sep = "_") %>% unique()
     colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(colnames(df), intensity_names_new, nomatch = 0)]
     
+    # remove intensity columns not in experimental design file.
+    df <- df[!is.na(names(df))]
     # filter if all intensity are 0
     df <- df[rowSums(df[,grep("^LFQ_", colnames(df))]) != 0,]
     
@@ -3866,7 +3881,8 @@ server <- function(input, output,session){
       }
       
     }
-    
+    df$Gene.names[df["Gene.names"]==""] <- "NoGeneNameAvailable"
+    df$Protein.names[df["Protein.names"]==""] <- "NoProteinNameAvailable"
     return(df)
   })
   
