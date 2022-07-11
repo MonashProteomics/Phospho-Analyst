@@ -164,7 +164,7 @@ server <- function(input, output,session){
                           fill= TRUE, # to fill any missing data
                           sep = "\t"
     )
-    #validate(maxquant_input_test(temp_data))
+    validate(phospho_input_test(temp_data))
     return(temp_data)
   })
   
@@ -177,7 +177,7 @@ server <- function(input, output,session){
                            fill= TRUE, # to fill any missing data
                            sep = "\t"
     )
-    #validate(maxquant_input_test(temp_data))
+    validate(maxquant_input_test(temp_data1))
     return(temp_data1)
   })
   
@@ -425,7 +425,7 @@ server <- function(input, output,session){
     # int_names <- colnames( data_unique_names[,intensity_ints]) %>% gsub("Pharmacological_", "", .)
     # names(data_unique_names)[intensity_ints] <- c(int_names)
     
-    test_match_lfq_column_design(data_unique_names,intensity_ints, exp_design())
+    test_match_lfq_column_design_phospho(data_unique_names,intensity_ints, exp_design())
     data_se <- DEP::make_se(data_unique_names, intensity_ints, exp_design())
     
     as.numeric(rowData(data_se)$Score.diff) # add test

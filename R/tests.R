@@ -17,6 +17,64 @@ exp_design_test<-function(exp_design){
   
 }
 
+### Test if column names are proper in maxquant Phospho(STY)sites file
+phospho_input_test<-function(maxquant_input){
+  col_names<-colnames(maxquant_input)
+  ## 
+  if(!"Gene.names" %in% col_names){
+    stop(safeError("The column 'Gene names' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (any(grepl("^Intensity.+___\\d", col_names))==FALSE){
+    stop(safeError("Columns starting with 'Intensity' are not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  # else if (!"Protein.IDs" %in% col_names){
+  #   stop(safeError("The column 'Protein IDs' is not found in the MaxQuant Phospho(STY)sites File"))
+  # }
+  
+  else if (!"Reverse" %in% col_names){
+    stop(safeError("The column 'Reverse' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Potential.contaminant" %in% col_names){
+    stop(safeError("The column 'Potential contaminant' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Localization.prob" %in% col_names){
+    stop(safeError("The column 'Localization prob' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Phospho..STY..Probabilities" %in% col_names){
+    stop(safeError("The column 'Phospho (STY) Probabilities' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Positions.within.proteins" %in% col_names){
+    stop(safeError("The column 'Positions within proteins' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Amino.acid" %in% col_names){
+    stop(safeError("The column 'Amino acid' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Position" %in% col_names){
+    stop(safeError("The column 'Position' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"id" %in% col_names){
+    stop(safeError("The column 'id' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Protein" %in% col_names){
+    stop(safeError("The column 'Protein' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+  else if (!"Protein.names" %in% col_names){
+    stop(safeError("The column 'Protein names' is not found in the MaxQuant Phospho(STY)sites File"))
+  }
+  
+}
+
 ### Test if column names are proper in maxquant ProteinGroups file
 maxquant_input_test<-function(maxquant_input){
   col_names<-colnames(maxquant_input)
@@ -57,6 +115,44 @@ maxquant_input_test<-function(maxquant_input){
 
 
 ### Test if experimental design names and LFQ column names match
+test_match_lfq_column_design_phospho<-function(unique_data, lfq_columns, exp_design){
+  # Show error if inputs are not the required classes
+  assertthat::assert_that(is.data.frame(unique_data),
+                          is.integer(lfq_columns),
+                          is.data.frame(exp_design))
+  
+  # Show error if inputs do not contain required columns
+  if(any(!c("name", "ID") %in% colnames(unique_data))) {
+    stop(safeError("'Gene name', 'Position', and/or 'id' columns are not present in
+          Phospho(STY)sites input file"
+    ))
+  }
+  
+  if(any(!c("label", "condition", "replicate") %in% colnames(exp_design))) {
+    stop(safeError("'label', 'condition' and/or 'replicate' columns
+         are not present in the experimental design"))
+  }
+  
+  if(any(!apply(unique_data[, lfq_columns], 2, is.numeric))) {
+    stop(safeError("specified 'columns' should be numeric
+         Run make_se_parse() with the appropriate columns as argument"))
+  }
+  
+  raw <- unique_data[, lfq_columns]
+  
+  expdesign <- mutate(exp_design, condition = make.names(condition)) %>%
+    unite(ID, condition, replicate, remove = FALSE)
+  rownames(expdesign) <- expdesign$ID
+  
+  matched <- match(make.names(delete_prefix(expdesign$label)),
+                   make.names(delete_prefix(colnames(raw))))
+  
+  if(any(is.na(matched))) {
+    stop(safeError("The labels/'run names' in the experimental design DID NOT match
+         with intensity column names in maxquants Phospho(STY)sites file
+         Run Phospho-Analyst with correct labels in the experimental design"))
+  }
+}
 
 test_match_lfq_column_design<-function(unique_data, lfq_columns, exp_design){
   # Show error if inputs are not the required classes
@@ -93,7 +189,7 @@ test_match_lfq_column_design<-function(unique_data, lfq_columns, exp_design){
   if(any(is.na(matched))) {
     stop(safeError("The labels/'run names' in the experimental design DID NOT match
          with lfq column names in maxquants proteinGroups file
-         Run LFQ-Analyst with correct labels in the experimental design"))
+         Run Phospho-Analyst with correct labels in the experimental design"))
   }
 }
 
