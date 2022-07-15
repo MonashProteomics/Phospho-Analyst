@@ -1,6 +1,6 @@
 #Define server logic to read selected file ----
 server <- function(input, output,session){
-  options(shiny.maxRequestSize=120*1024^2)## Set maximum upload size to 100MB
+  options(shiny.maxRequestSize=120*1024^2)## Set maximum upload size to 120MB
   #  Show elements on clicking Start analysis button
   observeEvent(input$analyze ,{ 
     if(input$analyze==0){
@@ -6923,6 +6923,112 @@ server <- function(input, output,session){
     }
   )
   
+  #### Occurrence demo page logic ####
+  env_occ_dm <- reactive({
+    LoadToEnvironment("data/attendance_df.RData", env = globalenv())
+  })
+  
+  attendance_dm <- reactive({
+    env_occ_dm()[["attendance_df"]]
+  }) 
+  
+  data_attendance_dm <-reactive({
+    df <- attendance_dm()
+    if (!is.null(input[["CTRL"]])){
+      df <- df %>%
+        dplyr::filter(df[[6]] >=input[["CTRL"]][1] & df[[6]] <=input[["CTRL"]][2])
+    }
+    if (!is.null(input[["L41.10um"]])){
+      df <- df %>%
+        dplyr::filter(df[[7]] >=input[["L41.10um"]][1] & df[[7]] <=input[["L41.10um"]][2])
+    }
+    if (!is.null(input[["L41.1um"]])){
+      df <- df %>%
+        dplyr::filter(df[[8]] >=input[["L41.1um"]][1] & df[[8]] <=input[["L41.1um"]][2])
+    }
+    if (!is.null(input[["ALG.10um"]])){
+      df <- df %>%
+        dplyr::filter(df[[9]] >=input[["ALG.10um"]][1] & df[[9]] <=input[["ALG.10um"]][2])
+    }
+    if (!is.null(input[["ALG.1um"]])){
+      df <- df %>%
+        dplyr::filter(df[[10]] >=input[["ALG.1um"]][1] & df[[10]] <=input[["ALG.1um"]][2])
+    }
+    return(df)
+  })
+  
+  data_attendance_filtered_dm <- reactive({
+    filtered_data <- data_attendance_dm()
+    if (is.null(input$filtered_condition_dm)) {
+      filtered_data <- filtered_data
+    }
+    else {
+      if(("Reverse" %in% colnames(filtered_data)) & ("Reverse sequences" %in% input$filtered_condition_dm)){
+        filtered_data<-dplyr::filter(filtered_data,Reverse!="+")
+      }
+      else{filtered_data <-filtered_data}
+      if(("Potential.contaminant" %in% colnames(filtered_data)) & ("Potential contaminants" %in% input$filtered_condition_dm)){
+        filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
+      }
+      else{filtered_data <-filtered_data}
+      if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides Localization prob >= 0.75" %in% input$filtered_condition_dm)){
+        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= 0.75)
+      }
+      else{filtered_data <-filtered_data}
+    }
+    
+    drop_cols <- c("Localization.prob", "Reverse", "Potential.contaminant")
+    filtered_data<- filtered_data[, !(colnames(filtered_data) %in% drop_cols)]
+    return(filtered_data)
+  })
+  
+  #### Data table
+  output$contents_occ_dm <- DT::renderDataTable({
+    df<- data_attendance_filtered_dm()
+    return(df)},
+    options = list(scrollX = TRUE,
+                   scroller = TRUE,
+                   autoWidth=TRUE,
+                   # columnDefs= list(list(width = "10%", targets = c(1)),
+                   #                  list(width = "400px", targets = grep("Protein.names", names(df)))
+                   #                  )
+                   columnDefs= list(list(width = '400px', targets = c(-1)))
+    )
+  )
+  
+  make_sliderInput_dm <- function(n= 1){
+    exp_design_input <- exp_design_demo()
+    conditions <- exp_design_input$condition %>% unique()
+    
+    sliderInput(paste0("",conditions[n]),
+                label=paste0("",conditions[n]),
+                min = min(0), 
+                max = max(exp_design_input$replicate),
+                value = c(0, max(exp_design_input$replicate)),
+                step = 1)}
+  
+  slider_bars_dm <- reactive({
+    exp_design <- exp_design_demo()
+    lapply(X = 1:length(unique(exp_design$condition)), FUN = make_sliderInput_dm)
+  })
+  
+  output$sidebar_dm <- renderUI({
+    tagList(slider_bars_dm())
+  })
+  
+  output$download_attendance_dm <- downloadHandler("Occurrences_results_table.csv",
+                                                   content = function(file){
+                                                     write.table(data_attendance_filtered_dm(),  
+                                                                 file,
+                                                                 col.names = TRUE,
+                                                                 row.names = FALSE,
+                                                                 sep =",")
+                                                   },
+                                                   contentType = "text/csv")
+  
+  
+  
+  
   # # used for save demo data
   # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
@@ -6985,6 +7091,17 @@ server <- function(input, output,session){
   #   save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
   #   # saveRDS(data_dep_nr, file="phosphosite(corrected)_pharma.Rds")
   # 
+  # })
+  
+  # observeEvent(input$analyze ,{
+  #   if(input$analyze==0 ){
+  #     return()
+  #   }
+  #   
+  #   # data_missval <- normalized_phospho_data()
+  #   attendance_df <- data_attendance()
+  #   save(attendance_df, file = "attendance_df.RData")
+  #   
   # })
   
   

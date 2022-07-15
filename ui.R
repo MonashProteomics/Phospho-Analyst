@@ -1794,7 +1794,39 @@ ui <- function(request){
                                         ) # Tab box close
                                       )
                                   )) # fluidrow qc close
-                              ) # phosphosite(corrected) demo page closed
+                              ), # phosphosite(corrected) demo page closed
+                              tabPanel("Phosphosite Absence/Presence",
+                                       br(),
+                                       fluidRow(
+                                         box(width =3,
+                                             title = "Options",
+                                             tags$h4("Number of replicates present"),
+                                             tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"), # hide minor ticks of a sliderInput
+                                             uiOutput('sidebar_dm'),
+                                             br(),
+                                             tags$hr(),
+                                             tags$h4("Subset Results Table"),
+                                             shinyWidgets::prettyCheckboxGroup("filtered_condition_dm",
+                                                                               HTML("Filter Condition<br/>Remove"),
+                                                                               choices = c("Reverse sequences",
+                                                                                           "Potential contaminants", 
+                                                                                           "Peptides Localization prob >= 0.75"
+                                                                               ),
+                                                                               shape = "round",
+                                                                               selected = NULL, 
+                                             ),
+                                             status = "success",
+                                             solidHeader = TRUE
+                                         ),
+                                         box(width = 9,
+                                             title = "Results Table",
+                                             DT::dataTableOutput("contents_occ_dm"),
+                                             downloadButton('download_attendance_dm', 'Download Table'),
+                                             status = "success",
+                                             solidHeader = TRUE
+                                         )
+                                       ) # fuildrow close
+                              ) # phosphosite(absence/presence) demo page closed
                               
                   ) # panel list close
                   
