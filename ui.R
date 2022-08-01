@@ -362,8 +362,38 @@ ui <- function(request){
                                                                   downloadButton('downloadProtein', 'Download Plot')
                                                                 )
                                                        )
-                                                       # verbatimTextOutput("protein_info"))
-                                                     )
+                                                  #      navbarMenu("Abundance Plot", 
+                                                  #                 tabPanel(title = "Abundance rank",
+                                                  #                          fluidRow(
+                                                  #                            tags$p("Select protein from LFQ Results Table to highlight on the plot OR 
+                                                  # drag the mouse on plot to show expression of proteins in Table")
+                                                  #                          ),
+                                                  #                          fluidRow(
+                                                  #                            plotOutput("abundance_rank",
+                                                  #                                       height = 600,
+                                                  #                                       brush = "protein_brush_rank",
+                                                  #                                       click = "protein_click_rank"),
+                                                  #                            downloadButton('downloadAbundance_rank', 'Save Highlighted Plot'),
+                                                  #                            actionButton("resetPlot_rank", "Clear Selection")
+                                                  #                          )
+                                                  #                 ),
+                                                  #                 tabPanel("Abundance comparison",
+                                                  #                          fluidRow(
+                                                  #                            column(uiOutput("abundance_cntrst"), width = 12),
+                                                  #                            tags$p("Select protein from LFQ Results Table to highlight on the plot OR 
+                                                  # drag the mouse on plot to show expression of proteins in Table")
+                                                  #                          ),
+                                                  #                          fluidRow(
+                                                  #                            plotOutput("abundance_comp", 
+                                                  #                                       height = 600,
+                                                  #                                       brush = "protein_brush_comp",
+                                                  #                                       click = "protein_click_comp"),
+                                                  #                            downloadButton('downloadAbundance_comp', 'Save Highlighted Plot'),
+                                                  #                            actionButton("resetPlot_comp", "Clear Selection")
+                                                  #                          )
+                                                  #                 )
+                                                  #      ) # navbarMenu close
+                                                     ) # tabBox end
                                                    ) # box or column end
                                                    
                                                  ), # result plot colsed

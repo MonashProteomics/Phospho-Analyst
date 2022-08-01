@@ -310,14 +310,14 @@ server <- function(input, output,session){
           "Experiment design table saved"
         }
       }
-
+      
     })
   })
   
   # download edited exp_design table
   output$download_exp_pr <- downloadHandler("Phospho-Analyst_experimental_design(Proteome).txt",
                                             content = function(file){
-                                              write.table(phospho_exp_data2(),  file, 
+                                              write.table(protein_exp_data2(),  file, 
                                                           sep = "\t", 
                                                           row.names = F,
                                                           quote = F)
@@ -428,7 +428,7 @@ server <- function(input, output,session){
     new_intensity_names <- colnames(data_unique_names)[intensity_ints] %>% gsub("Intensity.", "", .)
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
-    remove_columns <- new_intensity_names[new_intensity_names %in% exp_design()$label ==FALSE]
+    remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
     if (identical(remove_columns, character(0)) == FALSE){
       intensity_ints <- intensity_ints[-c(which(new_intensity_names %in% remove_columns))]
     } else {
@@ -1611,7 +1611,7 @@ server <- function(input, output,session){
     new_intensity_names <- colnames(data_unique[,lfq_columns]) %>% gsub("LFQ.intensity.", "", .)
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
-    remove_columns <- new_intensity_names[new_intensity_names %in% exp_design()$label ==FALSE]
+    remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
     if (identical(remove_columns, character(0)) == FALSE){
       lfq_columns <- lfq_columns[-c(which(new_intensity_names %in% remove_columns))]
     } else {
@@ -3875,7 +3875,8 @@ server <- function(input, output,session){
     
     # replace intensity column names
     replace_peptide <- paste('LFQ_intensity',exp_design$condition, exp_design$replicate,sep = "_") %>% unique()
-    colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(colnames(df), intensity_names_new, nomatch = 0)]
+    colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(make.names(delete_prefix(intensity_names_new)), 
+                                                                                 make.names(delete_prefix(exp_design$label)), nomatch = 0)]
     
     # remove intensity columns not in experimental design file.
     df <- df[!is.na(names(df))]
