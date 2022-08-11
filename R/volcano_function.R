@@ -64,7 +64,9 @@ plot_volcano_new <- function(dep, contrast, apply_anova = FALSE,
     } else {
       p_values <- grep("anova_p.val", colnames(row_data))
     }
-    signif <- grep("^significant", colnames(row_data))
+    # signif <- grep("^significant", colnames(row_data))
+    signif <- grep(paste("^",contrast, "_significant_anova", sep = ""),
+                   colnames(row_data))
   } else {
     if(adjusted) {
       p_values <- grep(paste("^",contrast, "_p.adj", sep = ""),
@@ -73,7 +75,7 @@ plot_volcano_new <- function(dep, contrast, apply_anova = FALSE,
       p_values <- grep(paste("^",contrast, "_p.val", sep = ""),
                        colnames(row_data))
     }
-    signif <- grep(paste("^",contrast, "_significant", sep = ""),
+    signif <- grep(paste("^",contrast, "_significant$", sep = ""),
                    colnames(row_data))
   }
   
@@ -188,21 +190,40 @@ get_volcano_df <- function(dep, contrast, apply_anova = FALSE, adjusted = FALSE)
   # Generate a data.frame containing all info for the volcano plot
   diff <- grep(paste(contrast, "_diff", sep = ""),
                colnames(row_data))
+  # if(apply_anova){
+  #   p_values <- grep("anova_p.val", colnames(row_data))
+  # } else {
+  #   if(adjusted) {
+  #     p_values <- grep(paste(contrast, "_p.adj", sep = ""),
+  #                      colnames(row_data))
+  #   } else {
+  #     p_values <- grep(paste(contrast, "_p.val", sep = ""),
+  #                      colnames(row_data))
+  #   }
+  # }
+  
   if(apply_anova){
-    p_values <- grep("anova_p.val", colnames(row_data))
+    if(adjusted) {
+      p_values <- grep("anova_p.adj", colnames(row_data))
+    } else {
+      p_values <- grep("anova_p.val", colnames(row_data))
+    }
+    signif <- grep(paste("^",contrast, "_significant_anova", sep = ""),
+                   colnames(row_data))
   } else {
     if(adjusted) {
-      p_values <- grep(paste(contrast, "_p.adj", sep = ""),
+      p_values <- grep(paste("^",contrast, "_p.adj", sep = ""),
                        colnames(row_data))
     } else {
-      p_values <- grep(paste(contrast, "_p.val", sep = ""),
+      p_values <- grep(paste("^",contrast, "_p.val", sep = ""),
                        colnames(row_data))
     }
+    signif <- grep(paste("^",contrast, "_significant$", sep = ""),
+                   colnames(row_data))
   }
   
-  
-  signif <- grep(paste(contrast, "_significant", sep = ""),
-                 colnames(row_data))
+  # signif <- grep(paste(contrast, "_significant$", sep = ""),
+  #                colnames(row_data))
   df_tmp <- data.frame(diff = row_data[, diff],
                        p_values = -log10(row_data[, p_values]),
                        signif = row_data[, signif],

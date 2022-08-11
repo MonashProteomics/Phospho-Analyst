@@ -259,6 +259,10 @@ server <- function(input, output,session){
       temp_df$condition <- temp_df$condition %>% gsub('[-]', '.',.)
       temp_df$label[grepl("^[[:digit:]]", temp_df$label)] <- paste("X",temp_df$label,sep = '')
       temp_df$condition[grepl("^[[:digit:]]", temp_df$condition)] <- paste("X",temp_df$condition,sep = '')
+      
+      #-- for demo data
+      temp_df$label <- temp_df$label %>% gsub("Pharmacological_", "", .)
+      temp_df$condition <- temp_df$condition %>% gsub("Pharmacological_", "", .)
     }
     return(temp_df)
   })
@@ -348,6 +352,10 @@ server <- function(input, output,session){
       temp_df$label[grepl("^[[:digit:]]", temp_df$label)] <- paste("X",temp_df$label,sep = '')
       temp_df$condition[grepl("^[[:digit:]]", temp_df$condition)] <- paste("X",temp_df$condition,sep = '')
       
+      #-- for demo data
+      temp_df$label <- temp_df$label %>% gsub("Pharmacological_", "", .)
+      temp_df$condition <- temp_df$condition %>% gsub("Pharmacological_", "", .)
+      
     }
     return(temp_df)
   })
@@ -425,7 +433,7 @@ server <- function(input, output,session){
     intensity_ints <- grep("^Intensity.", colnames(data_unique_names))
     
     ### remove columns of samples not in experiment design table
-    new_intensity_names <- colnames(data_unique_names)[intensity_ints] %>% gsub("Intensity.", "", .)
+    new_intensity_names <- colnames(data_unique_names)[intensity_ints] %>% gsub("Intensity.", "", .) %>% gsub("Pharmacological_", "", .) # modified for demo
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
     remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
@@ -510,9 +518,9 @@ server <- function(input, output,session){
       
     }
     else if(length(unique(exp_design_input()$condition)) >= 3){
-      anova_dep <- diff_all
+      anova_diff <- diff_all
       # get assay data
-      intensity <- assay(anova_dep) %>% as.matrix()
+      intensity <- assay(anova_diff) %>% as.matrix()
       exp_design <- exp_design_input()
       exp_design_rename<-exp_design
       exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
@@ -530,20 +538,14 @@ server <- function(input, output,session){
         do(anova_function(.)) %>% dplyr::select(p.value) %>%
         ungroup()
       
-      colnames(anova)<-c("name", "anova_p.val")
-      
-      # add anova p.value to row data
-      rowData(anova_dep) <- merge(rowData(anova_dep), anova, by = 'name', sort = FALSE)
-      anova_dep_rej <- DEP::add_rejections(anova_dep,alpha = input$p, lfc= input$lfc)
-      
       # calculate adjusted anova p.value to data
-      anova_adj <-anova
-      anova_adj$anova_p.adj <- p.adjust(anova_adj$anova_p.val,method = input$fdr_correction)
-      anova_adj <- anova_adj %>% select(-anova_p.val)
+      anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
       
-      # add adjusted anova p.value to row data
-      rowData(anova_dep_rej) <- merge(rowData(anova_dep_rej), anova_adj, by = 'name', sort = FALSE)
-      return(anova_dep_rej)
+      # add anova p.value and adjusted p.value to row data
+      rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
+      anova_diff_rej <- add_rejections_anova(anova_diff,alpha = input$p, lfc= input$lfc)
+      return(anova_diff_rej)
     }
     
   })
@@ -1608,7 +1610,7 @@ server <- function(input, output,session){
     lfq_columns<-grep("LFQ.", colnames(data_unique))
     
     ### remove columns of samples not in experiment design table
-    new_intensity_names <- colnames(data_unique[,lfq_columns]) %>% gsub("LFQ.intensity.", "", .)
+    new_intensity_names <- colnames(data_unique[,lfq_columns]) %>% gsub("LFQ.intensity.", "", .) %>% gsub("Pharmacological_", "", .) # modified for demo
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
     remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
@@ -1685,9 +1687,9 @@ server <- function(input, output,session){
       
     }
     else if(length(unique(exp_design_input_1()$condition)) >= 3){
-      anova_dep <- diff_all
+      anova_diff <- diff_all
       # get assay data
-      intensity <- assay(anova_dep)
+      intensity <- assay(anova_diff)
       exp_design <- exp_design_input_1()
       exp_design_rename<-exp_design
       exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
@@ -1705,20 +1707,14 @@ server <- function(input, output,session){
         do(anova_function(.)) %>% dplyr::select(p.value) %>%
         ungroup()
       
-      colnames(anova)<-c("name", "anova_p.val")
-      
-      # add anova p.value to row data
-      rowData(anova_dep) <- merge(rowData(anova_dep), anova, by = 'name', sort = FALSE)
-      anova_dep_rej <- DEP::add_rejections(anova_dep,alpha = input$p_pr, lfc= input$lfc_pr)
-      
       # calculate adjusted anova p.value to data
-      anova_adj <-anova
-      anova_adj$anova_p.adj <- p.adjust(anova_adj$anova_p.val,method = input$fdr_correction_pr)
-      anova_adj <- anova_adj %>% select(-anova_p.val)
+      anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
       
-      # add adjusted anova p.value to row data
-      rowData(anova_dep_rej) <- merge(rowData(anova_dep_rej), anova_adj, by = 'name', sort = FALSE)
-      return(anova_dep_rej)
+      # add anova p.value and adjusted p.value to row data
+      rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
+      anova_diff_rej <- add_rejections_anova(anova_diff,alpha = input$p_pr, lfc= input$lfc_pr)
+      return(anova_diff_rej)
     }
   })
   
@@ -2545,8 +2541,9 @@ server <- function(input, output,session){
         ggplot(aes(x=phospho_diff, y=protein_diff)) + 
         geom_point(size = 2, alpha = 0.8) +
         geom_text_repel( 
-          data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
-                               protein_diff>2| protein_diff < -2), # Filter data first
+          data=df %>% 
+            filter(phospho_diff > 5 | phospho_diff < -5|protein_diff>2| protein_diff < -2), # Filter data first
+            # filter(abs(phospho_diff) > 5 | abs(protein_diff)>2), # Filter data first
           aes(label=phospho_id),
           nudge_x = 0.5, nudge_y = 0,
           size = 4) + 
@@ -3033,9 +3030,9 @@ server <- function(input, output,session){
       
     }
     else if(length(unique(exp_design_input()$condition)) >= 3){
-      anova_dep <- diff_all
+      anova_diff <- diff_all
       # get assay data
-      intensity <- assay(anova_dep)
+      intensity <- assay(anova_diff) %>% as.matrix()
       exp_design <- exp_design_input()
       exp_design_rename<-exp_design
       exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
@@ -3053,20 +3050,14 @@ server <- function(input, output,session){
         do(anova_function(.)) %>% dplyr::select(p.value) %>%
         ungroup()
       
-      colnames(anova)<-c("name", "anova_p.val")
-      
-      # add anova p.value to row data
-      rowData(anova_dep) <- merge(rowData(anova_dep), anova, by = 'name', sort = FALSE)
-      anova_dep_rej <- DEP::add_rejections(anova_dep,alpha = input$p, lfc= input$lfc)
-      
       # calculate adjusted anova p.value to data
-      anova_adj <-anova
-      anova_adj$anova_p.adj <- p.adjust(anova_adj$anova_p.val,method = input$fdr_correction)
-      anova_adj <- anova_adj %>% select(-anova_p.val)
+      anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
       
-      # add adjusted anova p.value to row data
-      rowData(anova_dep_rej) <- merge(rowData(anova_dep_rej), anova_adj, by = 'name', sort = FALSE)
-      return(anova_dep_rej)
+      # add anova p.value and adjusted p.value to row data
+      rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
+      anova_diff_rej <- add_rejections_anova(anova_diff,alpha = input$p, lfc= input$lfc)
+      return(anova_diff_rej)
     }
     
   })
@@ -5855,8 +5846,9 @@ server <- function(input, output,session){
         ggplot(aes(x=phospho_diff, y=protein_diff)) +
         geom_point(size = 2, alpha = 0.8) +
         geom_text_repel(
-          data=df %>% filter(phospho_diff > 5 | phospho_diff < -5|
-                               protein_diff>2| protein_diff < -2), # Filter data first
+          data=df %>% 
+            filter(phospho_diff > 5 | phospho_diff < -5|protein_diff>2| protein_diff < -2), # Filter data first
+            # filter(abs(phospho_diff) > 5 | abs(protein_diff)> 5), # Filter data first
           aes(label=phospho_id),
           nudge_x = 0.5, nudge_y = 0,
           size = 4) +
@@ -7059,7 +7051,7 @@ server <- function(input, output,session){
   #     save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
   #     # saveRDS(data_dep_pr, file="proteinGroup_pharma.Rds")
   #   })
-  # 
+  # # 
   # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
   #     return()
@@ -7079,8 +7071,8 @@ server <- function(input, output,session){
   #   save(exp_demo_1, file = "exp_demo_data_1.RData")
   # 
   # })
-  # 
-  # 
+  # # 
+  # # 
   # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
   #     return()

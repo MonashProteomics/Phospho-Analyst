@@ -808,7 +808,64 @@ delete_prefix <- function(words) {
 anova_function<-function(phospho_single){
   formula_phospho<-as.formula("intensity ~ condition")
   aov_single<-aov(formula_phospho, phospho_single)
-  tidy(aov_single)  %>% filter(term=="condition") %>% dplyr::select(p.value)
+  generics::tidy(aov_single)  %>% filter(term=="condition") %>% dplyr::select(p.value)
+}
+
+# marks significant proteins based on defined cutoffs by anova
+add_rejections_anova <- function(diff, alpha = 0.05, lfc = 1) {
+  # Show error if inputs are not the required classes
+  if(is.integer(alpha)) alpha <- as.numeric(alpha)
+  if(is.integer(lfc)) lfc <- as.numeric(lfc)
+  assertthat::assert_that(inherits(diff, "SummarizedExperiment"),
+                          is.numeric(alpha),
+                          length(alpha) == 1,
+                          is.numeric(lfc),
+                          length(lfc) == 1)
+  
+  row_data <- rowData(diff, use.names = FALSE) %>%
+    as.data.frame()
+  # Show error if inputs do not contain required columns
+  if(any(!c("name", "ID") %in% colnames(row_data))) {
+    stop("'name' and/or 'ID' columns are not present in '",
+         deparse(substitute(diff)),
+         "'\nRun make_unique() and make_se() to obtain the required columns",
+         call. = FALSE)
+  }
+  if(length(grep("_p.adj|_diff", colnames(row_data))) < 1) {
+    stop("'[contrast]_diff' and/or '[contrast]_p.adj' columns are not present in '",
+         deparse(substitute(diff)),
+         "'\nRun test_diff() to obtain the required columns",
+         call. = FALSE)
+  }
+  
+  # get all columns with adjusted p-values and log2 fold changes
+  cols_p <- setdiff(grep("_p.adj", colnames(row_data)),grep("anova_p.adj", colnames(row_data)))
+  anova_p <- grep("anova_p.adj", colnames(row_data))
+  cols_diff <- grep("_diff", colnames(row_data))
+  
+  # Mark differential expressed proteins by
+  # applying alpha and log2FC parameters per protein
+  p_reject <- row_data[, cols_p] <= alpha
+  p_reject[is.na(p_reject)] <- FALSE
+  diff_reject <- abs(row_data[, cols_diff]) >= lfc
+  diff_reject[is.na(diff_reject)] <- FALSE
+  anova_reject <- row_data[, anova_p] <= alpha
+  anova_reject[is.na(anova_reject)] <- FALSE
+  sign_df <- p_reject & diff_reject
+  anova_sign_df <-anova_reject & diff_reject 
+  colnames(sign_df) <- gsub("_p.adj", "_significant", colnames(sign_df))
+  colnames(anova_sign_df) <- gsub("_diff", "_significant_anova", colnames(anova_sign_df))
+  
+  # combined the significant columns
+  sign_comb_df <- cbind(sign_df,
+                        significant = apply(sign_df, 1, function(x) any(x)),
+                        anova_sign_df
+  )
+  sign_comb_df <- cbind(name = row_data$name, as.data.frame(sign_comb_df))
+  
+  rowData(diff) <- merge(rowData(diff, use.names = FALSE), sign_comb_df,
+                         by = "name")
+  return(diff)
 }
 
 # get editable experiment design (phosphosite) function
