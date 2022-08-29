@@ -193,7 +193,7 @@ ui <- function(request){
                                             rHandsontableOutput("exp_phospho"),
                                             actionButton("save_exp","Save"),
                                             downloadButton('download_exp', 'Download'),
-                                            # actionButton("original_exp", "Rewrite"),
+                                            div(style="display:inline-block;width:30%;text-align: right;",actionButton("original_exp", "Refresh", class="btn-warning")),
                                             br(),
                                             tags$b(textOutput("save_message", container = span)),
                                             br(),

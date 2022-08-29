@@ -226,19 +226,20 @@ server <- function(input, output,session){
                                          },
                                          contentType = "text/csv")
   
-  # # rewrite exp_design table
-  # observeEvent(input$showTable ,{ 
-  #   if(input$showTable==0){
-  #     return()
-  #   }
-  #   shinyjs::hide("panels")
-  #   shinyjs::hide("qc_tab")
-  #   shinyjs::show("quickstart_info")
-  # })
-  # 
-  # observeEvent(input$original_exp,{
-  #   output$exp_phospho<- renderRHandsontable({phospho_exp_data1()})
-  #   })
+  # rewrite exp_design table
+  observeEvent(input$showTable ,{
+    if(input$showTable==0){
+      return()
+    }
+    shinyjs::hide("panels")
+    shinyjs::hide("qc_tab")
+    shinyjs::show("quickstart_info")
+  })
+
+  observeEvent(input$original_exp,{
+    output$exp_phospho<- renderRHandsontable({phospho_exp_data1()})
+    output$save_message <- renderText({""})
+    })
   
   # phosphosite exp_desgin file
   exp_design_input<-eventReactive(input$analyze,{
@@ -251,7 +252,8 @@ server <- function(input, output,session){
       temp_df<-read.delim(inFile$datapath,
                           header = TRUE,
                           sep="\t",
-                          stringsAsFactors = FALSE)
+                          stringsAsFactors = FALSE,
+                          colClasses = c(label = "character"))
       exp_design_test(temp_df)
       temp_df$label<-as.character(temp_df$label)
       temp_df$condition<-trimws(temp_df$condition, which = "left")
@@ -343,7 +345,8 @@ server <- function(input, output,session){
       temp_df<-read.delim(inFile_1$datapath,
                           header = TRUE,
                           sep="\t",
-                          stringsAsFactors = FALSE)
+                          stringsAsFactors = FALSE,
+                          colClasses = c(label = "character"))
       exp_design_test(temp_df)
       temp_df$label<-as.character(temp_df$label)
       temp_df$condition<-trimws(temp_df$condition, which = "left")
