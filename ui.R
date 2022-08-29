@@ -42,7 +42,7 @@ ui <- function(request){
                                                       '.csv')),
                                    # editable table for phosphosite data
                                    tags$strong('Or modify the following template:', style = 'margin-left: 15px;color:#2E3440'),
-                                   actionButton("showTable", "Template", icon = icon("table")),
+                                   shinyjs::disabled(actionButton("showTable", "Template", icon = icon("table"))),
                                    tags$hr(),
                                    menuItem("Advanced Options",tabName="advanced", icon = icon("cogs"), 
                                             numericInput("p", 
@@ -89,7 +89,7 @@ ui <- function(request){
                                                                '.csv')),
                                             # editable table for protein data
                                             tags$strong('Or modify the following template:', style = 'margin-left: 15px;color:#2E3440'),
-                                            actionButton("showTable_pr", "Template", icon = icon("table")),
+                                            shinyjs::disabled(actionButton("showTable_pr", "Template", icon = icon("table"))),
                                             tags$hr(),
                                             menuItem("Advanced Options",tabName="advanced_pr", icon = icon("cogs"), 
                                                      numericInput("p_pr", 

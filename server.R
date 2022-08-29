@@ -155,6 +155,19 @@ server <- function(input, output,session){
   protein_data_input<-reactive({NULL})
   exp_design_input<-reactive({NULL})
   
+  # enable the template button if uploaded a phospho/protein file
+  observeEvent(input$file1$datapath, {
+    if(!is.null(input$file1$datapath)){
+      shinyjs::enable("showTable")
+    }
+  })
+  
+  observeEvent(input$file2$datapath, {
+    if(!is.null(input$file2$datapath)){
+      shinyjs::enable("showTable_pr")
+    }
+  })
+  
   phospho_data_input<-eventReactive(input$analyze,{
     inFile<-input$file1
     if(is.null(inFile))
@@ -189,7 +202,6 @@ server <- function(input, output,session){
                      header = TRUE,
                      fill= TRUE, # to fill any missing data
                      sep = "\t")
-    
     tempTable =  get_exp_design(df)
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
@@ -4172,7 +4184,7 @@ server <- function(input, output,session){
     # replace intensity column names
     replace_peptide <- paste('LFQ_intensity',exp_design$condition, exp_design$replicate,sep = "_") %>% unique()
     colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(make.names(delete_prefix(intensity_names_new)), 
-                                                                                 make.names(delete_prefix(exp_design$label)), nomatch = 0)]
+                                                                                 make.names(delete_prefix(exp_design$label)), nomatch = NA)]
     
     # remove intensity columns not in experimental design file.
     df <- df[!is.na(names(df))]
@@ -4195,8 +4207,12 @@ server <- function(input, output,session){
       }
       
     }
-    df$Gene.names[df["Gene.names"]==""] <- "NoGeneNameAvailable"
-    df$Protein.names[df["Protein.names"]==""] <- "NoProteinNameAvailable"
+    if ("" %in% df$Gene.names){
+      df$Gene.names[df["Gene.names"]==""] <- "NoGeneNameAvailable"
+    }
+    if ("" %in% df$Protein.names){
+      df$Protein.names[df["Protein.names"]==""] <- "NoProteinNameAvailable"
+    }
     return(df)
   })
   
