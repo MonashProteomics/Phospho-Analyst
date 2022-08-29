@@ -318,3 +318,50 @@ plot_protein<-function(dep, protein, type){
   
   return(p)
 }
+
+### Function to plot protein mean abundance and rank
+plot_abundance <- function(df, contrast, plot = TRUE) {
+  
+  # Show error if inputs are not the required classes
+  assertthat::assert_that(
+    # inherits(df, "SummarizedExperiment"),
+    is.character(contrast),
+    length(contrast) == 1,
+    is.logical(plot),
+    length(plot) == 1)
+  
+  # Comparison of mean protein abundance
+  selected_contrast = contrast
+  contrast1 <- selected_contrast %>% gsub("_vs.*", "",.)
+  contrast2 <- selected_contrast %>% gsub("^.*vs_", "",.)
+  
+  x_index <- grep(paste("^mean",contrast1, sep = "_"), colnames(df))
+  y_index <- grep(paste("^mean",contrast2, sep = "_"), colnames(df))
+  mean_index <- grep("mean_abundance", colnames(df))
+  
+  p_rank <- df %>%
+    ggplot(aes(x = rank, y=mean_abundance)) + 
+    geom_point(shape = 1) +
+    labs(x = "Protein Rank",
+         y = "Mean Abundance") + 
+    ylim(min(df[,x_index],df[,y_index],df[,mean_index]), max(df[,x_index],df[,y_index],df[,mean_index])) +
+    theme_DEP1() +
+    scale_color_manual(values = c("TRUE" = "black", "FALSE" = "grey"))
+  
+  p_comparison <- df %>% 
+    ggplot(aes(x = df[,x_index],
+               y = df[,y_index])) + 
+    geom_point() +
+    labs(x = paste("Mean abundance for ", contrast1, sep = ""),
+         y = paste("Mean abundance for ", contrast2, sep = "")) +
+    xlim(min(df[,x_index],df[,y_index],df[,mean_index]), max(df[,x_index],df[,y_index],df[,mean_index])) +
+    ylim(min(df[,x_index],df[,y_index],df[,mean_index]), max(df[,x_index],df[,y_index],df[,mean_index])) +
+    geom_abline(slope=1,intercept=0, linetype = "dashed") + 
+    geom_point(shape = 1,aes(alpha = 1/10)) +
+    theme_DEP1() +
+    theme(legend.position="none") +
+    scale_color_manual(values = c("TRUE" = "black", "FALSE" = "grey"))
+  
+  p_list <- list(p_rank,p_comparison)
+  return(p_list)
+}

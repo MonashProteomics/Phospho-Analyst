@@ -546,10 +546,32 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
     ids <- as.data.frame(row_data) %>% dplyr::select(peptide.sequence, name, Protein,Amino.acid, Localization.prob)
   }
   
+  # Obtain overall mean abundance and mean abundance of each condition
+  intensity_df <- assay(dep) %>% data.frame()
+  exp_design <- colData(dep) %>% data.frame()
+  conditions <- exp_design$condition %>% unique()
+  
+  intensity_df$mean_abundance <- rowMeans(as.matrix(intensity_df), na.rm = TRUE)
+  intensity_df$rank <- rank(-intensity_df$mean_abundance)
+  
+  for (i in 1:length(conditions)) {
+    condition <- conditions[i]
+    pattern <- paste(condition,"[[:digit:]]",sep = '_')
+    intensity_df[paste0('mean',sep = "_",condition)] <- rowMeans(
+      as.matrix(intensity_df %>% 
+                  select(grep(pattern, colnames(intensity_df)))), na.rm = TRUE)
+  }
+  
+  mean_df <- intensity_df %>%
+    dplyr::select(dplyr::starts_with("mean"),
+                  "rank") %>%
+    tibble::rownames_to_column()
+  
   table<-dplyr::left_join(ids,ratio, by=c("name"="rowname"))
   table <- dplyr::left_join(table, pval, by = c("name" = "rowname"))
   # table <- dplyr::left_join(table, centered, by = c("name" = "rowname")) %>%
   #   dplyr::arrange(desc(significant))
+  table <- dplyr::left_join(table, mean_df, by = c("name" = "rowname"))
   table<-as.data.frame(row_data) %>% 
     dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names,Residue.Both, ID) %>%
     dplyr::left_join(table, ., by = "name")

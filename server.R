@@ -871,13 +871,15 @@ server <- function(input, output,session){
                      Sys.sleep(0.25)
                    }
                  })
-    df<- data_result()
+    df<- data_result() %>% dplyr::select(-dplyr::starts_with("mean"),-rank) # drop mean abundance columns
+    print(colnames(df))
     return(df)
-  },
+  }
+  ,
   options = list(scrollX = TRUE,
                  autoWidth=TRUE,
                  columnDefs= list(list(width = '400px', targets = c(-1)),
-                                  list(width = '400px', targets = match("Protein.names", names(data_result())))))
+                                  list(width = '400px', targets = match("Protein.names", names(df)))))
   )
   
   ## Deselect all rows button
@@ -889,13 +891,13 @@ server <- function(input, output,session){
   
   observeEvent(input$original,{
     output$contents <- DT::renderDataTable({
-      df<- data_result()
+      df<- data_result() %>% dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
       return(df)
     },
     options = list(scrollX = TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = match("Protein.names", names(data_result())))))
+                                    list(width = '400px', targets = match("Protein.names", names(df)))))
     )
   })
   
@@ -919,63 +921,64 @@ server <- function(input, output,session){
   observeEvent(input$protein_brush,{
     output$contents <- DT::renderDataTable({
       
-      df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ]
+      df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ] %>% 
+        dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
       return(df)
     },
     options = list(scrollX= TRUE)
     )
-    
-    proteins_selected<-data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ] ## get all rows selected
-    ## convert contrast to x and padj to y
-    diff_proteins <- grep(paste("^", input$volcano_cntrst, "_log2", sep = ""),
-                          colnames(proteins_selected))
-    if(input$p_adj=="FALSE"){
-      padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.val", sep = ""),
-                            colnames(proteins_selected))
-    }
-    else{
-      padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
-                            colnames(proteins_selected))
-    }
-    df_protein <- data.frame(x = proteins_selected[, diff_proteins],
-                             y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
-                             name = proteins_selected$Phosphosite)
-    #print(df_protein)
-    
-    if(length(unique(exp_design_input()$condition)) <= 2){
-      p<-plot_volcano_new(dep(),
-                          input$volcano_cntrst,
-                          FALSE,
-                          input$check_names,
-                          input$p_adj)
-      
-    } else {
-      p<-plot_volcano_new(dep(),
-                          input$volcano_cntrst,
-                          input$check_anova,
-                          input$check_names,
-                          input$p_adj)
-    }
-    
-    p<- p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
-      ggrepel::geom_text_repel(data = df_protein,
-                               aes(x, y, label = name),
-                               size = 4,
-                               box.padding = unit(0.1, 'lines'),
-                               point.padding = unit(0.1, 'lines'),
-                               segment.size = 0.5)
-    
-    output$volcano <- renderPlot({
-      withProgress(message = 'Volcano Plot calculations are in progress',
-                   detail = 'Please wait for a while', value = 0, {
-                     for (i in 1:15) {
-                       incProgress(1/15)
-                       Sys.sleep(0.25)
-                     }
-                   })
-      p
-    })
-    return(p)
+    # 
+    # proteins_selected<-data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush(), ] ## get all rows selected
+    # ## convert contrast to x and padj to y
+    # diff_proteins <- grep(paste("^", input$volcano_cntrst, "_log2", sep = ""),
+    #                       colnames(proteins_selected))
+    # if(input$p_adj=="FALSE"){
+    #   padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.val", sep = ""),
+    #                         colnames(proteins_selected))
+    # }
+    # else{
+    #   padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
+    #                         colnames(proteins_selected))
+    # }
+    # df_protein <- data.frame(x = proteins_selected[, diff_proteins],
+    #                          y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
+    #                          name = proteins_selected$Phosphosite)
+    # #print(df_protein)
+    # 
+    # if(length(unique(exp_design_input()$condition)) <= 2){
+    #   p<-plot_volcano_new(dep(),
+    #                       input$volcano_cntrst,
+    #                       FALSE,
+    #                       input$check_names,
+    #                       input$p_adj)
+    #   
+    # } else {
+    #   p<-plot_volcano_new(dep(),
+    #                       input$volcano_cntrst,
+    #                       input$check_anova,
+    #                       input$check_names,
+    #                       input$p_adj)
+    # }
+    # 
+    # p<- p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+    #   ggrepel::geom_text_repel(data = df_protein,
+    #                            aes(x, y, label = name),
+    #                            size = 4,
+    #                            box.padding = unit(0.1, 'lines'),
+    #                            point.padding = unit(0.1, 'lines'),
+    #                            segment.size = 0.5)
+    # 
+    # output$volcano <- renderPlot({
+    #   withProgress(message = 'Volcano Plot calculations are in progress',
+    #                detail = 'Please wait for a while', value = 0, {
+    #                  for (i in 1:15) {
+    #                    incProgress(1/15)
+    #                    Sys.sleep(0.25)
+    #                  }
+    #                })
+    #   p
+    # })
+    # return(p)
   })
   
   observeEvent(input$resetPlot,{
@@ -983,17 +986,23 @@ server <- function(input, output,session){
     brush <<- NULL
     
     output$contents <- DT::renderDataTable({
-      df<- data_result()
+      df<- data_result() %>% dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
       return(df)
     },
     options = list(scrollX= TRUE,
                    autoWidth=TRUE,
                    columnDefs= list(list(width = '400px', targets = c(-1)),
-                                    list(width = '400px', targets = match("Protein.names", names(data_result())))))
+                                    list(width = '400px', targets = match("Protein.names", names(df)))))
     )
     
     output$volcano <- renderPlot({
-      volcano_input()
+      # volcano_input()
+      if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
+        volcano_input()
+      }
+      else if(!is.null(input$volcano_cntrst)){
+        volcano_input_selected()
+      }# else close
     })
   })
   
@@ -1034,6 +1043,299 @@ server <- function(input, output,session){
       protein_input()
     }
   })
+  
+  ### Abundance plot panel ####
+  #comparisons
+  output$abundance_cntrst <- renderUI({
+    if (!is.null(comparisons())) {
+      df <- SummarizedExperiment::rowData(dep())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("abundance_cntrst",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  ## abundance rank plot
+  #abundance rank plot brush
+  protein_name_brush_rank <- reactive({
+    protein_tmp<-brushedPoints(data_result(), input$protein_brush_rank,
+                               xvar = "rank", yvar = "mean_abundance")
+    protein_selected<-protein_tmp$`Phosphosite`
+  })
+  protein_name_click_rank <- reactive({
+    protein_tmp<-nearPoints(data_result(), input$protein_click_rank, maxpoints = 1)
+    protein_selected<-protein_tmp$`Phosphosite`
+  })
+  
+  abundance_rank_input <- reactive({
+    df <- SummarizedExperiment::rowData(dep())
+    cols <- grep("_significant$",colnames(df))
+    contrast <- gsub("_significant", "", colnames(df)[cols])[1]
+    p_list <- plot_abundance(data_result(), contrast)
+    p_list[[1]]
+  })
+  
+  abundance_rank_input_selected<-reactive({
+    if (!is.null(input$contents_rows_selected)){
+      proteins_selected<-data_result()[c(input$contents_rows_selected),]## get all rows selected
+    }
+    else if(!is.null(input$protein_brush_rank)){
+      proteins_selected<-data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush_rank(), ] 
+    }
+    
+    df_protein <- data.frame(x = proteins_selected$rank,
+                             y = proteins_selected$mean_abundance,
+                             name = proteins_selected$`Phosphosite`)
+    
+    df <- SummarizedExperiment::rowData(dep())
+    cols <- grep("_significant$",colnames(df))
+    contrast <- gsub("_significant", "", colnames(df)[cols])[1]
+    p_list <- plot_abundance(data_result(),
+                             contrast)
+    
+    p_list[[1]] + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+      ggrepel::geom_label_repel(data = df_protein,
+                                aes(x, y, label = name),
+                                nudge_y = 0.5,
+                                size = 4,
+                                box.padding = unit(0.1, 'lines'),
+                                point.padding = unit(0.1, 'lines'),
+                                segment.size = 0.5)## use the dataframe to plot points
+    
+  })
+  
+  output$abundance_rank <- renderPlot({
+    withProgress(message = 'Abundance Plot calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    if(is.null(input$contents_rows_selected) & is.null(input$protein_brush_rank)){
+      abundance_rank_input()
+    }
+    else {
+      abundance_rank_input_selected()
+    }
+  })
+  
+  # abundance comparison plot
+  #abundance rank plot brush
+  protein_name_brush_comp <- reactive({
+    if(!is.null(input$abundance_cntrst)){
+      contrast1 <- input$abundance_cntrst %>% gsub("_vs.*", "",.)
+      contrast2 <- input$abundance_cntrst %>% gsub("^.*vs_", "",.)
+      
+      protein_tmp<-brushedPoints(data_result(), input$protein_brush_comp,
+                                 xvar = paste("mean", contrast1, sep = "_"), yvar = paste("mean", contrast2, sep = "_"))
+      protein_selected<-protein_tmp$`Phosphosite`
+    }
+  })
+  protein_name_click_comp <- reactive({
+    if(!is.null(input$abundance_cntrst)){
+      contrast1 <- input$abundance_cntrst %>% gsub("_vs.*", "",.)
+      contrast2 <- input$abundance_cntrst %>% gsub("^.*vs_", "",.)
+      
+      
+      protein_tmp<-nearPoints(data_result(), input$protein_click_comp, 
+                              xvar = paste("mean", contrast1, sep = "_"), yvar = paste("mean", contrast2, sep = "_"),
+                              maxpoints = 1)
+      protein_selected<-protein_tmp$`Phosphosite`
+    }
+  })
+  
+  abundance_comp_input <- reactive({
+    if(!is.null(input$abundance_cntrst)) {
+      p_list <- plot_abundance(data_result(),
+                               input$abundance_cntrst)
+      p_list[[2]]
+    }
+  })
+  
+  abundance_comp_input_selected<-reactive({
+    if(!is.null(input$abundance_cntrst)){
+      
+      if (!is.null(input$contents_rows_selected)){
+        proteins_selected<-data_result()[c(input$contents_rows_selected),]## get all rows selected
+      }
+      else if(!is.null(input$protein_brush_comp)){
+        proteins_selected<-data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush_comp(), ]
+      }
+      
+      contrast1 <- input$abundance_cntrst %>% gsub("_vs.*", "",.)
+      contrast2 <- input$abundance_cntrst %>% gsub("^.*vs_", "",.)
+      
+      df_protein <- data.frame(x = proteins_selected[,grep(paste("^mean", contrast1, sep = "_"), colnames(proteins_selected))],
+                               y = proteins_selected[,grep(paste("^mean", contrast2, sep = "_"), colnames(proteins_selected))],
+                               name = proteins_selected$`Phosphosite`)
+      
+      p_list <- plot_abundance(data_result(),
+                               input$abundance_cntrst)
+      
+      p_list[[2]] + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+        ggrepel::geom_label_repel(data = df_protein,
+                                  aes(x, y, label = name),
+                                  nudge_y = 0.5,
+                                  size = 4,
+                                  box.padding = unit(0.1, 'lines'),
+                                  point.padding = unit(0.1, 'lines'),
+                                  segment.size = 0.5)## use the dataframe to plot points
+    }
+  })
+  
+  output$abundance_comp <- renderPlot({
+    withProgress(message = 'Abundance Plot calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    if(is.null(input$contents_rows_selected) & is.null(input$protein_brush_comp)){
+      abundance_comp_input()
+    }
+    else if(!is.null(input$abundance_cntrst)){
+      abundance_comp_input_selected()
+    }
+  })
+  
+  output$downloadAbundance_rank <- downloadHandler(
+    filename = function() {
+      "Abundance_rank.svg"
+    },
+    content = function(file) {
+      if(is.null(input$contents_rows_selected)){
+        p <- abundance_rank_input()
+      }
+      else{
+        p <- abundance_rank_input_selected()
+      }
+      svg(file, width = 8, height = 8)
+      print(p)
+      dev.off()
+    }
+  )
+  
+  output$downloadAbundance_comp <- downloadHandler(
+    filename = function() {
+      paste0("Abundance_", input$abundance_cntrst, ".svg")
+    },
+    content = function(file) {
+      if(is.null(input$contents_rows_selected)){
+        p <- abundance_comp_input()
+      }
+      else{
+        p <- abundance_comp_input_selected()
+      }
+      svg(file, width = 8, height = 8)
+      print(p)
+      dev.off()
+    }
+  )
+  
+  ## Select rows dynamically in abundance rank plot
+  observeEvent(input$protein_brush_rank,{
+    output$contents <- DT::renderDataTable({
+      df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush_rank(), ] 
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE)
+    )
+  })
+  
+  observeEvent(input$protein_click_rank,{
+    output$contents <- DT::renderDataTable({
+      df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_click_rank(), ] 
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  ## Select rows dynamically in abundance comparison plot
+  
+  brush_comp <- NULL
+  makeReactiveBinding("brush_comp")
+  
+  observeEvent(input$protein_brush_comp,{
+    output$contents <- DT::renderDataTable({
+      df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_brush_comp(), ]  
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE)
+    )
+  })
+  
+  observeEvent(input$protein_click_comp,{
+    output$contents <- DT::renderDataTable({
+      df<- data_result()[data_result()[["Phosphosite"]] %in% protein_name_click_comp(), ]
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  # reset abundance plots
+  observeEvent(input$resetPlot_rank,{
+    session$resetBrush("protein_brush_rank")
+    brush <<- NULL
+    
+    output$contents <- DT::renderDataTable({
+      df<- data_result() 
+      # %>% dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  observeEvent(input$resetPlot_comp,{
+    session$resetBrush("protein_brush_comp")
+    brush_comp <<- NULL
+    
+    output$contents <- DT::renderDataTable({
+      df<- data_result()
+      # %>% dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
   
   ### QC Outputs
@@ -1227,7 +1529,7 @@ server <- function(input, output,session){
         nrow()
       
       tested_contrasts<- gsub("_significant", "", 
-                              colnames(SummarizedExperiment::rowData(dep()))[grep("_significant", 
+                              colnames(SummarizedExperiment::rowData(dep()))[grep("_significant$", 
                                                                                   colnames(SummarizedExperiment::rowData(dep())))])
       pg_width<- ncol(normalised_data()) / 2.5
       # Set up parameters to pass to Rmd document
@@ -2180,7 +2482,7 @@ server <- function(input, output,session){
         nrow()
       
       tested_contrasts<- gsub("_significant", "", 
-                              colnames(SummarizedExperiment::rowData(dep_pr()))[grep("_significant", 
+                              colnames(SummarizedExperiment::rowData(dep_pr()))[grep("_significant$", 
                                                                                      colnames(SummarizedExperiment::rowData(dep_pr())))])
       pg_width<- ncol(normalised_data_pr()) / 2.5
       # Set up parameters to pass to Rmd document
@@ -3706,7 +4008,7 @@ server <- function(input, output,session){
         nrow()
       
       tested_contrasts<- gsub("_significant", "", 
-                              colnames(SummarizedExperiment::rowData(dep_nr()))[grep("_significant", 
+                              colnames(SummarizedExperiment::rowData(dep_nr()))[grep("_significant$", 
                                                                                      colnames(SummarizedExperiment::rowData(dep_nr())))])
       pg_width<- ncol(normalised_data_nr()) / 2.5
       # Set up parameters to pass to Rmd document
@@ -4688,7 +4990,7 @@ server <- function(input, output,session){
         nrow()
       
       tested_contrasts<- gsub("_significant", "", 
-                              colnames(SummarizedExperiment::rowData(dep_dm()))[grep("_significant", 
+                              colnames(SummarizedExperiment::rowData(dep_dm()))[grep("_significant$", 
                                                                                      colnames(SummarizedExperiment::rowData(dep_dm())))])
       pg_width<- ncol(normalised_data_dm()) / 2.5
       # Set up parameters to pass to Rmd document
@@ -5473,7 +5775,7 @@ server <- function(input, output,session){
         nrow()
       
       tested_contrasts<- gsub("_significant", "", 
-                              colnames(SummarizedExperiment::rowData(dep_dm_pr()))[grep("_significant", 
+                              colnames(SummarizedExperiment::rowData(dep_dm_pr()))[grep("_significant$", 
                                                                                         colnames(SummarizedExperiment::rowData(dep_dm_pr())))])
       pg_width<- ncol(normalised_data_dm_pr()) / 2.5
       # Set up parameters to pass to Rmd document
@@ -6838,7 +7140,7 @@ server <- function(input, output,session){
         nrow()
       
       tested_contrasts<- gsub("_significant", "",
-                              colnames(SummarizedExperiment::rowData(dep_dm_nr()))[grep("_significant",
+                              colnames(SummarizedExperiment::rowData(dep_dm_nr()))[grep("_significant$",
                                                                                         colnames(SummarizedExperiment::rowData(dep_dm_nr())))])
       pg_width<- ncol(normalised_data_dm_nr()) / 2.5
       # Set up parameters to pass to Rmd document
