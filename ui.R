@@ -368,8 +368,8 @@ ui <- function(request){
                                                        navbarMenu("Abundance Plot",
                                                                   tabPanel(title = "Abundance rank",
                                                                            fluidRow(
-                                                                             tags$p("Select protein from Results Table to highlight on the plot OR
-                                                  drag the mouse on plot to show expression of proteins in Table")
+                                                                             tags$p("Select protein from Results Table to highlight on the plot OR 
+                                                                                    drag the mouse on plot to show expression of proteins in Table")
                                                                            ),
                                                                            fluidRow(
                                                                              plotOutput("abundance_rank",
@@ -383,8 +383,8 @@ ui <- function(request){
                                                                   tabPanel("Abundance comparison",
                                                                            fluidRow(
                                                                              column(uiOutput("abundance_cntrst"), width = 12),
-                                                                             tags$p("Select protein from Results Table to highlight on the plot OR
-                                                  drag the mouse on plot to show expression of proteins in Table")
+                                                                             tags$p("Select protein from Results Table to highlight on the plot OR 
+                                                                                    drag the mouse on plot to show expression of proteins in Table")
                                                                            ),
                                                                            fluidRow(
                                                                              plotOutput("abundance_comp",
@@ -1209,7 +1209,38 @@ ui <- function(request){
                                                         plotOutput("protein_plot_dm"),
                                                         downloadButton('downloadProtein_dm', 'Download Plot')
                                                       )
-                                             )
+                                             ),
+                                             navbarMenu("Abundance Plot",
+                                                        tabPanel(title = "Abundance rank",
+                                                                 fluidRow(
+                                                                   tags$p("Select protein from Results Table to highlight on the plot OR 
+                                                                                    drag the mouse on plot to show expression of proteins in Table")
+                                                                 ),
+                                                                 fluidRow(
+                                                                   plotOutput("abundance_rank_dm",
+                                                                              height = 600,
+                                                                              brush = "protein_brush_rank_dm",
+                                                                              click = "protein_click_rank_dm"),
+                                                                   downloadButton('downloadAbundance_rank_dm', 'Save Highlighted Plot'),
+                                                                   actionButton("resetPlot_rank_dm", "Clear Selection")
+                                                                 )
+                                                        ),
+                                                        tabPanel("Abundance comparison",
+                                                                 fluidRow(
+                                                                   column(uiOutput("abundance_cntrst_dm"), width = 12),
+                                                                   tags$p("Select protein from Results Table to highlight on the plot OR 
+                                                                                    drag the mouse on plot to show expression of proteins in Table")
+                                                                 ),
+                                                                 fluidRow(
+                                                                   plotOutput("abundance_comp_dm",
+                                                                              height = 600,
+                                                                              brush = "protein_brush_comp_dm",
+                                                                              click = "protein_click_comp_dm"),
+                                                                   downloadButton('downloadAbundance_comp_dm', 'Save Highlighted Plot'),
+                                                                   actionButton("resetPlot_comp_dm", "Clear Selection")
+                                                                 )
+                                                        )
+                                             ) # navbarMenu close
                                            )
                                          ) # box or column end
                                          

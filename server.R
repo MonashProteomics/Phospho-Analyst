@@ -1106,10 +1106,9 @@ server <- function(input, output,session){
     df <- SummarizedExperiment::rowData(dep())
     cols <- grep("_significant$",colnames(df))
     contrast <- gsub("_significant", "", colnames(df)[cols])[1]
-    p_list <- plot_abundance(data_result(),
-                             contrast)
+    p <- abundance_rank_input()
     
-    p_list[[1]] + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+    p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
       ggrepel::geom_label_repel(data = df_protein,
                                 aes(x, y, label = name),
                                 nudge_y = 0.5,
@@ -1186,10 +1185,9 @@ server <- function(input, output,session){
                                y = proteins_selected[,grep(paste("^mean", contrast2, sep = "_"), colnames(proteins_selected))],
                                name = proteins_selected$`Phosphosite`)
       
-      p_list <- plot_abundance(data_result(),
-                               input$abundance_cntrst)
+      p <- abundance_comp_input()
       
-      p_list[[2]] + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+      p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
         ggrepel::geom_label_repel(data = df_protein,
                                   aes(x, y, label = name),
                                   nudge_y = 0.5,
@@ -1277,8 +1275,8 @@ server <- function(input, output,session){
   
   ## Select rows dynamically in abundance comparison plot
   
-  brush_comp <- NULL
-  makeReactiveBinding("brush_comp")
+  # brush_comp <- NULL
+  # makeReactiveBinding("brush_comp")
   
   observeEvent(input$protein_brush_comp,{
     output$contents <- DT::renderDataTable({
@@ -1322,7 +1320,7 @@ server <- function(input, output,session){
   
   observeEvent(input$resetPlot_comp,{
     session$resetBrush("protein_brush_comp")
-    brush_comp <<- NULL
+    brush <<- NULL
     
     output$contents <- DT::renderDataTable({
       df<- data_result()
@@ -4849,6 +4847,280 @@ server <- function(input, output,session){
     }
   })
   
+  ### Demo Abundance plot panel ####
+  #comparisons
+  output$abundance_cntrst_dm <- renderUI({
+    if (!is.null(comparisons_dm())) {
+      df <- SummarizedExperiment::rowData(dep_dm())
+      cols <- grep("_significant$",colnames(df))
+      selectizeInput("abundance_cntrst_dm",
+                     "Comparison",
+                     choices = gsub("_significant", "", colnames(df)[cols]))
+    }
+  })
+  
+  ## abundance rank plot
+  #abundance rank plot brush
+  protein_name_brush_rank_dm <- reactive({
+    protein_tmp<-brushedPoints(data_result_dm(), input$protein_brush_rank_dm,
+                               xvar = "rank", yvar = "mean_abundance")
+    protein_selected<-protein_tmp$`Phosphosite`
+  })
+  protein_name_click_rank_dm <- reactive({
+    protein_tmp<-nearPoints(data_result_dm(), input$protein_click_rank_dm, maxpoints = 1)
+    protein_selected<-protein_tmp$`Phosphosite`
+  })
+  
+  abundance_rank_input_dm <- reactive({
+    df <- SummarizedExperiment::rowData(dep_dm())
+    cols <- grep("_significant$",colnames(df))
+    contrast <- gsub("_significant", "", colnames(df)[cols])[1]
+    p_list <- plot_abundance(data_result_dm(), contrast)
+    p_list[[1]]
+  })
+  
+  abundance_rank_input_selected_dm<-reactive({
+    if (!is.null(input$contents_dm_rows_selected)){
+      proteins_selected<-data_result_dm()[c(input$contents_dm_rows_selected),]## get all rows selected
+    }
+    else if(!is.null(input$protein_brush_rank_dm)){
+      proteins_selected<-data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_rank_dm(), ] 
+    }
+    
+    df_protein <- data.frame(x = proteins_selected$rank,
+                             y = proteins_selected$mean_abundance,
+                             name = proteins_selected$`Phosphosite`)
+    
+    df <- SummarizedExperiment::rowData(dep_dm())
+    cols <- grep("_significant$",colnames(df))
+    contrast <- gsub("_significant", "", colnames(df)[cols])[1]
+    p <- abundance_rank_input_dm()
+    
+    p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+      ggrepel::geom_label_repel(data = df_protein,
+                                aes(x, y, label = name),
+                                nudge_y = 0.5,
+                                size = 4,
+                                box.padding = unit(0.1, 'lines'),
+                                point.padding = unit(0.1, 'lines'),
+                                segment.size = 0.5)## use the dataframe to plot points
+    
+  })
+  
+  output$abundance_rank_dm <- renderPlot({
+    withProgress(message = 'Abundance Plot calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush_rank_dm)){
+      abundance_rank_input_dm()
+    }
+    else {
+      abundance_rank_input_selected_dm()
+    }
+  })
+  
+  # abundance comparison plot
+  #abundance rank plot brush
+  protein_name_brush_comp_dm <- reactive({
+    if(!is.null(input$abundance_cntrst_dm)){
+      contrast1 <- input$abundance_cntrst_dm %>% gsub("_vs.*", "",.)
+      contrast2 <- input$abundance_cntrst_dm %>% gsub("^.*vs_", "",.)
+      
+      protein_tmp<-brushedPoints(data_result_dm(), input$protein_brush_comp_dm,
+                                 xvar = paste("mean", contrast1, sep = "_"), yvar = paste("mean", contrast2, sep = "_"))
+      protein_selected<-protein_tmp$`Phosphosite`
+    }
+  })
+  protein_name_click_comp_dm <- reactive({
+    if(!is.null(input$abundance_cntrst_dm)){
+      contrast1 <- input$abundance_cntrst_dm %>% gsub("_vs.*", "",.)
+      contrast2 <- input$abundance_cntrst_dm %>% gsub("^.*vs_", "",.)
+      
+      
+      protein_tmp<-nearPoints(data_result_dm(), input$protein_click_comp_dm, 
+                              xvar = paste("mean", contrast1, sep = "_"), yvar = paste("mean", contrast2, sep = "_"),
+                              maxpoints = 1)
+      protein_selected<-protein_tmp$`Phosphosite`
+    }
+  })
+  
+  abundance_comp_input_dm <- reactive({
+    if(!is.null(input$abundance_cntrst_dm)) {
+      p_list <- plot_abundance(data_result_dm(),
+                               input$abundance_cntrst_dm)
+      p_list[[2]]
+    }
+  })
+  
+  abundance_comp_input_selected_dm<-reactive({
+    if(!is.null(input$abundance_cntrst_dm)){
+      
+      if (!is.null(input$contents_dm_rows_selected)){
+        proteins_selected<-data_result_dm()[c(input$contents_dm_rows_selected),]## get all rows selected
+      }
+      else if(!is.null(input$protein_brush_comp_dm)){
+        proteins_selected<-data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_comp_dm(), ]
+      }
+      
+      contrast1 <- input$abundance_cntrst_dm %>% gsub("_vs.*", "",.)
+      contrast2 <- input$abundance_cntrst_dm %>% gsub("^.*vs_", "",.)
+      
+      df_protein <- data.frame(x = proteins_selected[,grep(paste("^mean", contrast1, sep = "_"), colnames(proteins_selected))],
+                               y = proteins_selected[,grep(paste("^mean", contrast2, sep = "_"), colnames(proteins_selected))],
+                               name = proteins_selected$`Phosphosite`)
+      
+      p <- abundance_comp_input_dm()
+      
+      p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
+        ggrepel::geom_label_repel(data = df_protein,
+                                  aes(x, y, label = name),
+                                  nudge_y = 0.5,
+                                  size = 4,
+                                  box.padding = unit(0.1, 'lines'),
+                                  point.padding = unit(0.1, 'lines'),
+                                  segment.size = 0.5)## use the dataframe to plot points
+    }
+  })
+  
+  output$abundance_comp_dm <- renderPlot({
+    withProgress(message = 'Abundance Plot calculations are in progress',
+                 detail = 'Please wait for a while', value = 0, {
+                   for (i in 1:15) {
+                     incProgress(1/15)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush_comp_dm)){
+      abundance_comp_input_dm()
+    }
+    else if(!is.null(input$abundance_cntrst_dm)){
+      abundance_comp_input_selected_dm()
+    }
+  })
+  
+  output$downloadAbundance_rank_dm <- downloadHandler(
+    filename = function() {
+      "Abundance_rank.svg"
+    },
+    content = function(file) {
+      if(is.null(input$contents_dm_rows_selected)){
+        p <- abundance_rank_input_dm()
+      }
+      else{
+        p <- abundance_rank_input_selected_dm()
+      }
+      svg(file, width = 8, height = 8)
+      print(p)
+      dev.off()
+    }
+  )
+  
+  output$downloadAbundance_comp_dm <- downloadHandler(
+    filename = function() {
+      paste0("Abundance_", input$abundance_cntrst_dm, ".svg")
+    },
+    content = function(file) {
+      if(is.null(input$contents_dm_rows_selected)){
+        p <- abundance_comp_input_dm()
+      }
+      else{
+        p <- abundance_comp_input_selected_dm()
+      }
+      svg(file, width = 8, height = 8)
+      print(p)
+      dev.off()
+    }
+  )
+  
+  ## Select rows dynamically in abundance rank plot
+  observeEvent(input$protein_brush_rank_dm,{
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_rank_dm(), ] 
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE)
+    )
+  })
+  
+  observeEvent(input$protein_click_rank_dm,{
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_click_rank_dm(), ] 
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  ## Select rows dynamically in abundance comparison plot
+  
+  # brush_comp <- NULL
+  # makeReactiveBinding("brush_comp")
+  
+  observeEvent(input$protein_brush_comp_dm,{
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_comp_dm(), ]  
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE)
+    )
+  })
+  
+  observeEvent(input$protein_click_comp_dm,{
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_click_comp_dm(), ]
+      # %>% 
+      #   dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX= TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  # reset abundance plots
+  observeEvent(input$resetPlot_rank_dm,{
+    session$resetBrush("protein_brush_rank_dm")
+    brush <<- NULL
+    
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm() 
+      # %>% dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+  
+  observeEvent(input$resetPlot_comp_dm,{
+    session$resetBrush("protein_brush_comp_dm")
+    brush <<- NULL
+    
+    output$contents_dm <- DT::renderDataTable({
+      df<- data_result_dm()
+      # %>% dplyr::select(-dplyr::starts_with("mean"),-"rank") # drop mean abundance columns
+      return(df)
+    },
+    options = list(scrollX = TRUE,
+                   autoWidth=TRUE,
+                   columnDefs= list(list(width = '400px', targets = c(-1))))
+    )
+  })
+
   
   ### QC Outputs
   output$sample_corr_dm <-renderPlot({
@@ -7248,25 +7520,40 @@ server <- function(input, output,session){
   
   data_attendance_dm <-reactive({
     df <- attendance_dm()
-    if (!is.null(input[["CTRL"]])){
-      df <- df %>%
-        dplyr::filter(df[[6]] >=input[["CTRL"]][1] & df[[6]] <=input[["CTRL"]][2])
-    }
-    if (!is.null(input[["L41.10um"]])){
-      df <- df %>%
-        dplyr::filter(df[[7]] >=input[["L41.10um"]][1] & df[[7]] <=input[["L41.10um"]][2])
-    }
-    if (!is.null(input[["L41.1um"]])){
-      df <- df %>%
-        dplyr::filter(df[[8]] >=input[["L41.1um"]][1] & df[[8]] <=input[["L41.1um"]][2])
-    }
-    if (!is.null(input[["ALG.10um"]])){
-      df <- df %>%
-        dplyr::filter(df[[9]] >=input[["ALG.10um"]][1] & df[[9]] <=input[["ALG.10um"]][2])
-    }
-    if (!is.null(input[["ALG.1um"]])){
-      df <- df %>%
-        dplyr::filter(df[[10]] >=input[["ALG.1um"]][1] & df[[10]] <=input[["ALG.1um"]][2])
+    # if (!is.null(input[["CTRL"]])){
+    #   df <- df %>%
+    #     dplyr::filter(df[[6]] >=input[["CTRL"]][1] & df[[6]] <=input[["CTRL"]][2])
+    # }
+    # if (!is.null(input[["L41.10um"]])){
+    #   df <- df %>%
+    #     dplyr::filter(df[[7]] >=input[["L41.10um"]][1] & df[[7]] <=input[["L41.10um"]][2])
+    # }
+    # if (!is.null(input[["L41.1um"]])){
+    #   df <- df %>%
+    #     dplyr::filter(df[[8]] >=input[["L41.1um"]][1] & df[[8]] <=input[["L41.1um"]][2])
+    # }
+    # if (!is.null(input[["ALG.10um"]])){
+    #   df <- df %>%
+    #     dplyr::filter(df[[9]] >=input[["ALG.10um"]][1] & df[[9]] <=input[["ALG.10um"]][2])
+    # }
+    # if (!is.null(input[["ALG.1um"]])){
+    #   df <- df %>%
+    #     dplyr::filter(df[[10]] >=input[["ALG.1um"]][1] & df[[10]] <=input[["ALG.1um"]][2])
+    # }
+    # get conditions
+    exp_design <- exp_design_demo()
+    conditions <- exp_design$condition %>% unique()
+    
+    
+    for (i in 1:length(conditions)) {
+      condition <- conditions[i]
+      # print(colnames(df))
+      cols <- grep(paste0(condition, "$"),colnames(df))
+      
+      if (!is.null(input[[paste0("",condition)]])){
+        df <- df %>%
+          dplyr::filter(df[[cols]] >=input[[paste0("",condition)]][1] & df[[cols]] <=input[[paste0("",condition)]][2])
+      }
     }
     return(df)
   })
