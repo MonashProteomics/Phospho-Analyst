@@ -1086,13 +1086,40 @@ ui <- function(request){
                                                        status = "success",
                                                        solidHeader = TRUE
                                                    ),
-                                                   box(width = 9,
-                                                       title = "Results Table",
-                                                       shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ"), color = "#bec8da"),
-                                                       downloadButton('download_attendance', 'Download Table'),
-                                                       status = "success",
-                                                       solidHeader = TRUE
-                                                   )
+                                                   column(9,
+                                                          box(width = NULL,
+                                                              title = "Results Table",
+                                                              shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ"), color = "#bec8da"),
+                                                              downloadButton('download_attendance', 'Download Table'),
+                                                              status = "success",
+                                                              solidHeader = TRUE),
+                                                          box(width = NULL,
+                                                              title = "Venn Plot",
+                                                              tags$p('Select conditions/groups to generate the Venn plot. By default, more than three conditions/groups generates a 3D Venn plot, 
+                                                                     set Condition 3 as "NONE" to generate a 2D Venn plot'),
+                                                              column(12,
+                                                                     box(width = 4,id = "con_1",uiOutput("condition_1")),
+                                                                     box(width = 4,id = "con_2", uiOutput("condition_2")),
+                                                                     box(width = 4,id = "con_3", uiOutput("condition_3"))),
+                                                              column(12,
+                                                                     shinycssloaders::withSpinner(plotOutput("venn_plot"),
+                                                                                                  color = "#bec8da")),
+                                                              column(12, downloadButton('download_venn_svg', "Save svg")),
+                                                              status = "success",
+                                                              solidHeader = TRUE)
+                                                   ) # Venn plot column closed
+                                                   # 
+                                                   # 
+                                                   # 
+                                                   # 
+                                                   # 
+                                                   # box(width = 9,
+                                                   #     title = "Results Table",
+                                                   #     shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ"), color = "#bec8da"),
+                                                   #     downloadButton('download_attendance', 'Download Table'),
+                                                   #     status = "success",
+                                                   #     solidHeader = TRUE
+                                                   # )
                                                  ) # fuildrow close
                                                  )) # tabPanel list closed
                         ) # panelBox closed
@@ -1926,13 +1953,34 @@ ui <- function(request){
                                              status = "success",
                                              solidHeader = TRUE
                                          ),
-                                         box(width = 9,
-                                             title = "Results Table",
-                                             shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ_dm"), color = "#bec8da"),
-                                             downloadButton('download_attendance_dm', 'Download Table'),
-                                             status = "success",
-                                             solidHeader = TRUE
-                                         )
+                                         column(9,
+                                                box(width = NULL,
+                                                    title = "Results Table",
+                                                    shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ_dm"), color = "#bec8da"),
+                                                    downloadButton('download_attendance_dm', 'Download Table'),
+                                                    status = "success",
+                                                    solidHeader = TRUE),
+                                                box(width = NULL,
+                                                    title = "Venn Plot",
+                                                    column(12,
+                                                           box(width = 4,id = "con_1_dm",uiOutput("condition_1_dm")),
+                                                           box(width = 4,id = "con_2_dm", uiOutput("condition_2_dm")),
+                                                           box(width = 4,id = "con_3_dm", uiOutput("condition_3_dm"))),
+                                                    column(12,
+                                                           shinycssloaders::withSpinner(plotOutput("venn_plot_dm"),
+                                                                                        color = "#bec8da")),
+                                                    column(12, downloadButton('download_venn_svg_dm', "Save svg")),
+                                                    status = "success",
+                                                    solidHeader = TRUE)
+                                         ) # Venn plot column closed
+                    
+                                         # box(width = 9,
+                                         #     title = "Results Table",
+                                         #     shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ_dm"), color = "#bec8da"),
+                                         #     downloadButton('download_attendance_dm', 'Download Table'),
+                                         #     status = "success",
+                                         #     solidHeader = TRUE
+                                         # )
                                        ) # fuildrow close
                               ) # phosphosite(absence/presence) demo page closed
                               

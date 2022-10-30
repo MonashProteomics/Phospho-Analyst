@@ -4332,6 +4332,94 @@ server <- function(input, output,session){
                                                 },
                                                 contentType = "text/csv")
   
+  ## Venn plot
+  condition_list <- reactive({
+    if(!is.null(exp_design_input())){
+      exp_design <- exp_design_input()
+      conditions <- exp_design$condition %>% unique() %>% sort()
+      return(conditions)
+    }
+  })
+  
+  observeEvent(input$analyze, {
+    if (length(condition_list()) == 1){
+      shinyjs::hide(id = "con_2")
+      shinyjs::hide(id = "con_3")
+    } 
+    if (length(condition_list()) == 2){
+      shinyjs::hide(id = "con_3")
+    } 
+  })
+  
+  output$condition_1 <- renderUI({
+    if (!is.null(condition_list())){
+      selectizeInput("condition_1",
+                     "Condition 1",
+                     choices = condition_list(),
+                     selected = condition_list()[1])
+    }
+  })
+  
+  output$condition_2 <- renderUI({
+    if (!is.null(condition_list()) & length(condition_list()) > 1){
+      selectizeInput("condition_2",
+                     "Condition 2",
+                     choices = condition_list()[condition_list() != input$condition_1],
+                     selected = condition_list()[2])
+    }
+  })
+  
+  output$condition_3 <- renderUI({
+    if (!is.null(condition_list())  & length(condition_list()) > 2){
+      selectizeInput("condition_3",
+                     "Condition 3",
+                     choices = c("NONE", condition_list()[condition_list() != input$condition_1 & condition_list() != input$condition_2]),
+                     selected = condition_list()[3])
+    }
+  })
+  
+  venn_plot_input <- reactive({
+    df<- data_attendance_filtered()
+    if(length(condition_list()) < 2){
+      stop(safeError("Venn plot should contain at least two sets"))
+    } else if(length(condition_list()) < 3){
+      set1 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
+      set2 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
+      x <- list(set1,set2)
+      names(x) <- c("C 1", "C 2")
+    } else {
+      set1 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
+      set2 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
+      set3 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_3),colnames(df))] != 0]
+      x <- list(set1,set2,set3)
+      names(x) <- c("C 1", "C 2", "C 3")
+      if (!is.null(input$condition_3)){
+        if (input$condition_3 == "NONE"){
+          x <- list(set1,set2)
+          names(x) <- c("C 1", "C 2")
+        }
+      }
+    }
+    ggVennDiagram::ggVennDiagram(x,label_alpha = 0) +
+      scale_fill_gradient(low = "#F4FAFE", high = "#4981BF")
+  })
+  
+  output$venn_plot <- renderPlot({
+    if (!is.null(input$condition_1) & !is.null(input$condition_2)){
+      venn_plot_input()
+    }
+  })
+  
+  output$download_venn_svg<-downloadHandler(
+    filename = function() { "venn_plot.svg" }, 
+    content = function(file) {
+      svg(file)
+      print(venn_plot_input())
+      dev.off()
+    }
+  )
+  
+  
   #### Demo logic (Phosphosite)========== #############
   
   ####======= Render Functions
@@ -7604,26 +7692,6 @@ server <- function(input, output,session){
   
   data_attendance_dm <-reactive({
     df <- attendance_dm()
-    # if (!is.null(input[["CTRL"]])){
-    #   df <- df %>%
-    #     dplyr::filter(df[[6]] >=input[["CTRL"]][1] & df[[6]] <=input[["CTRL"]][2])
-    # }
-    # if (!is.null(input[["L41.10um"]])){
-    #   df <- df %>%
-    #     dplyr::filter(df[[7]] >=input[["L41.10um"]][1] & df[[7]] <=input[["L41.10um"]][2])
-    # }
-    # if (!is.null(input[["L41.1um"]])){
-    #   df <- df %>%
-    #     dplyr::filter(df[[8]] >=input[["L41.1um"]][1] & df[[8]] <=input[["L41.1um"]][2])
-    # }
-    # if (!is.null(input[["ALG.10um"]])){
-    #   df <- df %>%
-    #     dplyr::filter(df[[9]] >=input[["ALG.10um"]][1] & df[[9]] <=input[["ALG.10um"]][2])
-    # }
-    # if (!is.null(input[["ALG.1um"]])){
-    #   df <- df %>%
-    #     dplyr::filter(df[[10]] >=input[["ALG.1um"]][1] & df[[10]] <=input[["ALG.1um"]][2])
-    # }
     # get conditions
     exp_design <- exp_design_demo()
     conditions <- exp_design$condition %>% unique()
@@ -7712,7 +7780,76 @@ server <- function(input, output,session){
                                                    contentType = "text/csv")
   
   
+  ## Venn plot
+  condition_list_dm <- reactive({
+    if(!is.null(exp_design_demo())){
+      exp_design <- exp_design_demo()
+      conditions <- exp_design$condition %>% unique() %>% sort()
+      return(conditions)
+    }
+  })
   
+  output$condition_1_dm <- renderUI({
+    if (!is.null(condition_list_dm())){
+      selectizeInput("condition_1_dm",
+                     "Condition 1",
+                     choices = condition_list_dm(),
+                     selected = condition_list_dm()[1])
+    }
+  })
+  
+  output$condition_2_dm <- renderUI({
+    if (!is.null(condition_list_dm()) & length(condition_list_dm()) > 1){
+      selectizeInput("condition_2_dm",
+                     "Condition 2",
+                     choices = condition_list_dm()[condition_list_dm() != input$condition_1_dm],
+                     selected = condition_list_dm()[2])
+    }
+  })
+  
+  output$condition_3_dm <- renderUI({
+    if (!is.null(condition_list_dm())  & length(condition_list_dm()) > 2){
+      selectizeInput("condition_3_dm",
+                     "Condition 3",
+                     # choices = condition_list_dm(),
+                     choices = c("NONE", condition_list_dm()[condition_list_dm() != input$condition_1_dm & condition_list_dm() != input$condition_2_dm]),
+                     selected = condition_list_dm()[3])
+    }
+  })
+  
+  venn_plot_input_dm <- reactive({
+    df<- data_attendance_filtered_dm()
+    
+    set1 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_1_dm),colnames(df))] != 0] %>% unique()
+    set2 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_2_dm),colnames(df))] != 0] %>% unique()
+    set3 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_3_dm),colnames(df))] != 0] %>% unique()
+    x <- list(set1,set2,set3)
+    names(x) <- c("C 1", "C 2", "C 3")
+    if (!is.null(input$condition_3_dm)){
+      if (input$condition_3_dm == "NONE"){
+        x <- list(set1,set2)
+        names(x) <- c("C 1", "C 2")
+      }
+    }
+    
+    ggVennDiagram::ggVennDiagram(x,label_alpha = 0) +
+      scale_fill_gradient(low = "#F4FAFE", high = "#4981BF")
+  })
+  
+  output$venn_plot_dm <- renderPlot({
+    if (!is.null(input$condition_1_dm) & !is.null(input$condition_2_dm)){
+      venn_plot_input_dm()
+    }
+  })
+  
+  output$download_venn_svg_dm<-downloadHandler(
+    filename = function() { "venn_plot.svg" }, 
+    content = function(file) {
+      svg(file)
+      print(venn_plot_input_dm())
+      dev.off()
+    }
+  )
   
   # # used for save demo data
   # observeEvent(input$analyze ,{
