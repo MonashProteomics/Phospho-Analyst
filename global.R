@@ -31,3 +31,6 @@ library(tinytex)
 library(shinyBS)
 library(KSEAapp)
 library(rhandsontable)
+library("shinycssloaders") # new added
+library("shiny.info") # new added
+VERSION <- "v0.1"

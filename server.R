@@ -42,26 +42,25 @@ server <- function(input, output,session){
   
   
   observeEvent(input$analyze ,{ 
-    if(input$analyze==0 ){
+    if(input$analyze==0 & input$panel_list ==0 ){
       return()
     }
-    
     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
                 appear on the screen", type="info",
                closeOnClickOutside = TRUE,
                closeOnEsc = TRUE,
                timer = 0)  # not close the modal automatically 
   })
-  
-  observe({
-    if (input$panel_list !="Phosphosite" & input$panel_list !="Phosphosite Absence/Presence"){
-      shinyalert("In Progress!", "Data analysis has started, wait until table and plots
-                appear on the screen", type="info",
-                 closeOnClickOutside = TRUE,
-                 closeOnEsc = TRUE,
-                 timer = 0) # not close the modal automatically 
-    }
-  })
+  # 
+  # observe({
+  #   if (input$panel_list !="Phosphosite" & input$panel_list !="Phosphosite Absence/Presence"){
+  #     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
+  #               appear on the screen", type="info",
+  #                closeOnClickOutside = TRUE,
+  #                closeOnEsc = TRUE,
+  #                timer = 0) # not close the modal automatically 
+  #   }
+  # })
   
   # observe({
   #   if (input$tabs_selected=="analysis" & input$panel_list !=0){
@@ -252,6 +251,20 @@ server <- function(input, output,session){
     output$exp_phospho<- renderRHandsontable({phospho_exp_data1()})
     output$save_message <- renderText({""})
     })
+  
+  observeEvent(input$showTable_pr ,{
+    if(input$showTable_pr==0){
+      return()
+    }
+    shinyjs::hide("panels")
+    shinyjs::hide("qc_tab")
+    shinyjs::show("quickstart_info")
+  })
+  
+  observeEvent(input$original_exp_pr,{
+    output$exp_protein<- renderRHandsontable({protein_exp_data1()})
+    output$save_message_pr <- renderText({""})
+  })
   
   # phosphosite exp_desgin file
   exp_design_input<-eventReactive(input$analyze,{
@@ -1389,11 +1402,23 @@ server <- function(input, output,session){
   })
   
   ## Enrichment Outputs
+  output$spinner_go <- renderUI({
+    req(input$go_analysis)
+    shinycssloaders::withSpinner(plotOutput("go_enrichment"), color = "#bec8da")
+  })
+  
   output$go_enrichment<-renderPlot({
+    Sys.sleep(2)
     go_input()$plot_go
   })
   
+  output$spinner_ksea <- renderUI({
+    req(input$KSEA_analysis)
+    shinycssloaders::withSpinner(plotOutput("KSEA_enrichment"), color = "#bec8da")
+  })
+  
   output$KSEA_enrichment<-renderPlot({
+    Sys.sleep(2)
     KSEA_input()$plot_KSEA
   })
   
@@ -2376,11 +2401,23 @@ server <- function(input, output,session){
   })
   
   ## Enrichment Outputs
+  output$spinner_go_pr <- renderUI({
+    req(input$go_analysis_pr)
+    shinycssloaders::withSpinner(plotOutput("go_enrichment_pr"), color = "#bec8da")
+  })
+  
   output$go_enrichment_pr<-renderPlot({
+    Sys.sleep(2)
     go_input_pr()$plot_go
   })
   
+  output$spinner_pa_pr <- renderUI({
+    req(input$pathway_analysis_pr)
+    shinycssloaders::withSpinner(plotOutput("pathway_enrichment_pr"), color = "#bec8da")
+  })
+  
   output$pathway_enrichment_pr<-renderPlot({
+    Sys.sleep(2)
     pathway_input_pr()$plot_pa
   })
   
@@ -3897,11 +3934,23 @@ server <- function(input, output,session){
   # })
   
   ## Enrichment Outputs
+  output$spinner_go_nr <- renderUI({
+    req(input$go_analysis_nr)
+    shinycssloaders::withSpinner(plotOutput("go_enrichment_nr"), color = "#bec8da")
+  })
+  
   output$go_enrichment_nr<-renderPlot({
+    Sys.sleep(2)
     go_input_nr()$plot_go
   })
   
+  output$spinner_ksea_nr <- renderUI({
+    req(input$KSEA_analysis_nr)
+    shinycssloaders::withSpinner(plotOutput("KSEA_enrichment_nr"), color = "#bec8da")
+  })
+  
   output$KSEA_enrichment_nr<-renderPlot({
+    Sys.sleep(2)
     KSEA_input_nr()$plot_KSEA
   })
   
@@ -5160,8 +5209,19 @@ server <- function(input, output,session){
   })
   
   ## Enrichment Outputs
+  output$spinner_go_dm <- renderUI({
+    req(input$go_analysis_dm)
+    shinycssloaders::withSpinner(plotOutput("go_enrichment_dm"), color = "#bec8da")
+  })
+  
   output$go_enrichment_dm<-renderPlot({
+    Sys.sleep(2)
     go_input_dm()$plot_go
+  })
+  
+  output$spinner_ksea_dm <- renderUI({
+    req(input$KSEA_analysis_dm)
+    shinycssloaders::withSpinner(plotOutput("KSEA_enrichment_dm"), color = "#bec8da")
   })
   
   output$KSEA_enrichment_dm<-renderPlot({
@@ -5948,11 +6008,23 @@ server <- function(input, output,session){
   })
   
   ## Enrichment Outputs
+  output$spinner_go_dm_pr <- renderUI({
+    req(input$go_analysis_dm_pr)
+    shinycssloaders::withSpinner(plotOutput("go_enrichment_dm_pr"), color = "#bec8da")
+  })
+  
   output$go_enrichment_dm_pr<-renderPlot({
+    Sys.sleep(2)
     go_input_dm_pr()$plot_go
   })
   
+  output$spinner_pa_dm_pr <- renderUI({
+    req(input$pathway_analysis_dm_pr)
+    shinycssloaders::withSpinner(plotOutput("pathway_enrichment_dm_pr"), color = "#bec8da")
+  })
+  
   output$pathway_enrichment_dm_pr<-renderPlot({
+    Sys.sleep(2)
     pathway_input_dm_pr()$plot_pa
   })
   
@@ -7315,11 +7387,23 @@ server <- function(input, output,session){
   })
   
   ## Enrichment Outputs
+  output$spinner_go_dm_nr <- renderUI({
+    req(input$go_analysis_dm_nr)
+    shinycssloaders::withSpinner(plotOutput("go_enrichment_dm_nr"), color = "#bec8da")
+  })
+  
   output$go_enrichment_dm_nr<-renderPlot({
+    Sys.sleep(2)
     go_input_dm_nr()$plot_go
   })
   
+  output$spinner_ksea_dm_nr <- renderUI({
+    req(input$KSEA_analysis_dm_nr)
+    shinycssloaders::withSpinner(plotOutput("KSEA_enrichment_dm_nr"), color = "#bec8da")
+  })
+  
   output$KSEA_enrichment_dm_nr<-renderPlot({
+    Sys.sleep(2)
     KSEA_input_dm_nr()
   })
   
