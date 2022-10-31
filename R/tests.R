@@ -200,7 +200,7 @@ enrichment_output_test<-function(dep, database){
     as.data.frame() %>%
     dplyr::select(name, significant) %>%
     dplyr::filter(significant) %>%
-    dplyr::mutate(name = gsub("[.].*", "", name))
+    dplyr::mutate(name = gsub("[.|_].*", "", name))
   test_enrichment_output<-enrichr_mod(significant$name, databases = database)
   if(nrow(test_enrichment_output[[1]])==0)
     stop(safeError("Enrichment analysis failed. 

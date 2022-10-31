@@ -798,7 +798,7 @@ server <- function(input, output,session){
                  })
     
     if(!is.null(input$contrast)){
-      # enrichment_output_test(dep(), input$go_database)
+      enrichment_output_test(dep(), input$go_database)
       go_results<- test_gsea_mod_phospho(dep(), databases = input$go_database, contrasts = TRUE)
       null_enrichment_test(go_results)
       if (input$go_database == "KEGG" | input$go_database == "Reactome"){
@@ -3636,7 +3636,7 @@ server <- function(input, output,session){
                  })
     
     if(!is.null(input$contrast_nr)){
-      # enrichment_output_test(dep_nr(), input$go_database_nr)
+      enrichment_output_test(dep_nr(), input$go_database_nr)
       go_results<- test_gsea_mod_phospho(dep_nr(), databases = input$go_database_nr, contrasts = TRUE)
       null_enrichment_test(go_results)
       if (input$go_database_nr == "KEGG" | input$go_database_nr == "Reactome"){
@@ -4726,7 +4726,7 @@ server <- function(input, output,session){
                  })
     
     if(!is.null(input$contrast_dm)){
-      # enrichment_output_test(dep_dm(), input$go_database_dm)
+      enrichment_output_test(dep_dm(), input$go_database_dm)
       go_results<- test_gsea_mod_phospho(dep_dm(), databases = input$go_database_dm, contrasts = TRUE)
       null_enrichment_test(go_results)
       if (input$go_database_dm == "KEGG" | input$go_database_dm == "Reactome"){
@@ -7190,7 +7190,7 @@ server <- function(input, output,session){
                  })
     
     if(!is.null(input$contrast_dm_nr)){
-      # enrichment_output_test(dep_dm_nr(), input$go_database_dm_nr)
+      enrichment_output_test(dep_dm_nr(), input$go_database_dm_nr)
       go_results<- test_gsea_mod_phospho(dep_dm_nr(), databases = input$go_database_dm_nr, contrasts = TRUE)
       null_enrichment_test(go_results)
       if (input$go_database_dm_nr == "KEGG" | input$go_database_dm_nr == "Reactome"){
