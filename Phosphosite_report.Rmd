@@ -19,6 +19,9 @@ params:
   dep: NA
   pg_width: NA
   cvs_input: NA
+  abundance_rank_input: NA
+  data_result: NA
+  
 output: 
   pdf_document:
     fig_caption: yes
@@ -137,7 +140,34 @@ for(i in params$tested_contrasts){
   print(plot_volcano_new(params$dep(),contrast = i, add_names = F))
   }
 ```
-
+\pagebreak
+  
+#### Volcano Plots (Applied ANOVA test)
+  Plots illustrate statistically significant (ANOVA P value) versus change magnitude (fold change) in different contrasts.
+  
+```{r volcano_anova,  echo=FALSE, warning=FALSE, comment=NA}
+for(i in params$tested_contrasts){
+  print(plot_volcano_new(params$dep(),apply_anova = TRUE, contrast = i, add_names = F))
+  }
+```
+\pagebreak
+  
+#### Abundance Rank Plot
+  Plots illustrate statistically significant (ANOVA P value) versus change magnitude (fold change) in different contrasts.
+  
+```{r abundance_rank,  echo=FALSE, warning=FALSE, comment=NA}
+print(params$abundance_rank_input())
+```
+\pagebreak
+  
+#### Abundance Comparision Plots
+  Plots illustrate the abundance (log transformed) comparison between two conditions
+  
+```{r abundance_comp,  echo=FALSE, warning=FALSE, comment=NA}
+for(i in params$tested_contrasts){
+  print(plot_abundance(params$data_result(),contrast = i)[[2]])
+  }
+```
 
 
 

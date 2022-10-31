@@ -107,7 +107,16 @@ for(i in params$tested_contrasts){
   print(plot_volcano_new(params$dep(),contrast = i, add_names = F))
   }
 ```
-
+\pagebreak
+  
+#### Volcano Plots (Applied ANOVA test)
+  Plots illustrate statistically significant (ANOVA P value) versus change magnitude (fold change) in different contrasts.
+  
+```{r volcano_anova,  echo=FALSE, warning=FALSE, comment=NA}
+for(i in params$tested_contrasts){
+  print(plot_volcano_new(params$dep(),apply_anova = TRUE, contrast = i, add_names = F))
+  }
+```
 
 
 

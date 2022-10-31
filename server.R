@@ -1587,7 +1587,9 @@ server <- function(input, output,session){
                      correlation_input =correlation_input,
                      heatmap_input = heatmap_input,
                      cvs_input= cvs_input,
-                     dep = dep
+                     dep = dep,
+                     abundance_rank_input = abundance_rank_input,
+                     data_result = data_result
       )
       
       # Knit the document, passing in the `params` list
@@ -5449,7 +5451,9 @@ server <- function(input, output,session){
                      correlation_input =correlation_input_dm,
                      heatmap_input = heatmap_input_dm,
                      cvs_input= cvs_input_dm,
-                     dep = dep_dm
+                     dep = dep_dm,
+                     abundance_rank_input = abundance_rank_input_dm,
+                     data_result = data_result_dm
       )
       
       # Knit the document, passing in the `params` list
