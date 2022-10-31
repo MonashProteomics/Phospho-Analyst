@@ -1989,7 +1989,7 @@ server <- function(input, output,session){
   })
   
   normalised_data_pr<-reactive({
-    print(assay(processed_data_pr()))
+    # print(assay(processed_data_pr()))
     DEP::normalize_vsn(processed_data_pr())
   })
   
@@ -5625,7 +5625,7 @@ server <- function(input, output,session){
   })
   
   normalised_data_dm_pr<-reactive({
-    normalize_vsn(imputed_data_dm_pr())
+    normalize_vsn(processed_data_dm_pr())
   })
   
   imputed_table_dm_pr<-reactive({
@@ -5638,7 +5638,7 @@ server <- function(input, output,session){
   })
   
   diff_all_dm_pr<-reactive({
-    test_diff(normalised_data_dm_pr(),type = 'all')
+    test_diff(imputed_data_dm_pr(),type = 'all')
   })
   
   dep_dm_pr<-reactive({
