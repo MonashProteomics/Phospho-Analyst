@@ -689,13 +689,23 @@ server <- function(input, output,session){
       ## convert contrast to x and padj to y
       diff_proteins <- grep(paste("^", input$volcano_cntrst, "_log2", sep = ""),
                             colnames(proteins_selected))
-      if(input$p_adj=="FALSE"){
-        padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.val", sep = ""),
-                              colnames(proteins_selected))
-      }
-      else{
-        padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
-                              colnames(proteins_selected))
+      
+      if(input$check_anova == "FALSE"){
+        if(input$p_adj=="FALSE"){
+          padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.val", sep = ""),
+                                colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
+                                colnames(proteins_selected))
+        }
+      } else {
+        if(input$p_adj=="FALSE"){
+          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+        }
       }
       
       df_protein <- data.frame(x = proteins_selected[, diff_proteins],
@@ -1853,13 +1863,23 @@ server <- function(input, output,session){
       ## convert contrast to x and padj to y
       diff_proteins <- grep(paste("^", input$volcano_cntrst_pr, "_log2", sep = ""),
                             colnames(proteins_selected))
-      if(input$p_adj_pr=="FALSE"){
-        padj_proteins <- grep(paste("^", input$volcano_cntrst_pr, "_p.val", sep = ""),
-                              colnames(proteins_selected))
-      }
-      else{
-        padj_proteins <- grep(paste("^", input$volcano_cntrst_pr, "_p.adj", sep = ""),
-                              colnames(proteins_selected))
+      
+      if(input$check_anova_pr == "FALSE"){
+        if(input$p_adj_pr=="FALSE"){
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_pr, "_p.val", sep = ""),
+                                colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_pr, "_p.adj", sep = ""),
+                                colnames(proteins_selected))
+        }
+      } else {
+        if(input$p_adj_pr=="FALSE"){
+          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+        }
       }
       
       df_protein <- data.frame(x = proteins_selected[, diff_proteins],
@@ -3520,13 +3540,23 @@ server <- function(input, output,session){
       ## convert contrast to x and padj to y
       diff_proteins <- grep(paste("^", input$volcano_cntrst_nr, "_log2", sep = ""),
                             colnames(proteins_selected))
-      if(input$p_adj_nr=="FALSE"){
-        padj_proteins <- grep(paste("^", input$volcano_cntrst_nr, "_p.val", sep = ""),
-                              colnames(proteins_selected))
-      }
-      else{
-        padj_proteins <- grep(paste("^", input$volcano_cntrst_nr, "_p.adj", sep = ""),
-                              colnames(proteins_selected))
+      
+      if(input$check_names_nr == "FALSE"){
+        if(input$p_adj_nr=="FALSE"){
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_nr, "_p.val", sep = ""),
+                                colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_nr, "_p.adj", sep = ""),
+                                colnames(proteins_selected))
+        }
+      } else {
+        if(input$p_adj_nr=="FALSE"){
+          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+        }
       }
       
       df_protein <- data.frame(x = proteins_selected[, diff_proteins],
@@ -4626,13 +4656,23 @@ server <- function(input, output,session){
       ## convert contrast to x and padj to y
       diff_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_log2", sep = ""),
                             colnames(proteins_selected))
-      if(input$p_adj=="FALSE"){
-        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_p.val", sep = ""),
-                              colnames(proteins_selected))
-      }
-      else{
-        padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
-                              colnames(proteins_selected))
+      
+      if(input$check_anova_dm == "FALSE"){
+        if(input$p_adj_dm=="FALSE"){
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_p.val", sep = ""),
+                                colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_p.adj", sep = ""),
+                                colnames(proteins_selected))
+        }
+      } else {
+        if(input$p_adj_dm=="FALSE"){
+          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+        }
       }
       
       df_protein <- data.frame(x = proteins_selected[, diff_proteins],
@@ -5739,13 +5779,23 @@ server <- function(input, output,session){
       ## convert contrast to x and padj to y
       diff_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_log2", sep = ""),
                             colnames(proteins_selected))
-      if(input$p_adj=="FALSE"){
-        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_p.val", sep = ""),
-                              colnames(proteins_selected))
-      }
-      else{
-        padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
-                              colnames(proteins_selected))
+      
+      if(input$check_anova_dm_pr == "FALSE"){
+        if(input$p_adj_dm_pr=="FALSE"){
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_p.val", sep = ""),
+                                colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_p.adj", sep = ""),
+                                colnames(proteins_selected))
+        }
+      } else {
+        if(input$p_adj_dm_pr=="FALSE"){
+          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+        }
       }
       
       df_protein <- data.frame(x = proteins_selected[, diff_proteins],
@@ -7093,13 +7143,24 @@ server <- function(input, output,session){
       ## convert contrast to x and padj to y
       diff_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_log2", sep = ""),
                             colnames(proteins_selected))
-      if(input$p_adj=="FALSE"){
-        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_p.val", sep = ""),
-                              colnames(proteins_selected))
-      }
-      else{
-        padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
-                              colnames(proteins_selected))
+      
+      
+      if(input$check_anova_dm_nr == "FALSE"){
+        if(input$p_adj_dm_nr=="FALSE"){
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_p.val", sep = ""),
+                                colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_p.adj", sep = ""),
+                                colnames(proteins_selected))
+        }
+      } else {
+        if(input$p_adj_dm_nr=="FALSE"){
+          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+        }
+        else{
+          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+        }
       }
       
       df_protein <- data.frame(x = proteins_selected[, diff_proteins],
