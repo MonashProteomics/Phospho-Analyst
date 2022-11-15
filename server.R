@@ -49,7 +49,7 @@ server <- function(input, output,session){
                 appear on the screen", type="info",
                closeOnClickOutside = TRUE,
                closeOnEsc = TRUE,
-               timer = 20000)   # timer in miliseconds (10 sec)
+               timer = 25000)   # timer in miliseconds (10 sec)
   })
   # 
   # observe({
