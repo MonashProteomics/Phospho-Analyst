@@ -7950,69 +7950,69 @@ server <- function(input, output,session){
     }
   )
   
-  # # used for save demo data
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  # 
-  #   data_missval <- processed_data()
-  #   data_dep <- dep()
-  #   # result <- data_result()
-  #   # phospho_pre <- cleaned_data()
-  #   # phospho_imp <- imputed_data()
-  #   save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
-  #   # saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
-  #   # saveRDS(result, file="benchmark_result.Rds")
-  # 
-  # })
-  # 
-  #   observeEvent(input$analyze ,{
-  #     if(input$analyze==0 ){
-  #       return()
-  #     }
-  # 
-  #     data_missval_pr <- processed_data_pr()
-  #     data_dep_pr <- dep_pr()
-  #     # protein_pre <- cleaned_data_pr()
-  #     # protein_imp <- imputed_data_pr()
-  #     save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
-  #     # saveRDS(data_dep_pr, file="proteinGroup_pharma.Rds")
-  #   })
-  # # 
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  # 
-  #   exp_demo <- exp_design_input()
-  #   save(exp_demo, file = "exp_demo_data.RData")
-  # 
-  # })
-  # 
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  # 
-  #   exp_demo_1 <- exp_design_input_1()
-  #   save(exp_demo_1, file = "exp_demo_data_1.RData")
-  # 
-  # })
-  # # 
-  # # 
-  # observeEvent(input$analyze ,{
-  #   if(input$analyze==0 ){
-  #     return()
-  #   }
-  # 
-  #   # data_missval <- normalized_phospho_data()
-  #   data_imputed_nr <- imputed_data_nr()
-  #   data_dep_nr <- dep_nr()
-  #   save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
-  #   # saveRDS(data_dep_nr, file="phosphosite(corrected)_pharma.Rds")
-  # 
-  # })
+  # used for save demo data
+  observeEvent(input$analyze ,{
+    if(input$analyze==0 ){
+      return()
+    }
+
+    data_missval <- processed_data()
+    data_dep <- dep()
+    # result <- data_result()
+    # phospho_pre <- cleaned_data()
+    # phospho_imp <- imputed_data()
+    save(data_missval, data_dep, file = "phosphosite_demo_data.RData")
+    # saveRDS(data_dep, file="pharmacological(median_sub)dep.Rds")
+    # saveRDS(result, file="benchmark_result.Rds")
+
+  })
+
+    observeEvent(input$analyze ,{
+      if(input$analyze==0 ){
+        return()
+      }
+
+      data_missval_pr <- processed_data_pr()
+      data_dep_pr <- dep_pr()
+      # protein_pre <- cleaned_data_pr()
+      # protein_imp <- imputed_data_pr()
+      save(data_missval_pr, data_dep_pr, file = "proteinGroup_demo_data.RData")
+      # saveRDS(data_dep_pr, file="proteinGroup_pharma.Rds")
+    })
+  #
+  observeEvent(input$analyze ,{
+    if(input$analyze==0 ){
+      return()
+    }
+
+    exp_demo <- exp_design_input()
+    save(exp_demo, file = "exp_demo_data.RData")
+
+  })
+
+  observeEvent(input$analyze ,{
+    if(input$analyze==0 ){
+      return()
+    }
+
+    exp_demo_1 <- exp_design_input_1()
+    save(exp_demo_1, file = "exp_demo_data_1.RData")
+
+  })
+  #
+  #
+  observeEvent(input$analyze ,{
+    if(input$analyze==0 ){
+      return()
+    }
+
+    # data_missval <- normalized_phospho_data()
+    data_imputed_nr <- imputed_data_nr()
+    data_dep_nr <- dep_nr()
+    save(data_imputed_nr, data_dep_nr, file = "phosphosite(corrected)_demo_data.RData")
+    # saveRDS(data_dep_nr, file="phosphosite(corrected)_pharma.Rds")
+
+  })
   
   # observeEvent(input$analyze ,{
   #   if(input$analyze==0 ){
