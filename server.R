@@ -430,7 +430,7 @@ server <- function(input, output,session){
     data_ex <- data_ex %>% dplyr::filter(Localization.prob >= 0.75)
     peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
     data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
-    data_pre$Residue.Both <- map2(data_pre$Positions.within.proteins, data_pre$Amino.acid,create_Residue.Both_func)
+    data_pre$Residue.Both <- map2(data_pre$Positions.within.proteins, data_pre$Amino.acid,create_Residue.Both_func) %>% unlist()
     # data_pre <- data_pre %>%
     #   mutate(Residue.Both = paste(Amino.acid,Position,sep = ''))
     
@@ -550,25 +550,35 @@ server <- function(input, output,session){
       # get assay data
       intensity <- assay(anova_diff) %>% as.matrix()
       exp_design <- exp_design_input()
-      exp_design_rename<-exp_design
-      exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
       
-      # reshape intensity columns
-      data_reshape<-reshape2::melt(intensity,value.name = "intensity", variable.name = "label")
-      colnames(data_reshape)<-c("uid", "label", "intensity")
+      # apply limma to get anova result
+      f <- exp_design$condition
+      design <- stats::model.matrix(~ condition, data = exp_design)
+      fit <- limma::lmFit(intensity, design = design)
+      model <- limma::eBayes(fit)
       
-      # Join the table
-      data_experiment<-left_join(data_reshape, exp_design_rename, by="label")
-      
-      # apply anova function
-      anova<-data_experiment %>%
-        group_by(`uid`) %>%
-        do(anova_function(.)) %>% dplyr::select(p.value) %>%
-        ungroup()
-      
-      # calculate adjusted anova p.value to data
-      anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      anova <- limma::topTable(model, coef = c(2:ncol(design)), n = Inf)
+      anova <- anova %>% tibble::rownames_to_column() %>% dplyr::select(rowname, P.Value, adj.P.Val)
       colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
+      # exp_design_rename<-exp_design
+      # exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
+      # 
+      # # reshape intensity columns
+      # data_reshape<-reshape2::melt(intensity,value.name = "intensity", variable.name = "label")
+      # colnames(data_reshape)<-c("uid", "label", "intensity")
+      # 
+      # # Join the table
+      # data_experiment<-left_join(data_reshape, exp_design_rename, by="label")
+      # 
+      # # apply anova function
+      # anova<-data_experiment %>%
+      #   group_by(`uid`) %>%
+      #   do(anova_function(.)) %>% dplyr::select(p.value) %>%
+      #   ungroup()
+      # 
+      # # calculate adjusted anova p.value to data
+      # anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      # colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
       
       # add anova p.value and adjusted p.value to row data
       rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
@@ -671,7 +681,9 @@ server <- function(input, output,session){
   volcano_df<- reactive({
     if(!is.null(input$volcano_cntrst)) {
       get_volcano_df(dep(),
-                     input$volcano_cntrst) 
+                     input$volcano_cntrst,
+                     input$check_anova,
+                     input$p_adj) 
       
     }
   })
@@ -699,12 +711,13 @@ server <- function(input, output,session){
           padj_proteins <- grep(paste("^", input$volcano_cntrst, "_p.adj", sep = ""),
                                 colnames(proteins_selected))
         }
-      } else {
+      } 
+      else {
         if(input$p_adj=="FALSE"){
-          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
         }
         else{
-          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
         }
       }
       
@@ -1875,10 +1888,10 @@ server <- function(input, output,session){
         }
       } else {
         if(input$p_adj_pr=="FALSE"){
-          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
         }
         else{
-          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
         }
       }
       
@@ -2053,25 +2066,36 @@ server <- function(input, output,session){
       # get assay data
       intensity <- assay(anova_diff)
       exp_design <- exp_design_input_1()
-      exp_design_rename<-exp_design
-      exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
       
-      # reshape intensity columns
-      data_reshape<-reshape2::melt(intensity,value.name = "intensity", variable.name = "label")
-      colnames(data_reshape)<-c("uid", "label", "intensity")
+      # apply limma to get anova result
+      f <- exp_design$condition
+      design <- stats::model.matrix(~ condition, data = exp_design)
+      fit <- limma::lmFit(intensity, design = design)
+      model <- limma::eBayes(fit)
       
-      # Join the table
-      data_experiment<-left_join(data_reshape, exp_design_rename, by="label")
-      
-      # apply anova function
-      anova<-data_experiment %>%
-        group_by(`uid`) %>%
-        do(anova_function(.)) %>% dplyr::select(p.value) %>%
-        ungroup()
-      
-      # calculate adjusted anova p.value to data
-      anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      anova <- limma::topTable(model, coef = c(2:ncol(design)), n = Inf)
+      anova <- anova %>% tibble::rownames_to_column() %>% dplyr::select(rowname, P.Value, adj.P.Val)
       colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
+      
+      # exp_design_rename<-exp_design
+      # exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
+      # 
+      # # reshape intensity columns
+      # data_reshape<-reshape2::melt(intensity,value.name = "intensity", variable.name = "label")
+      # colnames(data_reshape)<-c("uid", "label", "intensity")
+      # 
+      # # Join the table
+      # data_experiment<-left_join(data_reshape, exp_design_rename, by="label")
+      # 
+      # # apply anova function
+      # anova<-data_experiment %>%
+      #   group_by(`uid`) %>%
+      #   do(anova_function(.)) %>% dplyr::select(p.value) %>%
+      #   ungroup()
+      # 
+      # # calculate adjusted anova p.value to data
+      # anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      # colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
       
       # add anova p.value and adjusted p.value to row data
       rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
@@ -3408,25 +3432,35 @@ server <- function(input, output,session){
       # get assay data
       intensity <- assay(anova_diff) %>% as.matrix()
       exp_design <- exp_design_input()
-      exp_design_rename<-exp_design
-      exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
       
-      # reshape intensity columns
-      data_reshape<-reshape2::melt(intensity,value.name = "intensity", variable.name = "label")
-      colnames(data_reshape)<-c("uid", "label", "intensity")
+      # apply limma to get anova result
+      f <- exp_design$condition
+      design <- stats::model.matrix(~ condition, data = exp_design)
+      fit <- limma::lmFit(intensity, design = design)
+      model <- limma::eBayes(fit)
       
-      # Join the table
-      data_experiment<-left_join(data_reshape, exp_design_rename, by="label")
-      
-      # apply anova function
-      anova<-data_experiment %>%
-        group_by(`uid`) %>%
-        do(anova_function(.)) %>% dplyr::select(p.value) %>%
-        ungroup()
-      
-      # calculate adjusted anova p.value to data
-      anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      anova <- limma::topTable(model, coef = c(2:ncol(design)), n = Inf)
+      anova <- anova %>% tibble::rownames_to_column() %>% dplyr::select(rowname, P.Value, adj.P.Val)
       colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
+      # exp_design_rename<-exp_design
+      # exp_design_rename$label<-paste(exp_design_rename$condition, exp_design_rename$replicate, sep = "_")
+      # 
+      # # reshape intensity columns
+      # data_reshape<-reshape2::melt(intensity,value.name = "intensity", variable.name = "label")
+      # colnames(data_reshape)<-c("uid", "label", "intensity")
+      # 
+      # # Join the table
+      # data_experiment<-left_join(data_reshape, exp_design_rename, by="label")
+      # 
+      # # apply anova function
+      # anova<-data_experiment %>%
+      #   group_by(`uid`) %>%
+      #   do(anova_function(.)) %>% dplyr::select(p.value) %>%
+      #   ungroup()
+      # 
+      # # calculate adjusted anova p.value to data
+      # anova$anova_p.adj <- p.adjust(anova$p.value,method = "BH")
+      # colnames(anova)<-c("name", "anova_p.val","anova_p.adj")
       
       # add anova p.value and adjusted p.value to row data
       rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
@@ -3552,10 +3586,10 @@ server <- function(input, output,session){
         }
       } else {
         if(input$p_adj_nr=="FALSE"){
-          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
         }
         else{
-          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
         }
       }
       
