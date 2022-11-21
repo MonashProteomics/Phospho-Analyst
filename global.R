@@ -23,8 +23,6 @@ library(ggplot2)
 library(ggExtra)
 library(ggpubr)
 library(shinyWidgets)
-library(reshape2)
-library(generics)
 library(stats)
 library(matrixStats)
 library(tinytex)
@@ -34,5 +32,5 @@ library(rhandsontable)
 library("shinycssloaders") # new added
 library("shiny.info") # new added
 library("ggVennDiagram") # new added
-VERSION <- "v0.4"
+VERSION <- "v0.5"
 # set.seed(12345)

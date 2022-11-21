@@ -464,7 +464,13 @@ server <- function(input, output,session){
     new_intensity_names <- colnames(data_unique_names)[intensity_ints] %>% gsub("Intensity.", "", .) %>% gsub("Pharmacological_", "", .) # modified for demo
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
-    remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
+    # remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
+    if (any(make.names(new_intensity_names) %in% make.names(exp_design()$label))){
+      remove_columns <- new_intensity_names[make.names(new_intensity_names )%in% make.names(exp_design()$label) ==FALSE]
+    } else {
+      remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names) )%in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
+    }
+    
     if (identical(remove_columns, character(0)) == FALSE){
       intensity_ints <- intensity_ints[-c(which(new_intensity_names %in% remove_columns))]
     } else {
@@ -856,11 +862,11 @@ server <- function(input, output,session){
     progress_indicator("Kinase-Substrate Analysis is running....")
     
     result_df <- get_results_phospho(dep(),FALSE)
-    print(input$contrast_1)  #test
+    # print(input$contrast_1)  #test
     col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1, "_p.val", sep = ""),
                       paste(input$contrast_1, "_log2 fold change", sep = ""))
-    print(col_selected) #test
+    # print(col_selected) #test
     
     # select required columns and rename them
     column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
@@ -923,7 +929,7 @@ server <- function(input, output,session){
                    }
                  })
     df<- data_result() %>% dplyr::select(-dplyr::starts_with("mean"),-rank) # drop mean abundance columns
-    print(colnames(df))
+    # print(colnames(df))
     return(df)
   }
   ,
@@ -1988,7 +1994,13 @@ server <- function(input, output,session){
     new_intensity_names <- colnames(data_unique[,lfq_columns]) %>% gsub("LFQ.intensity.", "", .) %>% gsub("Pharmacological_", "", .) # modified for demo
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
-    remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
+    # remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
+    if (any(make.names(new_intensity_names) %in% make.names(exp_design()$label))){
+      remove_columns <- new_intensity_names[make.names(new_intensity_names )%in% make.names(exp_design()$label) ==FALSE]
+    } else {
+      remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names) )%in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
+    }
+    
     if (identical(remove_columns, character(0)) == FALSE){
       lfq_columns <- lfq_columns[-c(which(new_intensity_names %in% remove_columns))]
     } else {
@@ -2730,7 +2742,7 @@ server <- function(input, output,session){
         subset(select = col_selected) %>% 
         dplyr::rename(phospho_id = Phosphosite, phospho_diff = paste(input$volcano_comp, "_log2 fold change", sep = ""))
       return(phospho_df_1)
-      print(head(phospho_df_1)) # test
+      # print(head(phospho_df_1)) # test
     }
   })
   
@@ -2743,7 +2755,7 @@ server <- function(input, output,session){
       protein_row <- column_to_rownames(protein_row, 'rowname')
       protein_intensity <- assay(dep_pr()) %>% as.data.frame()
       protein_df <- merge(protein_row, protein_intensity, by = 0) # Merge data according to row names
-      print(colnames(protein_df))
+      # print(colnames(protein_df))
       
       col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
                           paste(input$volcano_comp, "_log2 fold change", sep = ""),
@@ -2753,7 +2765,7 @@ server <- function(input, output,session){
         subset(select = col_selected) %>% 
         dplyr::rename(protein_diff = paste(input$volcano_comp, "_log2 fold change", sep = "") )
       return(protein_df_1)
-      cat(head(protein_df_1)) # test
+      # cat(head(protein_df_1)) # test
     }
     
   })
@@ -2776,7 +2788,7 @@ server <- function(input, output,session){
                                           normalized_diff < -1 & p_values < 0.05 ~ 'Down',
                                           TRUE ~ 'Not Sig'))
       return(df)
-      cat(head(df)) # test
+      # cat(head(df)) # test
     }
   })
   
@@ -2817,7 +2829,7 @@ server <- function(input, output,session){
       # phospho_df_33 <- phospho_df_22 %>%
       #   left_join(., exp_design, by = "label")
       return(phospho_df_33)
-      cat(head(phospho_df_33)) # test
+      # cat(head(phospho_df_33)) # test
     }
   })
   
@@ -2845,7 +2857,7 @@ server <- function(input, output,session){
       # protein_df_33 <- protein_df_22 %>%
       #   left_join(., exp_design, by = "label")
       return(protein_df_33)
-      cat(head(protein_df_33)) # test
+      # cat(head(protein_df_33)) # test
     }
   })
   
@@ -2855,7 +2867,7 @@ server <- function(input, output,session){
       if (is.null(input$selected_gene)){
         phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
         protein_df <- protein_df_long() %>% dplyr::filter(Gene.names == gene_names()$Gene.names[1])
-        print(head(phospho_df,2)) # test
+        # print(head(phospho_df,2)) # test
       }
       else {
         phospho_df <- phospho_df_long() %>% dplyr::filter(Gene.names %in% input$selected_gene)
@@ -2910,7 +2922,7 @@ server <- function(input, output,session){
         phospho_df <- phospho_df() %>% dplyr::filter(Gene.names %in% input$selected_gene)
       }
       phospho_df_1 <- phospho_df
-      print(colnames(phospho_df_1)) # test
+      # print(colnames(phospho_df_1)) # test
       for (i in 1:length(conditions)) {
         condition <- conditions[i]
         pattern <- paste(condition,"[[:digit:]]",sep = '_')
@@ -3725,11 +3737,11 @@ server <- function(input, output,session){
     progress_indicator("Kinase-Substrate Analysis is running....")
     
     result_df <- get_results_phospho(dep_nr(),FALSE)
-    print(input$contrast_1_nr)  #test
+    # print(input$contrast_1_nr)  #test
     col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1_nr, "_p.val", sep = ""),
                       paste(input$contrast_1_nr, "_log2 fold change", sep = ""))
-    print(col_selected) #test
+    # print(col_selected) #test
     
     # select required columns and rename them
     column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
@@ -4824,11 +4836,11 @@ server <- function(input, output,session){
     progress_indicator("Kinase-Substrate Analysis is running....")
     
     result_df <- get_results_phospho(dep_dm(),FALSE)
-    print(input$contrast_1_dm)  #test
+    # print(input$contrast_1_dm)  #test
     col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1_dm, "_p.val", sep = ""),
                       paste(input$contrast_1_dm, "_log2 fold change", sep = ""))
-    print(col_selected) #test
+    # print(col_selected) #test
     
     # select required columns and rename them
     column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
@@ -6494,7 +6506,7 @@ server <- function(input, output,session){
       protein_row <- column_to_rownames(protein_row, 'rowname')
       protein_intensity <- assay(dep_dm_pr()) %>% as.data.frame()
       protein_df_dm <- merge(protein_row, protein_intensity, by = 0) # Merge data according to row names
-      print(colnames(protein_df_dm))
+      # print(colnames(protein_df_dm))
       
       col_selected <- c(colnames(protein_intensity),"Protein ID",'Gene.names',
                         paste(input$volcano_comp_dm, "_log2 fold change", sep = ""),
@@ -6652,13 +6664,13 @@ server <- function(input, output,session){
       
       if (is.null(input$selected_gene_dm)){
         phospho_df <- phospho_df_dm() %>% dplyr::filter(Gene.names == gene_names_dm()$Gene.names[1])
-        print(head(phospho_df,2)) # test
+        # print(head(phospho_df,2)) # test
       }
       else {
         phospho_df <- phospho_df_dm() %>% dplyr::filter(Gene.names %in% input$selected_gene_dm)
       }
       phospho_df_1 <- phospho_df
-      print(colnames(phospho_df_1)) # test
+      # print(colnames(phospho_df_1)) # test
       for (i in 1:length(conditions)) {
         condition <- conditions[i]
         pattern <- paste(condition,"[[:digit:]]",sep = '_')
@@ -7311,11 +7323,11 @@ server <- function(input, output,session){
     progress_indicator("Kinase-Substrate Analysis is running....")
     
     result_df <- get_results_phospho(dep_dm_nr(),FALSE)
-    print(input$contrast_1_dm_nr)  #test
+    # print(input$contrast_1_dm_nr)  #test
     col_selected <- c('Protein ID','Gene.names','peptide.sequence', 'Residue.Both',
                       paste(input$contrast_1_dm_nr, "_p.val", sep = ""),
                       paste(input$contrast_1_dm_nr, "_log2 fold change", sep = ""))
-    print(col_selected) #test
+    # print(col_selected) #test
     
     # select required columns and rename them
     column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
