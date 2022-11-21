@@ -4257,10 +4257,6 @@ server <- function(input, output,session){
   data_attendance<-reactive({
     peptide_data <- phospho_data_input()
     
-    # get the required intensity columns
-    intensity_cols <- grep("^Intensity.+___\\d", colnames(peptide_data))
-    intensity_names <- colnames( peptide_data[,intensity_cols])
-    
     ## Expand Site table
     # get all intensity columns
     intensity <- grep("^Intensity.+|Intensity", colnames(peptide_data)) 
@@ -4302,14 +4298,23 @@ server <- function(input, output,session){
     df <- data_ex  %>% select("peptide.sequence", "Phosphosite", "Protein", "Amino.acid",
                               "Localization.prob",all_of(intensity_names_new),"Gene.names","Protein.names","Reverse", "Potential.contaminant")
     
+    colnames(df) <- colnames(df)  %>% gsub("Intensity.", "", .) 
+    intensity_names_new <- intensity_names_new %>% gsub("Intensity.", "", .) 
+    
     # get conditions
     exp_design <- exp_design_input()
     conditions <- exp_design$condition %>% unique()
     
     # replace intensity column names
     replace_peptide <- paste('LFQ_intensity',exp_design$condition, exp_design$replicate,sep = "_") %>% unique()
-    colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(make.names(delete_prefix(intensity_names_new)), 
+    
+    if (any(make.names(intensity_names_new) %in% make.names(exp_design$label))){
+      colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(make.names(intensity_names_new), 
+                                                                                 make.names(exp_design$label), nomatch = NA)]
+    } else {
+      colnames(df)[colnames(df) %in% intensity_names_new] <- replace_peptide[match(make.names(delete_prefix(intensity_names_new)), 
                                                                                  make.names(delete_prefix(exp_design$label)), nomatch = NA)]
+    }
     
     # remove intensity columns not in experimental design file.
     df <- df[!is.na(names(df))]
