@@ -32,5 +32,4 @@ library(rhandsontable)
 library("shinycssloaders") # new added
 library("shiny.info") # new added
 library("ggVennDiagram") # new added
-VERSION <- "v0.5"
-# set.seed(12345)
+VERSION <- "v0.6"

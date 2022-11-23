@@ -5076,7 +5076,7 @@ server <- function(input, output,session){
                      Sys.sleep(0.25)
                    }
                  })
-    if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush)){
+    if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush_dm)){
       volcano_input_dm()
     }
     else if(!is.null(input$volcano_cntrst_dm)){
@@ -5824,7 +5824,9 @@ server <- function(input, output,session){
   volcano_df_dm_pr<- reactive({
     if(!is.null(input$volcano_cntrst_dm_pr)) {
       get_volcano_df(dep_dm_pr(),
-                     input$volcano_cntrst_dm_pr) 
+                     input$volcano_cntrst_dm_pr,
+                     input$check_anova_dm_pr,
+                     input$p_adj_dm_pr) 
       
     }
   })
@@ -6071,14 +6073,25 @@ server <- function(input, output,session){
     ## convert contrast to x and padj to y
     diff_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_log2", sep = ""),
                           colnames(proteins_selected))
-    if(input$p_adj=="FALSE"){
-      padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_p.val", sep = ""),
-                            colnames(proteins_selected))
+    
+    if(input$check_anova_dm_pr == "FALSE"){
+      if(input$p_adj_dm_pr=="FALSE"){
+        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_p.val", sep = ""),
+                              colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_p.adj", sep = ""),
+                              colnames(proteins_selected))
+      }
+    } else {
+      if(input$p_adj_dm_pr=="FALSE"){
+        padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
+      }
     }
-    else{
-      padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_pr, "_p.adj", sep = ""),
-                            colnames(proteins_selected))
-    }
+    
     df_protein <- data.frame(x = proteins_selected[, diff_proteins],
                              y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
                              name = proteins_selected$`Gene Name`)
@@ -6161,7 +6174,7 @@ server <- function(input, output,session){
                      Sys.sleep(0.25)
                    }
                  })
-    if(is.null(input$contents_dm_pr_rows_selected)){
+    if(is.null(input$contents_dm_pr_rows_selected) & is.null(input$protein_brush_dm_pr)){
       volcano_input_dm_pr()
     }
     else if(!is.null(input$volcano_cntrst_dm_pr)){
@@ -7188,7 +7201,9 @@ server <- function(input, output,session){
   volcano_df_dm_nr<- reactive({
     if(!is.null(input$volcano_cntrst_dm_nr)) {
       get_volcano_df(dep_dm_nr(),
-                     input$volcano_cntrst_dm_nr)
+                     input$volcano_cntrst_dm_nr,
+                     input$check_anova_dm_nr,
+                     input$p_adj_dm_nr)
       
     }
   })
@@ -7461,14 +7476,26 @@ server <- function(input, output,session){
     ## convert contrast to x and padj to y
     diff_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_log2", sep = ""),
                           colnames(proteins_selected))
-    if(input$p_adj=="FALSE"){
-      padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_p.val", sep = ""),
-                            colnames(proteins_selected))
+    
+    
+    if(input$check_anova_dm_nr == "FALSE"){
+      if(input$p_adj_dm_nr=="FALSE"){
+        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_p.val", sep = ""),
+                              colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_p.adj", sep = ""),
+                              colnames(proteins_selected))
+      }
+    } else {
+      if(input$p_adj_dm_nr=="FALSE"){
+        padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
+      }
     }
-    else{
-      padj_proteins <- grep(paste("^", input$volcano_cntrst_dm_nr, "_p.adj", sep = ""),
-                            colnames(proteins_selected))
-    }
+    
     df_protein <- data.frame(x = proteins_selected[, diff_proteins],
                              y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
                              name = proteins_selected$Phosphosite)
@@ -7551,7 +7578,7 @@ server <- function(input, output,session){
                      Sys.sleep(0.25)
                    }
                  })
-    if(is.null(input$contents_dm_nr_rows_selected)){
+    if(is.null(input$contents_dm_nr_rows_selected) & is.null(input$protein_brush_dm_nr)){
       volcano_input_dm_nr()
     }
     else if(!is.null(input$volcano_cntrst_dm_nr)){
