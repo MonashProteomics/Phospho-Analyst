@@ -1087,7 +1087,7 @@ server <- function(input, output,session){
                      Sys.sleep(0.25)
                    }
                  })
-    if(is.null(input$contents_rows_selected)){
+    if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
       volcano_input()
     }
     else if(!is.null(input$volcano_cntrst)){
@@ -4688,7 +4688,9 @@ server <- function(input, output,session){
   volcano_df_dm<- reactive({
     if(!is.null(input$volcano_cntrst_dm)) {
       get_volcano_df(dep_dm(),
-                     input$volcano_cntrst_dm) 
+                     input$volcano_cntrst_dm,
+                     input$check_anova_dm,
+                     input$p_adj_dm) 
       
     }
   })
@@ -4719,10 +4721,10 @@ server <- function(input, output,session){
         }
       } else {
         if(input$p_adj_dm=="FALSE"){
-          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
         }
         else{
-          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
         }
       }
       
@@ -4954,7 +4956,6 @@ server <- function(input, output,session){
     protein_selected<-protein_tmp$name
   }) 
   
-  
   ## Select rows dynamically
   observeEvent(input$protein_brush_dm,{
     output$contents_dm <- DT::renderDataTable({
@@ -4966,31 +4967,43 @@ server <- function(input, output,session){
                    columnDefs= list(list(width = '400px', targets = c(-1)),
                                     list(width = '400px', targets = match("Protein.names", names(data_result_dm())))))
     )
-    
+
     proteins_selected<-data_result_dm()[data_result_dm()[["Phosphosite"]] %in% protein_name_brush_dm(), ] #
     # get all rows selected
     ## convert contrast to x and padj to y
     diff_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_log2", sep = ""),
                           colnames(proteins_selected))
-    if(input$p_adj=="FALSE"){
-      padj_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_p.val", sep = ""),
-                            colnames(proteins_selected))
+    
+    
+    if(input$check_anova_dm == "FALSE"){
+      if(input$p_adj_dm=="FALSE"){
+        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_p.val", sep = ""),
+                              colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_p.adj", sep = ""),
+                              colnames(proteins_selected))
+      }
+    } else {
+      if(input$p_adj_dm=="FALSE"){
+        padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
+      }
+      else{
+        padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
+      }
     }
-    else{
-      padj_proteins <- grep(paste("^", input$volcano_cntrst_dm, "_p.adj", sep = ""),
-                            colnames(proteins_selected))
-    }
+    
     df_protein <- data.frame(x = proteins_selected[, diff_proteins],
                              y = -log10(as.numeric(proteins_selected[, padj_proteins])),#)#,
                              name = proteins_selected$Phosphosite)
-    
+
     p<-plot_volcano_new(dep_dm(),
                         input$volcano_cntrst_dm,
                         input$check_anova_dm,
                         input$check_names_dm,
                         input$p_adj_dm)
-    
-    
+
+
     p<- p + geom_point(data = df_protein, aes(x, y), color = "maroon", size= 3) +
       ggrepel::geom_text_repel(data = df_protein,
                                aes(x, y, label = name),
@@ -4998,7 +5011,7 @@ server <- function(input, output,session){
                                box.padding = unit(0.1, 'lines'),
                                point.padding = unit(0.1, 'lines'),
                                segment.size = 0.5)
-    
+
     output$volcano_dm <- renderPlot({
       withProgress(message = 'Volcano Plot calculations are in progress',
                    detail = 'Please wait for a while', value = 0, {
@@ -5063,7 +5076,7 @@ server <- function(input, output,session){
                      Sys.sleep(0.25)
                    }
                  })
-    if(is.null(input$contents_dm_rows_selected)){
+    if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush)){
       volcano_input_dm()
     }
     else if(!is.null(input$volcano_cntrst_dm)){
@@ -5842,10 +5855,10 @@ server <- function(input, output,session){
         }
       } else {
         if(input$p_adj_dm_pr=="FALSE"){
-          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
         }
         else{
-          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
         }
       }
       
@@ -7207,10 +7220,10 @@ server <- function(input, output,session){
         }
       } else {
         if(input$p_adj_dm_nr=="FALSE"){
-          padj_proteins <- grep("anova_p.val",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.val",colnames(proteins_selected))
         }
         else{
-          padj_proteins <- grep("anova_p.adj",colnames(proteins_selected))
+          padj_proteins <- grep("ANOVA_p.adj",colnames(proteins_selected))
         }
       }
       
