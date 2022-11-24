@@ -2699,12 +2699,16 @@ server <- function(input, output,session){
   ####======= Render Functions
   
   output$volcano_comp <- renderUI({
-    if (!is.null(comparisons())) {
+    if (!is.null(comparisons()) & !is.null(comparisons_pr())){
       df <- SummarizedExperiment::rowData(dep())
+      df_pr <- SummarizedExperiment::rowData(dep_pr())
       cols <- grep("_significant$",colnames(df))
+      cols_pr <- grep("_significant$",colnames(df_pr))
+      volcano_comp <- Reduce(intersect, list(gsub("_significant", "", colnames(df)[cols]),
+                                             gsub("_significant", "", colnames(df_pr)[cols_pr])))
       selectizeInput("volcano_comp",
                      "Comparison",
-                     choices = gsub("_significant", "", colnames(df)[cols]))
+                     choices = volcano_comp)
     }
   })
   
@@ -2794,10 +2798,11 @@ server <- function(input, output,session){
   
   # gene names for selection input
   gene_names <- reactive({
-    if (!is.null(phospho_df_long())){
-      gene_names_list <- phospho_df_long() %>%
-        select('Gene.names') %>%
-        unique()
+    if (!is.null(phospho_df_long()) & !is.null(protein_df_long())){
+      gene_names <- phospho_df_long() %>% select('Gene.names') %>% unique()
+      gene_names_pr <- protein_df_long() %>% select('Gene.names') %>% unique()
+      gene_names_list <- Reduce(intersect, list(gene_names,gene_names_pr))
+      
       return(gene_names_list)
     }
   })
