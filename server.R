@@ -2881,6 +2881,8 @@ server <- function(input, output,session){
       
       # get intensity values to set y scale limits
       all_intensity <- union(phospho_df$intensity, protein_df$intensity)
+      # set the list of colors
+      color_list <- common_color()[[2]]
       
       p1 <- phospho_df %>% 
         unique() %>%
@@ -2888,7 +2890,7 @@ server <- function(input, output,session){
         geom_point(aes(color = factor(replicate)),
                    size = 3) +
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
-        scale_colour_discrete(name  ="Replicate") + 
+        scale_colour_discrete(name  ="Replicate", type = color_list) + 
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Phospho site', x = '') +
         facet_grid(. ~phospho_id) +
         theme_DEP2()
@@ -2900,17 +2902,18 @@ server <- function(input, output,session){
         geom_point(aes(color = factor(replicate)),
                    size = 3) +
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
-        scale_colour_discrete(name  ="Replicate") + 
+        scale_colour_discrete(name  ="Replicate", type = color_list) + 
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Protein', x = '', y = 'Intensity') +
         facet_grid(. ~Gene.names) +
         theme_DEP2()
       
-      ggarrange(p2, 
-                p1 + 
+      ggarrange(p2 + theme(legend.position = "none"), 
+                p1 + theme(legend.position = "right") +
+                  labs(color = "Replicate") +
                   theme(axis.text.y = element_blank(),
                         axis.ticks.y = element_blank(),
                         axis.title.y = element_blank()), 
-                widths=c(1,4), common.legend = TRUE, legend = 'right') 
+                widths=c(1,4)) 
     }
   })
   
@@ -2975,21 +2978,32 @@ server <- function(input, output,session){
   })
   
   # QC inputs
+  common_color <- reactive({
+    if(!is.null(exp_design_input()) & !is.null(exp_design_input_1())){
+      replicate_color <- scales::hue_pal()(max(max(exp_design_input()$replicate), max(exp_design_input_1()$replicate)))
+      condition_list <- union(exp_design_input()$condition,exp_design_input_1()$condition) 
+      condition_color <- condition_list <- union(exp_design_input()$condition,exp_design_input_1()$condition) 
+      condition_color <- scales::hue_pal()(length(condition_list))
+      names(condition_color) <- condition_list
+      return(list(condition_color,replicate_color))
+    }
+  })
+  
   pca_input_c <- reactive({
-    ggarrange(pca_input() + labs(title = 'Phospho'), 
-              pca_input_pr() + labs(title = "Protein"), 
+    ggarrange(pca_input() + labs(title = 'Phospho') + scale_colour_manual(values = common_color()[[1]]), 
+              pca_input_pr() + labs(title = "Protein") + scale_colour_manual(values = common_color()[[1]]), 
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
   sample_cvs_input_c <- reactive({
-    ggarrange(cvs_input() + labs(title = 'Phospho'), 
-              cvs_input_pr() + labs(title = "Protein"),
+    ggarrange(cvs_input() + labs(title = 'Phospho') + scale_fill_manual(values = common_color()[[1]]), 
+              cvs_input_pr() + labs(title = "Protein") + scale_fill_manual(values = common_color()[[1]]),
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
   numbers_input_c <- reactive({
-    ggarrange(numbers_input() + labs(title = 'Phospho'), 
-              numbers_input_pr() + labs(title = "Protein"),
+    ggarrange(numbers_input() + labs(title = 'Phospho') + scale_fill_manual(values = common_color()[[1]]), 
+              numbers_input_pr() + labs(title = "Protein") + scale_fill_manual(values = common_color()[[1]]),
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
@@ -2999,14 +3013,14 @@ server <- function(input, output,session){
   })
   
   norm_input_c <- reactive({
-    ggarrange(norm_input() + labs(title = 'Phospho'), 
-              norm_input_pr() + labs(title = "Protein") ,
+    ggarrange(norm_input() + labs(title = 'Phospho') + scale_fill_manual(values = common_color()[[1]]), 
+              norm_input_pr() + labs(title = "Protein") + scale_fill_manual(values = common_color()[[1]]),
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
   imputation_input_c <- reactive({
-    ggarrange(imputation_input() + labs(title = 'Phospho'), 
-              imputation_input_pr() + labs(title = "Protein"),
+    ggarrange(imputation_input() + labs(title = 'Phospho') + scale_colour_manual(values = common_color()[[1]]), 
+              imputation_input_pr() + labs(title = "Protein") + scale_colour_manual(values = common_color()[[1]]),
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
@@ -6659,6 +6673,8 @@ server <- function(input, output,session){
       
       # get intensity values to set y scale limits
       all_intensity <- union(phospho_df$intensity, protein_df$intensity)
+      # set the list of colors
+      color_list <- common_color_dm()
       
       p1 <- phospho_df %>%
         unique() %>%
@@ -6666,7 +6682,7 @@ server <- function(input, output,session){
         geom_point(aes(color = factor(replicate)),
                    size = 3) +
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
-        scale_colour_discrete(name  ="Replicate") +
+        scale_colour_discrete(name  ="Replicate",type = color_list) +
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Phospho site', x = '') +
         facet_grid(. ~phospho_id) +
         theme_DEP2()
@@ -6678,17 +6694,18 @@ server <- function(input, output,session){
         geom_point(aes(color = factor(replicate)),
                    size = 3) +
         geom_line(aes(group= factor(replicate), color= factor(replicate))) +
-        scale_colour_discrete(name  ="Replicate") +
+        scale_colour_discrete(name  ="Replicate",type = color_list) +
         ylim(min(all_intensity), max(all_intensity)) + labs(title = 'Protein', x = '', y = 'Intensity') +
         facet_grid(. ~Gene.names) +
         theme_DEP2()
       
-      ggarrange(p2,
-                p1 +
+      ggarrange(p2 + theme(legend.position="none"),
+                p1 + theme(legend.position="right") + 
+                  labs(color = "Replicate") +
                   theme(axis.text.y = element_blank(),
                         axis.ticks.y = element_blank(),
                         axis.title.y = element_blank()),
-                widths=c(1,4), common.legend = TRUE, legend = 'right')
+                widths=c(1,4))
     }
   })
   
@@ -6753,6 +6770,13 @@ server <- function(input, output,session){
   })
   
   ## QC Inputs
+  common_color_dm <- reactive({
+    if(!is.null(exp_design_demo()) & !is.null(exp_design_demo_1())){
+      replicate_color <- scales::hue_pal()(max(max(exp_design_demo()$replicate), max(exp_design_demo_1()$replicate)))
+      return(replicate_color)
+    }
+  })
+  
   pca_input_c_dm <- reactive({
     ggarrange(pca_input_dm() + labs(title = 'Phospho'),
               pca_input_dm_pr() + labs(title = "Protein"),
@@ -6778,7 +6802,7 @@ server <- function(input, output,session){
   
   norm_input_c_dm <- reactive({
     ggarrange(norm_input_dm() + labs(title = 'Phospho'), 
-              norm_input_dm_pr() + labs(title = "Protein") ,
+              norm_input_dm_pr() + labs(title = "Protein"),
               widths=c(1,1), common.legend = TRUE, legend = 'right')
   })
   
