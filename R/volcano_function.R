@@ -172,7 +172,7 @@ get_volcano_df <- function(dep, contrast, apply_anova = FALSE, adjusted = FALSE)
   }
   
   # Show error if an unvalid contrast is given
-  if (length(grep(paste(contrast, "_diff", sep = ""),
+  if (length(grep(paste("^",contrast, "_diff", sep = ""),
                   colnames(row_data))) == 0) {
     valid_cntrsts <- row_data %>%
       data.frame() %>%
@@ -188,7 +188,7 @@ get_volcano_df <- function(dep, contrast, apply_anova = FALSE, adjusted = FALSE)
   }
   
   # Generate a data.frame containing all info for the volcano plot
-  diff <- grep(paste(contrast, "_diff", sep = ""),
+  diff <- grep(paste("^", contrast, "_diff", sep = ""),
                colnames(row_data))
   # if(apply_anova){
   #   p_values <- grep("anova_p.val", colnames(row_data))
