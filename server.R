@@ -40,6 +40,15 @@ server <- function(input, output,session){
     
   })
   
+  # Hide Phosphosite(corrected) page if two-level condition number not the same
+  observeEvent(input$analyze ,{ 
+    condition <- exp_design_input()$condition %>% unique() %>% sort()
+    condition_pr <- exp_design_input_1()$condition %>% unique() %>% sort()
+    if (setequal(condition,condition_pr) == "FALSE"){
+      hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
+    }
+  })
+  
   
   observeEvent(input$analyze ,{ 
     if(input$analyze==0 & input$panel_list ==0 ){
