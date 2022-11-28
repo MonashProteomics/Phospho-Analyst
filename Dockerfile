@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -yq \
 RUN Rscript -e 'install.packages(c("devtools", "tidyverse", "ggrepel", "httr", "rjson", "mvtnorm", "tmvtnorm", \
 "imputeLCMD", "plotly", "DT", "BiocManager","testthat", "RColorBrewer", "shiny","shinyalert","shinydashboard", \
 "shinyjs", "svglite", "rhandsontable", "shinyBS", "shinyWidgets", "ggVennDiagram", "shinycssloaders","shiny.info", \
-"fresh", "ggplot2", "ggExtra", "ggpubr", "reshape2", "generics", "stats", "matrixStats", "tinytex", "KSEAapp"), dependencies=TRUE)'
+"fresh", "ggplot2", "ggExtra", "ggpubr", "reshape2", "generics", "stats", "matrixStats", "tinytex", "KSEAapp","scales"), dependencies=TRUE)'
 
 #FROM bioconductor/bioconductor_docker:RELEASE_3_15
 RUN Rscript -e 'BiocManager::install(pkgs=c("DEP", "SummarizedExperiment", "limma", "ComplexHeatmap","pcaMethods","impute"), ask=F, dependencies=TRUE)'
