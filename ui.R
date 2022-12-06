@@ -1078,7 +1078,7 @@ ui <- function(request){
                                                                            HTML("Filter Condition<br/>Remove"),
                                                                            choices = c("Reverse sequences",
                                                                                        "Potential contaminants", 
-                                                                                       "Peptides Localization prob >= 0.75"
+                                                                                       "Peptides Localization prob < 0.75"
                                                                            ),
                                                                            shape = "round",
                                                                            selected = NULL, 
@@ -1945,7 +1945,7 @@ ui <- function(request){
                                                                                HTML("Filter Condition<br/>Remove"),
                                                                                choices = c("Reverse sequences",
                                                                                            "Potential contaminants", 
-                                                                                           "Peptides Localization prob >= 0.75"
+                                                                                           "Peptides Localization prob < 0.75"
                                                                                ),
                                                                                shape = "round",
                                                                                selected = NULL, 

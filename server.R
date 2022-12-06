@@ -4497,17 +4497,17 @@ server <- function(input, output,session){
       set1 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
       set2 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
       x <- list(set1,set2)
-      names(x) <- c("C 1", "C 2")
+      names(x) <- c("Condition 1", "Condition 2")
     } else {
       set1 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
       set2 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
       set3 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_3),colnames(df))] != 0]
       x <- list(set1,set2,set3)
-      names(x) <- c("C 1", "C 2", "C 3")
+      names(x) <- c("Condition 1", "Condition 2", "Condition 3")
       if (!is.null(input$condition_3)){
         if (input$condition_3 == "NONE"){
           x <- list(set1,set2)
-          names(x) <- c("C 1", "C 2")
+          names(x) <- c("Condition 1", "Condition 2")
         }
       }
     }
@@ -8018,11 +8018,11 @@ server <- function(input, output,session){
     set2 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_2_dm),colnames(df))] != 0] %>% unique()
     set3 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_3_dm),colnames(df))] != 0] %>% unique()
     x <- list(set1,set2,set3)
-    names(x) <- c("C 1", "C 2", "C 3")
+    names(x) <- c("Condition 1", "Condition 2", "Condition 3")
     if (!is.null(input$condition_3_dm)){
       if (input$condition_3_dm == "NONE"){
         x <- list(set1,set2)
-        names(x) <- c("C 1", "C 2")
+        names(x) <- c("Condition 1", "Condition 2")
       }
     }
     
