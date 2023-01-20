@@ -1,9 +1,26 @@
 #Define server logic to read selected file ----
 server <- function(input, output,session){
   options(shiny.maxRequestSize=120*1024^2)## Set maximum upload size to 120MB
+  
+  # check validation of uploaded files
+  start_analysis <- eventReactive(input$analyze,{ 
+    if(input$analyze==0 ){
+      return(FALSE)
+    } else {
+      if ((is.null(phospho_data_input()) | is.null(exp_design_input())) & (is.null(protein_data_input()) | is.null(exp_design_input_1()))) {
+        shinyalert("Input file missing!", "Please check your input files", type="warning",
+                   closeOnClickOutside = TRUE,
+                   closeOnEsc = TRUE,
+                   timer = 5000)
+        return(FALSE)
+      } 
+    }
+    return(TRUE)
+  })
+  
   #  Show elements on clicking Start analysis button
   observeEvent(input$analyze ,{ 
-    if(input$analyze==0){
+    if(input$analyze==0 | start_analysis() == FALSE){
       return()
     }
     shinyjs::hide("quickstart_info")
@@ -12,7 +29,10 @@ server <- function(input, output,session){
   })
   
   # Hide other pages if only upload one of the phosphosite or protein data file
-  observeEvent(input$analyze ,{ 
+  observeEvent(start_analysis() ,{ 
+    if (start_analysis() == FALSE){
+      return(NULL)
+    }
     if (is.null(input$file1)){
       hideTab(inputId = "panel_list", target = "Phosphosite")
       hideTab(inputId = "panel_list", target = "Comparison")
@@ -29,19 +49,25 @@ server <- function(input, output,session){
   })
   
   # Hide LFQ page if only have one replicate in each sample
-  observeEvent(input$analyze ,{ 
+  observeEvent(start_analysis() ,{
+    if (start_analysis() == FALSE){
+      return(NULL)
+    }
     exp <- exp_design_input()
     if (max(exp$replicate)==1){
       hideTab(inputId = "panel_list", target = "Phosphosite")
       hideTab(inputId = "panel_list", target = "Comparison")
       hideTab(inputId = "panel_list", target = "Phosphosite(corrected)")
       hideTab(inputId = "panel_list", target = "Protein")
-    } 
-    
+    }
+
   })
-  
+
   # Hide Phosphosite(corrected) page if two-level condition number not the same
-  observeEvent(input$analyze ,{ 
+  observeEvent(start_analysis() ,{
+    if (start_analysis() == FALSE){
+      return(NULL)
+    }
     condition <- exp_design_input()$condition %>% unique() %>% sort()
     condition_pr <- exp_design_input_1()$condition %>% unique() %>% sort()
     if (setequal(condition,condition_pr) == "FALSE"){
@@ -51,7 +77,7 @@ server <- function(input, output,session){
   
   
   observeEvent(input$analyze ,{ 
-    if(input$analyze==0 & input$panel_list ==0 ){
+    if((input$analyze==0 & input$panel_list ==0)| start_analysis() == FALSE ){
       return()
     }
     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
@@ -60,26 +86,6 @@ server <- function(input, output,session){
                closeOnEsc = TRUE,
                timer = 25000)   # timer in miliseconds (10 sec)
   })
-  # 
-  # observe({
-  #   if (input$panel_list !="Phosphosite" & input$panel_list !="Phosphosite Absence/Presence"){
-  #     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
-  #               appear on the screen", type="info",
-  #                closeOnClickOutside = TRUE,
-  #                closeOnEsc = TRUE,
-  #                timer = 0) # not close the modal automatically 
-  #   }
-  # })
-  
-  # observe({
-  #   if (input$tabs_selected=="analysis" & input$panel_list !=0){
-  #     shinyalert("In Progress!", "Data analysis has started, wait until table and plots
-  #               appear on the screen", type="info",
-  #                closeOnClickOutside = TRUE,
-  #                closeOnEsc = TRUE,
-  #                timer = 10000)  # timer in miliseconds (10 sec)
-  #   }
-  # })
   
   observe({
     if (input$tabs_selected=="demo" & input$panel_list_dm !=0){
@@ -162,6 +168,7 @@ server <- function(input, output,session){
   phospho_data_input<-reactive({NULL})
   protein_data_input<-reactive({NULL})
   exp_design_input<-reactive({NULL})
+  exp_design_input_1<-reactive({NULL})
   
   # enable the template button if uploaded a phospho/protein file
   observeEvent(input$file1$datapath, {
@@ -278,11 +285,15 @@ server <- function(input, output,session){
   # phosphosite exp_desgin file
   exp_design_input<-eventReactive(input$analyze,{
     inFile<-input$file3
-    if (is.null(inFile) ||input$save_exp>0){
-      temp_df <- phospho_exp_data2()
-      
-    }
-    else{
+    if (is.null(inFile) & input$save_exp==0) {
+      return(NULL)
+    } else if (input$save_exp>0){
+      if (any(is.na(phospho_exp_data2()))){
+        return(NULL)
+      } else {
+        temp_df <- phospho_exp_data2()
+      }
+    }else{
       temp_df<-read.delim(inFile$datapath,
                           header = TRUE,
                           sep="\t",
@@ -367,15 +378,20 @@ server <- function(input, output,session){
   # proteinGroup exp_desgin file
   exp_design_input_1<-eventReactive(input$analyze,{
     inFile_1 <-input$file4
-    if (is.null(inFile_1)){
-      if(input$save_exp_pr==0){
+    
+    if (is.null(inFile_1) & input$save_exp_pr==0) {
+      if (!is.null(input$file3)){
         temp_df <- exp_design_input()
+      } else {
+        return(NULL)
       }
-      else{
-        temp_df <- protein_exp_data2()}
-    }
-
-    else{
+    } else if (input$save_exp_pr>0){
+      if (any(is.na(protein_exp_data2()))){
+        return(NULL)
+      } else {
+        temp_df <- protein_exp_data2()
+      }
+    }else{
       temp_df<-read.delim(inFile_1$datapath,
                           header = TRUE,
                           sep="\t",

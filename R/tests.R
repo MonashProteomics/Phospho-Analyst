@@ -22,7 +22,8 @@ phospho_input_test<-function(maxquant_input){
   col_names<-colnames(maxquant_input)
   ## 
   if(!"Gene.names" %in% col_names){
-    stop(safeError("The column 'Gene names' is not found in the MaxQuant Phospho(STY)sites File"))
+    # stop(safeError("The column 'Gene names' is not found in the MaxQuant Phospho(STY)sites File"))
+    "The column 'Gene names' is not found in the MaxQuant Phospho(STY)sites File"
   }
   
   else if (any(grepl("^Intensity.+___\\d", col_names))==FALSE){
