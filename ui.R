@@ -455,11 +455,11 @@ ui <- function(request){
                                                                                   uiOutput("contrast")),
                                                                            column(6,
                                                                                   selectInput("go_database", "Database:",
-                                                                                              c("Molecular Function"="GO_Molecular_Function_2017b",
-                                                                                                "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                                                "Biological Process"="GO_Biological_Process_2017b",
-                                                                                                "KEGG"="KEGG_2016",
-                                                                                                "Reactome"="Reactome_2016"))
+                                                                                              c("Molecular Function"="GO_Molecular_Function_2021",
+                                                                                                "Cellular Component"="GO_Cellular_Component_2021",
+                                                                                                "Biological Process"="GO_Biological_Process_2021",
+                                                                                                "KEGG"="KEGG_2021_Human",
+                                                                                                "Reactome"="Reactome_2022"))
                                                                            ),
                                                                            column(12,actionButton("go_analysis", "Run Enrichment")),
                                                                            column(12,
@@ -692,9 +692,9 @@ ui <- function(request){
                                                                                   uiOutput("contrast_pr")),
                                                                            column(6,
                                                                                   selectInput("go_database_pr", "GO database:",
-                                                                                              c("Molecular Function"="GO_Molecular_Function_2017b",
-                                                                                                "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                                                "Biological Process"="GO_Biological_Process_2017b"))
+                                                                                              c("Molecular Function"="GO_Molecular_Function_2021",
+                                                                                                "Cellular Component"="GO_Cellular_Component_2021",
+                                                                                                "Biological Process"="GO_Biological_Process_2021"))
                                                                            ),
                                                                            column(12,actionButton("go_analysis_pr", "Run Enrichment")),
                                                                            column(12,
@@ -709,8 +709,8 @@ ui <- function(request){
                                                                                   uiOutput("contrast_1_pr")),
                                                                            column(6,
                                                                                   selectInput("pathway_database_pr", "Pathway database:",
-                                                                                              c("KEGG"="KEGG_2016",
-                                                                                                "Reactome"="Reactome_2016"))
+                                                                                              c("KEGG"="KEGG_2021_Human",
+                                                                                                "Reactome"="Reactome_2022"))
                                                                            ),
                                                                            column(12,actionButton("pathway_analysis_pr", "Run Enrichment")),
                                                                            column(12,
@@ -1012,11 +1012,11 @@ ui <- function(request){
                                                                                   uiOutput("contrast_nr")),
                                                                            column(6,
                                                                                   selectInput("go_database_nr", "GO database:",
-                                                                                              c("Molecular Function"="GO_Molecular_Function_2017b",
-                                                                                                "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                                                "Biological Process"="GO_Biological_Process_2017b",
-                                                                                                "KEGG"="KEGG_2016",
-                                                                                                "Reactome"="Reactome_2016"))
+                                                                                              c("Molecular Function"="GO_Molecular_Function_2021",
+                                                                                                "Cellular Component"="GO_Cellular_Component_2021",
+                                                                                                "Biological Process"="GO_Biological_Process_2021",
+                                                                                                "KEGG"="KEGG_2021_Human",
+                                                                                                "Reactome"="Reactome_2022"))
                                                                            ),
                                                                            column(12,actionButton("go_analysis_nr", "Run Enrichment")),
                                                                            column(12,
@@ -1339,11 +1339,11 @@ ui <- function(request){
                                                                         uiOutput("contrast_dm")),
                                                                  column(6,
                                                                         selectInput("go_database_dm", "Database:",
-                                                                                    c("Molecular Function"="GO_Molecular_Function_2017b",
-                                                                                      "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                                      "Biological Process"="GO_Biological_Process_2017b",
-                                                                                      "KEGG"="KEGG_2016",
-                                                                                      "Reactome"="Reactome_2016"))
+                                                                                    c("Molecular Function"="GO_Molecular_Function_2021",
+                                                                                      "Cellular Component"="GO_Cellular_Component_2021",
+                                                                                      "Biological Process"="GO_Biological_Process_2021",
+                                                                                      "KEGG"="KEGG_2021_Human",
+                                                                                      "Reactome"="Reactome_2022"))
                                                                  ),
                                                                  column(12,actionButton("go_analysis_dm", "Run Enrichment")),
                                                                  column(12,
@@ -1560,9 +1560,9 @@ ui <- function(request){
                                                                         uiOutput("contrast_dm_pr")),
                                                                  column(6,
                                                                         selectInput("go_database_dm_pr", "GO database:",
-                                                                                    c("Molecular Function"="GO_Molecular_Function_2017b",
-                                                                                      "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                                      "Biological Process"="GO_Biological_Process_2017b"))
+                                                                                    c("Molecular Function"="GO_Molecular_Function_2021",
+                                                                                      "Cellular Component"="GO_Cellular_Component_2021",
+                                                                                      "Biological Process"="GO_Biological_Process_2021"))
                                                                  ),
                                                                  column(12,actionButton("go_analysis_dm_pr", "Run Enrichment")),
                                                                  column(12,
@@ -1577,8 +1577,8 @@ ui <- function(request){
                                                                         uiOutput("contrast_1_dm_pr")),
                                                                  column(6,
                                                                         selectInput("pathway_database_dm_pr", "Pathway database:",
-                                                                                    c("KEGG"="KEGG_2016",
-                                                                                      "Reactome"="Reactome_2016"))
+                                                                                    c("KEGG"="KEGG_2021_Human",
+                                                                                      "Reactome"="Reactome_2022"))
                                                                  ),
                                                                  column(12,actionButton("pathway_analysis_dm_pr", "Run Enrichment")),
                                                                  column(12,
@@ -1888,11 +1888,11 @@ ui <- function(request){
                                                                  uiOutput("contrast_dm_nr")),
                                                           column(6,
                                                                  selectInput("go_database_dm_nr", "GO database:",
-                                                                             c("Molecular Function"="GO_Molecular_Function_2017b",
-                                                                               "Cellular Component"="GO_Cellular_Component_2017b",
-                                                                               "Biological Process"="GO_Biological_Process_2017b",
-                                                                               "KEGG"="KEGG_2016",
-                                                                               "Reactome"="Reactome_2016"))
+                                                                             c("Molecular Function"="GO_Molecular_Function_2021",
+                                                                               "Cellular Component"="GO_Cellular_Component_2021",
+                                                                               "Biological Process"="GO_Biological_Process_2021",
+                                                                               "KEGG"="KEGG_2021_Human",
+                                                                               "Reactome"="Reactome_2022"))
                                                           ),
                                                           column(12,actionButton("go_analysis_dm_nr", "Run Enrichment")),
                                                           column(12,
