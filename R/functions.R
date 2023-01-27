@@ -283,8 +283,14 @@ get_annotation <- function(dep, indicate) {
       cols <- c("orangered", "cornflowerblue")
     if(length(var) <= 7 & length(var) > 2)
       cols <- RColorBrewer::brewer.pal(length(var), "Pastel1")
-    if(length(var) > 7)
+    if(length(var) <= 12 & length(var) > 7)
       cols <- RColorBrewer::brewer.pal(length(var), "Set3")
+    if(length(var) > 12)
+      cols <- c(RColorBrewer::brewer.pal(12, "Set3"),
+                RColorBrewer::brewer.pal(8, "Set2"),
+                RColorBrewer::brewer.pal(9, "Set1"),
+                RColorBrewer::brewer.pal(8, "Pastel2"),
+                RColorBrewer::brewer.pal(9, "Pastel1"))[1:length(var)]
     names(cols) <- var
     anno_col[[i]] <-  cols
   }
