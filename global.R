@@ -33,4 +33,4 @@ library("shinycssloaders") # new added
 library("shiny.info") # new added
 library("ggVennDiagram") # new added
 library("scales") # new added
-VERSION <- "v0.11"
+VERSION <- "v0.12"
