@@ -163,7 +163,13 @@ ui <- function(request){
                   and offers numerous publication-quality result output graphics and tables to facilitate statistical 
                   and exploratory analysis of label-free quantitative datasets. "), 
                       br(),
-                      HTML('<center><img src="./Phospho_Analyst.svg" width="600px"></center>'),
+                      fluidRow(
+                        column(3),
+                        column(6,
+                               HTML('<center><img src="./Phospho_Analyst.svg" width="80%"></center>')),
+                        column(3)
+                      ),
+                      # HTML('<center><img src="./Phospho_Analyst.svg" width="600px"></center>'),
                       br(),
                       h4("Sidebar tabs"),
                       tags$ul(
@@ -229,7 +235,13 @@ ui <- function(request){
                                                                  from MaxQuant. ", " Use the ", tags$b("Datasets ")," tab to download example files provided.")
                           ),
                           br(),
-                          HTML('<center><img src="./Phospho_Analyst.svg" width="500px"></center>'),
+                          fluidRow(
+                            column(4),
+                            column(4,
+                                   HTML('<center><img src="./Phospho_Analyst.svg" width="100%"></center>')),
+                            column(4)
+                          ),
+                          # HTML('<center><img src="./Phospho_Analyst.svg" width="100%"></center>'),
                           width = 12,
                           solidHeader = TRUE,
                           status = "primary"
