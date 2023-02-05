@@ -2054,6 +2054,7 @@ ui <- function(request){
                       p("For any feedback or question regarding Phospho-Analyst, please contact the 
 			  Monash Proteomics and Metabolomics Facility:"),
                       tags$ul(
+                        tags$li("Haijian Zhang: hailey.zhang1(at)monash.edu"),
                         tags$li("Anup Shah: anup.shah(at)monash.edu"),
                         tags$li("Ralf Schittenhelm: ralf.schittenhelm(at)monash.edu")
                       ),
@@ -2071,7 +2072,7 @@ ui <- function(request){
                       
                       tags$ul(
                         tags$li(p(HTML(paste0("Related App: ", tags$b("LFQ-Analyst")," for analysing label-free quantitative proteomics dataset",
-                                              a(href = 'https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst/',
+                                              a(href = 'https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst',
                                                 target='_blank', tags$b("https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst"))))))
                         
                       ),   
