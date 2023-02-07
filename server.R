@@ -7,7 +7,7 @@ server <- function(input, output,session){
     if(input$analyze==0 ){
       return(FALSE)
     } else {
-      if ((is.null(phospho_data_input()) | is.null(exp_design_input())) & (is.null(protein_data_input()) | is.null(exp_design_input_1()))) {
+      if ((is.null(input$file1) | is.null(exp_design_input())) & (is.null(input$file2) | is.null(exp_design_input_1()))) {
         shinyalert("Input file missing!", "Please check your input files", type="warning",
                    closeOnClickOutside = TRUE,
                    closeOnEsc = TRUE,
@@ -22,10 +22,11 @@ server <- function(input, output,session){
   observeEvent(input$analyze ,{ 
     if(input$analyze==0 | start_analysis() == FALSE){
       return()
+    } else {
+      shinyjs::hide("quickstart_info")
+      shinyjs::show("panels")
+      shinyjs::show("qc_tab")
     }
-    shinyjs::hide("quickstart_info")
-    shinyjs::show("panels")
-    shinyjs::show("qc_tab")
   })
   
   # Hide other pages if only upload one of the phosphosite or protein data file
