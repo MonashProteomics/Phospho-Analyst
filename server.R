@@ -679,7 +679,7 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input<-eventReactive(input$analyze ,{ 
+  heatmap_input<-reactive({ 
     if(input$analyze==0 ){
       return()
     }
