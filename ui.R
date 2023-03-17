@@ -68,10 +68,10 @@ ui <- function(request){
                                                                p("Type of FDR correction", style = 'color:#2E3440'),
                                                                choices =  c("Benjamini Hochberg"="BH",
                                                                             "t-statistics-based"="fdrtool"
-                                                               ), selected= "BH"),
-                                            numericInput("k_number",
-                                                         p("Number of clusters in heatmap", style = 'color:#2E3440'),
-                                                         min = 1, max = 20, value = 6)
+                                                               ), selected= "BH")
+                                            # numericInput("k_number",
+                                            #              p("Number of clusters in heatmap", style = 'color:#2E3440'),
+                                            #              min = 1, max = 20, value = 6)
                                    ),
                                    tags$hr(style = 'border-top: 4px double #2E3440'),
                                    menuItem(strong("Total Proteome (Optional)",style = 'color:#2E3440'),tabName="proteinGroup",icon = icon("file-upload"),
@@ -112,10 +112,10 @@ ui <- function(request){
                                                                                      "t-statistics-based"="fdrtool"
                                                                         ), selected= "BH"),
                                                      checkboxInput("single_peptide_pr",
-                                                                   p("Include single peptide identifications", style = 'color:#2E3440'), FALSE),
-                                                     numericInput("k_number_pr",
-                                                                  p("Number of clusters in heatmap", style = 'color:#2E3440'),
-                                                                  min = 1, max = 20, value = 6)
+                                                                   p("Include single peptide identifications", style = 'color:#2E3440'), FALSE)
+                                                     # numericInput("k_number_pr",
+                                                     #              p("Number of clusters in heatmap", style = 'color:#2E3440'),
+                                                     #              min = 1, max = 20, value = 6)
                                             )),
                                    
                                    tags$hr(style = 'border-top: 4px double #2E3440'),
@@ -226,7 +226,7 @@ ui <- function(request){
                             # "  (",tags$b("Phospho (STY)Sites.txt "),'and',tags$b(" Protein Group.txt "),'could be optional to upload)',
                             tags$li(tags$b("Optional: "),"Adjust the p-value cut-off, the log2 fold change cut-off, 
                                                                          the imputation type, FDR correction method and/or number of clusters in heatmap in the",
-                                    tags$b("Advanced Options.")),
+                                    tags$b("Advanced Options.")), # TODO: add normalisation type there
                             tags$li("Press ", tags$b('"Start Analysis".')), 
                             tags$li(tags$b("Hint: "), " Use the ", tags$b("User Guide ")," tab for a detailed explanation of inputs,
                                                                          advanced options and outputs."), 
@@ -340,6 +340,12 @@ ui <- function(request){
                                                                 )),
                                                        tabPanel(title= "Heatmap",
                                                                 fluidRow(
+                                                                  box(tags$div(class="inline", numericInput("k_number",
+                                                                                                            "Number of clusters in heatmap:  ",
+                                                                                                            min = 1, max = 20, value = 6))
+                                                                  )
+                                                                ),
+                                                                fluidRow(
                                                                   shinycssloaders::withSpinner(plotOutput("heatmap", height = 600), color = "#bec8da")
                                                                 ),
                                                                 fluidRow(
@@ -352,7 +358,9 @@ ui <- function(request){
                                                                 ),
                                                                 # align save button
                                                                 tags$style(type='text/css', "#downloadCluster {margin-top: 25px;}"),
-                                                                tags$style(type='text/css', "#download_hm_svg {margin-top: 25px;}")
+                                                                tags$style(type='text/css', "#download_hm_svg {margin-top: 25px;}"),
+                                                                tags$style(type="text/css", 
+                                                                           ".inline label{ display: table-cell; text-align: center; vertical-align: middle; } .inline .form-group { display: table-row;}")
                                                        ),
                                                        tabPanel(title = "Individual Plot",
                                                                 fluidRow(
