@@ -1511,7 +1511,8 @@ server <- function(input, output,session){
   individual_cluster <- reactive({
     cluster_number <- input$cluster_number
     cluster_all <- heatmap_input()
-    data_result()[cluster_all[[cluster_number]],]
+    single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
+    data_result()[single_cluster,]
   })
   
   # output$text1 <- renderPrint({
@@ -2529,7 +2530,8 @@ server <- function(input, output,session){
   individual_cluster_pr <- reactive({
     cluster_number <- input$cluster_number_pr
     cluster_all <- heatmap_input_pr()
-    data_result_pr()[cluster_all[[cluster_number]],]
+    single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
+    data_result_pr()[single_cluster,]
   })
   
   output$downloadCluster_pr <- downloadHandler(
@@ -4105,7 +4107,8 @@ server <- function(input, output,session){
   individual_cluster_nr <- reactive({
     cluster_number <- input$cluster_number_nr
     cluster_all <- heatmap_input_nr()
-    data_result_nr()[cluster_all[[cluster_number]],]
+    single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
+    data_result_nr()[single_cluster,]
   })
   
   
@@ -5492,7 +5495,8 @@ server <- function(input, output,session){
   individual_cluster_dm <- reactive({
     cluster_number <- input$cluster_number_dm
     cluster_all <- heatmap_input_dm()
-    data_result_dm()[cluster_all[[cluster_number]],]
+    single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
+    data_result_dm()[single_cluster,]
   })
   
   output$downloadCluster_dm <- downloadHandler(
@@ -6316,7 +6320,8 @@ server <- function(input, output,session){
   individual_cluster_dm_pr <- reactive({
     cluster_number <- input$cluster_number_dm_pr
     cluster_all <- heatmap_input_dm_pr()
-    data_result_dm_pr()[cluster_all[[cluster_number]],]
+    single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
+    data_result_dm_pr()[single_cluster,]
   })
   
   output$downloadCluster_dm_pr <- downloadHandler(
@@ -7728,7 +7733,8 @@ server <- function(input, output,session){
   individual_cluster_dm_nr <- reactive({
     cluster_number <- input$cluster_number_dm_nr
     cluster_all <- heatmap_input_dm_nr()
-    data_result_dm_nr()[cluster_all[[cluster_number]],]
+    single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
+    data_result_dm_nr()[single_cluster,]
   })
   
   output$download_hm_svg_dm_nr <-downloadHandler(

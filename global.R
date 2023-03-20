@@ -1,3 +1,5 @@
+VERSION <- "v0.14"
+
 library("SummarizedExperiment")
 library("tidyverse")
 library("DEP")
@@ -33,4 +35,3 @@ library("shinycssloaders") # new added
 library("shiny.info") # new added
 library("ggVennDiagram") # new added
 library("scales") # new added
-VERSION <- "v0.14"
