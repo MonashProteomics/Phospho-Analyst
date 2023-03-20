@@ -68,10 +68,13 @@ ui <- function(request){
                                                                p("Type of FDR correction", style = 'color:#2E3440'),
                                                                choices =  c("Benjamini Hochberg"="BH",
                                                                             "t-statistics-based"="fdrtool"
-                                                               ), selected= "BH")
+                                                               ), selected= "BH"),
                                             # numericInput("k_number",
                                             #              p("Number of clusters in heatmap", style = 'color:#2E3440'),
                                             #              min = 1, max = 20, value = 6)
+                                            numericInput("local_prob",
+                                                         p("Peptides Localization prob >=", style = 'color:#2E3440'),
+                                                         min = 0, max = 1, value = 0.75)
                                    ),
                                    tags$hr(style = 'border-top: 4px double #2E3440'),
                                    menuItem(strong("Total Proteome (Optional)",style = 'color:#2E3440'),tabName="proteinGroup",icon = icon("file-upload"),

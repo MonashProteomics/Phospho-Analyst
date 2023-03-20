@@ -453,7 +453,7 @@ server <- function(input, output,session){
                                                 names_pattern = '(.*)___(.)',
                                                 values_drop_na = TRUE)
     
-    data_ex <- data_ex %>% dplyr::filter(Localization.prob >= 0.75)
+    data_ex <- data_ex %>% dplyr::filter(Localization.prob >= input$local_prob)
     peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
     data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
     data_pre$Residue.Both <- map2(data_pre$Positions.within.proteins, data_pre$Amino.acid,create_Residue.Both_func) %>% unlist()
