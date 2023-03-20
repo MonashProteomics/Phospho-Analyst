@@ -1851,13 +1851,13 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input_pr<-eventReactive(input$analyze ,{
+  heatmap_input_pr<-reactive({
     if(input$analyze==0 ){
       return()
     }
     get_cluster_heatmap(dep_pr(),
                         type="centered",kmeans = TRUE,
-                        k=6, col_limit = 6,
+                        k=input$k_number_pr, col_limit = 6,
                         indicate = "condition"
     )
   })
@@ -3578,13 +3578,13 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input_nr<-eventReactive(input$analyze ,{ 
+  heatmap_input_nr<-reactive({ 
     if(input$analyze==0 ){
       return()
     }
     get_cluster_heatmap(dep_nr(),
                         type="centered",kmeans = TRUE,
-                        k=input$k_number, col_limit = 6,
+                        k=input$k_number_nr, col_limit = 6,
                         indicate = "condition"
     )
   })
@@ -4712,7 +4712,7 @@ server <- function(input, output,session){
   heatmap_input_dm<-reactive({ 
     get_cluster_heatmap(dep_dm(),
                         type="centered",kmeans = TRUE,
-                        k=6, col_limit = 6,
+                        k=input$k_number_dm, col_limit = 6,
                         indicate = "condition"
     )
   })
@@ -5850,7 +5850,7 @@ server <- function(input, output,session){
   heatmap_input_dm_pr<-reactive({ 
     get_cluster_heatmap(dep_dm_pr(),
                         type="centered",kmeans = TRUE,
-                        k=6, col_limit = 6,
+                        k=input$k_number_dm_pr, col_limit = 6,
                         indicate = "condition"
     )
   })
@@ -7237,7 +7237,7 @@ server <- function(input, output,session){
   heatmap_input_dm_nr<-reactive({
     get_cluster_heatmap(dep_dm_nr(),
                         type="centered",kmeans = TRUE,
-                        k=input$k_number, col_limit = 6,
+                        k=input$k_number_dm_nr, col_limit = 6,
                         indicate = "condition"
     )
   })

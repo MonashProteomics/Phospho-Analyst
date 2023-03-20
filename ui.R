@@ -615,6 +615,12 @@ ui <- function(request){
                                                                 )),
                                                        tabPanel(title= "Heatmap",
                                                                 fluidRow(
+                                                                  box(tags$div(class="inline", numericInput("k_number_pr",
+                                                                                                            "Number of clusters in heatmap:  ",
+                                                                                                            min = 1, max = 20, value = 6))
+                                                                  )
+                                                                ),
+                                                                fluidRow(
                                                                   shinycssloaders::withSpinner(plotOutput("heatmap_pr", height = 600), color = "#bec8da")
                                                                 ),
                                                                 fluidRow(
@@ -929,6 +935,12 @@ ui <- function(request){
                                                                 )),
                                                        tabPanel(title= "Heatmap",
                                                                 fluidRow(
+                                                                  box(tags$div(class="inline", numericInput("k_number_nr",
+                                                                                                            "Number of clusters in heatmap:  ",
+                                                                                                            min = 1, max = 20, value = 6))
+                                                                  )
+                                                                ),
+                                                                fluidRow(
                                                                   shinycssloaders::withSpinner(plotOutput("heatmap_nr", height = 600), color = "#bec8da")
                                                                 ),
                                                                 fluidRow(
@@ -1229,6 +1241,12 @@ ui <- function(request){
                                                       )),
                                              tabPanel(title= "Heatmap",
                                                       fluidRow(
+                                                        box(tags$div(class="inline", numericInput("k_number_dm",
+                                                                                                  "Number of clusters in heatmap:  ",
+                                                                                                  min = 1, max = 20, value = 6))
+                                                        )
+                                                      ),
+                                                      fluidRow(
                                                         shinycssloaders::withSpinner(plotOutput("heatmap_dm", height = 600), color = "#bec8da")
                                                       ),
                                                       fluidRow(
@@ -1480,6 +1498,12 @@ ui <- function(request){
                                                         #)),
                                                       )),
                                              tabPanel(title= "Heatmap",
+                                                      fluidRow(
+                                                        box(tags$div(class="inline", numericInput("k_number_dm_pr",
+                                                                                                  "Number of clusters in heatmap:  ",
+                                                                                                  min = 1, max = 20, value = 6))
+                                                        )
+                                                      ),
                                                       fluidRow(
                                                         shinycssloaders::withSpinner(plotOutput("heatmap_dm_pr", height = 600), color = "#bec8da")
                                                       ),
@@ -1802,6 +1826,12 @@ ui <- function(request){
                                                  #)),
                                                )),
                                       tabPanel(title= "Heatmap",
+                                               fluidRow(
+                                                 box(tags$div(class="inline", numericInput("k_number_dm_nr",
+                                                                                           "Number of clusters in heatmap:  ",
+                                                                                           min = 1, max = 20, value = 6))
+                                                 )
+                                               ),
                                                fluidRow(
                                                  shinycssloaders::withSpinner(plotOutput("heatmap_dm_nr", height = 600), color = "#bec8da")
                                                ),
