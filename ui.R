@@ -1113,11 +1113,12 @@ ui <- function(request){
                                                                            HTML("Filter Condition<br/>Remove"),
                                                                            choices = c("Reverse sequences",
                                                                                        "Potential contaminants", 
-                                                                                       "Peptides Localization prob < 0.75"
+                                                                                       "Peptides localization prob less than"
                                                                            ),
                                                                            shape = "round",
                                                                            selected = NULL, 
                                                        ),
+                                                       uiOutput("prob_text"),
                                                        status = "success",
                                                        solidHeader = TRUE
                                                    ),
@@ -1998,11 +1999,12 @@ ui <- function(request){
                                                                                HTML("Filter Condition<br/>Remove"),
                                                                                choices = c("Reverse sequences",
                                                                                            "Potential contaminants", 
-                                                                                           "Peptides Localization prob < 0.75"
+                                                                                           "Peptides localization prob less than"
                                                                                ),
                                                                                shape = "round",
                                                                                selected = NULL, 
                                              ),
+                                             uiOutput("prob_text_dm"),
                                              status = "success",
                                              solidHeader = TRUE
                                          ),

@@ -4408,8 +4408,8 @@ server <- function(input, output,session){
         filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
       }
       else{filtered_data <-filtered_data}
-      if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides Localization prob >= 0.75" %in% input$filtered_condition)){
-        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= 0.75)
+      if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides localization prob less than" %in% input$filtered_condition)){
+        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= input$local_prob_occ)
       }
       else{filtered_data <-filtered_data}
     }
@@ -4451,6 +4451,14 @@ server <- function(input, output,session){
   
   output$sidebar <- renderUI({
     tagList(slider_bars())
+  })
+  
+  output$prob_text <- renderUI({
+    if ("Peptides localization prob less than" %in% input$filtered_condition) {
+      numericInput("local_prob_occ",
+                   label = NULL,
+                   min = 0, max = 1, value = 0.75)
+    }
   })
   
   output$download_attendance <- downloadHandler("Occurrences_results_table.csv",
@@ -7941,8 +7949,8 @@ server <- function(input, output,session){
         filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
       }
       else{filtered_data <-filtered_data}
-      if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides Localization prob >= 0.75" %in% input$filtered_condition_dm)){
-        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= 0.75)
+      if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides localization prob less than" %in% input$filtered_condition_dm)){
+        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= input$local_prob_occ_dm)
       }
       else{filtered_data <-filtered_data}
     }
@@ -7984,6 +7992,14 @@ server <- function(input, output,session){
   
   output$sidebar_dm <- renderUI({
     tagList(slider_bars_dm())
+  })
+  
+  output$prob_text_dm <- renderUI({
+    if ("Peptides localization prob less than" %in% input$filtered_condition_dm) {
+      numericInput("local_prob_occ_dm",
+                   label = NULL,
+                   min = 0, max = 1, value = 0.75)
+    }
   })
   
   output$download_attendance_dm <- downloadHandler("Occurrences_results_table.csv",
