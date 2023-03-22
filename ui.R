@@ -227,9 +227,9 @@ ui <- function(request){
                             ), 
                             
                             # "  (",tags$b("Phospho (STY)Sites.txt "),'and',tags$b(" Protein Group.txt "),'could be optional to upload)',
-                            tags$li(tags$b("Optional: "),"Adjust the p-value cut-off, the log2 fold change cut-off, 
-                                                                         the imputation type, FDR correction method and/or number of clusters in heatmap in the",
-                                    tags$b("Advanced Options.")), # TODO: add normalisation type there
+                            tags$li(tags$b("Optional: "),"Adjust the p-value cut-off, the log2 fold change cut-off, the normalisation type, 
+                                                                         the imputation type, FDR correction method and/or peptides localization prob cut-off in the",
+                                    tags$b("Advanced Options.")), 
                             tags$li("Press ", tags$b('"Start Analysis".')), 
                             tags$li(tags$b("Hint: "), " Use the ", tags$b("User Guide ")," tab for a detailed explanation of inputs,
                                                                          advanced options and outputs."), 
