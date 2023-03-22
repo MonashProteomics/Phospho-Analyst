@@ -7955,7 +7955,7 @@ server <- function(input, output,session){
       else{filtered_data <-filtered_data}
     }
     
-    drop_cols <- c("Localization.prob", "Reverse", "Potential.contaminant")
+    drop_cols <- c("Reverse", "Potential.contaminant")
     filtered_data<- filtered_data[, !(colnames(filtered_data) %in% drop_cols)]
     return(filtered_data)
   })
