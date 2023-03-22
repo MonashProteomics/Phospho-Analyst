@@ -4411,7 +4411,9 @@ server <- function(input, output,session){
       }
       else{filtered_data <-filtered_data}
       if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides localization prob less than" %in% input$filtered_condition)){
-        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= input$local_prob_occ)
+        if(!is.null(input$local_prob_occ)){
+          filtered_data<-dplyr::filter(filtered_data, Localization.prob >= input$local_prob_occ)
+        }
       }
       else{filtered_data <-filtered_data}
     }
@@ -7954,7 +7956,9 @@ server <- function(input, output,session){
       }
       else{filtered_data <-filtered_data}
       if(("Localization.prob" %in% colnames(filtered_data)) & ("Peptides localization prob less than" %in% input$filtered_condition_dm)){
-        filtered_data<-dplyr::filter(filtered_data, Localization.prob >= input$local_prob_occ_dm)
+        if (!is.null(input$local_prob_occ_dm)){
+          filtered_data<-dplyr::filter(filtered_data, Localization.prob >= input$local_prob_occ_dm)
+        }
       }
       else{filtered_data <-filtered_data}
     }
