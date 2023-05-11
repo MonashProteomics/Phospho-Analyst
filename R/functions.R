@@ -578,14 +578,15 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
   # table <- dplyr::left_join(table, centered, by = c("name" = "rowname")) %>%
   #   dplyr::arrange(desc(significant))
   table <- dplyr::left_join(table, mean_df, by = c("name" = "rowname"))
-  table<-as.data.frame(row_data) %>% 
-    dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names,Residue.Both, ID) %>%
+ 
+  table<-as.data.frame(row_data)[,colnames(row_data) %in% c("name", "imputed", "num_NAs","Gene.names","Protein.names","Residue.Both", "ID")] %>%
+    # dplyr::select(name, imputed, num_NAs,Gene.names,Protein.names,Residue.Both, ID) %>%
     dplyr::left_join(table, ., by = "name")
   table<-table %>% dplyr::arrange(desc(significant))
   # table$Gene.names[is.null(table$Gene.names)] <- "NoGeneNameAvailable"
   # table$Protein.names[is.null(table$Protein.names)] <- "NoProteinNameAvailable"
-  table$Gene.names[table["Gene.names"]==""] <- "NoGeneNameAvailable"
-  table$Protein.names[table["Protein.names"]==""] <- "NoProteinNameAvailable"
+  # table$Gene.names[table["Gene.names"]==""] <- "NoGeneNameAvailable"
+  # table$Protein.names[table["Protein.names"]==""] <- "NoProteinNameAvailable"
   colnames(table)[2]<-c("Phosphosite")
   colnames(table)[3]<-c("Protein ID")
   
@@ -950,8 +951,8 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   protein_intensity <- 2^(assay(protein_imp)) %>% data.frame() 
   
   # get row data
-  phospho_df <- rowData(phospho_imp)   %>% data.frame() %>% select('Protein')
-  protein_df <- rowData(protein_imp)   %>% data.frame() %>% select('Majority.protein.IDs')
+  phospho_df <- rowData(phospho_imp)   %>% data.frame() %>% dplyr::select('Protein')
+  protein_df <- rowData(protein_imp)   %>% data.frame() %>% dplyr::select('Majority.protein.IDs')
   
   # merge phospho data with its intensity values
   phospho_df_1 <- merge(phospho_df, phospho_intensity,by='row.names',all=TRUE)
@@ -970,7 +971,7 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
     pattern <- paste(condition,"[[:digit:]]",sep = '_')
     protein_df_2[paste0('median',sep = "_",condition)] <- rowMedians(
       as.matrix(protein_df_2 %>% 
-                  select(grep(pattern, colnames(protein_df_2)))), na.rm = TRUE)
+                  dplyr::select(grep(pattern, colnames(protein_df_2)))), na.rm = TRUE)
   }
   
   protein_median <- protein_df_2 %>% 
@@ -980,14 +981,14 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   phospho_protein <- phospho_df_1 %>% 
     left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
     data.frame (row.names = 1) %>% 
-    select(-'Protein')
+    dplyr::select(-'Protein')
   
   # use each phosphosite intensity value to divide median protein intensity of a same group
   df_corrected <- row.names(phospho_protein) %>% data.frame()
   
   for (i in 1: length(conditions)) {
     condition <- conditions[i]
-    one_group <- colnames(phospho_protein %>% select(dplyr::starts_with(condition)))           
+    one_group <- colnames(phospho_protein %>% dplyr::select(dplyr::starts_with(condition)))           
     df <- phospho_protein[one_group]                
     median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
     
