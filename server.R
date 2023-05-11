@@ -3011,7 +3011,7 @@ server <- function(input, output,session){
     if(!is.null(exp_design_input()) & !is.null(exp_design_input_1())){
       replicate_color <- scales::hue_pal()(max(max(exp_design_input()$replicate), max(exp_design_input_1()$replicate)))
       condition_list <- union(exp_design_input()$condition,exp_design_input_1()$condition) 
-      condition_color <- condition_list <- union(exp_design_input()$condition,exp_design_input_1()$condition) 
+      # condition_color <- condition_list <- union(exp_design_input()$condition,exp_design_input_1()$condition) 
       condition_color <- scales::hue_pal()(length(condition_list))
       names(condition_color) <- condition_list
       return(list(condition_color,replicate_color))
