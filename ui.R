@@ -152,6 +152,7 @@ ui <- function(request){
         useShinyjs(), #imp to use shinyjs functions
         tags$head(includeScript("google_analytics.js"),
                   tags$style(type='text/css')),
+        tags$head(includeHTML(("google_analytics-GA4.html"))),
         
         tabItems(
           tabItem(tabName = "home",
