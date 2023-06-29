@@ -153,6 +153,11 @@ ui <- function(request){
         tags$head(includeScript("google_analytics.js"),
                   tags$style(type='text/css')),
         tags$head(includeHTML(("google_analytics-GA4.html"))),
+        tags$head(tags$script(HTML(
+          '// Enable navigation prompt
+          window.onbeforeunload = function() {
+          return "Changes that you made may not be saved.";};'
+        ))),
         
         tabItems(
           tabItem(tabName = "home",
