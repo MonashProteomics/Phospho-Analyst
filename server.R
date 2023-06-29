@@ -1545,17 +1545,14 @@ server <- function(input, output,session){
     },
     content = function(file) {
       pdf(file)
-      if(is.null(input$protein_brush)){
-        print(volcano_input())
-        dev.off()
+      if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
+        p <- volcano_input()
       }
       else{
-        observeEvent(input$protein_brush,{
-          print(p)
-        })
-        print(volcano_input_selected())
-        dev.off()
+        p <- volcano_input_selected()
       }
+      print(p)
+      dev.off()
     }
   )
   
@@ -2561,7 +2558,15 @@ server <- function(input, output,session){
     },
     content = function(file) {
       pdf(file)
-      print(volcano_input_selected_pr())
+      # print(volcano_input_selected_pr())
+      # dev.off()
+      if(is.null(input$contents_pr_rows_selected) & is.null(input$protein_brush_pr)){
+        p <- volcano_input_pr()
+      }
+      else{
+        p <- volcano_input_selected_pr()
+      }
+      print(p)
       dev.off()
     }
   )
@@ -4140,7 +4145,15 @@ server <- function(input, output,session){
     },
     content = function(file) {
       pdf(file)
-      print(volcano_input_selected_nr())
+      # print(volcano_input_selected_nr())
+      # dev.off()
+      if(is.null(input$contents_nr_rows_selected) & is.null(input$protein_brush_nr)){
+        p <- volcano_input_nr()
+      }
+      else{
+        p <- volcano_input_selected_nr()
+      }
+      print(p)
       dev.off()
     }
   )
@@ -5537,8 +5550,17 @@ server <- function(input, output,session){
     },
     content = function(file) {
       pdf(file)
-      print(volcano_input_selected_dm())
+      # print(volcano_input_selected_dm())
+      # dev.off()
+      if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush_dm)){
+        p <- volcano_input_dm()
+      }
+      else{
+        p <- volcano_input_selected_dm()
+      }
+      print(p)
       dev.off()
+      
     }
   )
   
@@ -6363,7 +6385,15 @@ server <- function(input, output,session){
     },
     content = function(file) {
       pdf(file)
-      print(volcano_input_selected_dm_pr())
+      # print(volcano_input_selected_dm_pr())
+      # dev.off()
+      if(is.null(input$contents_dm_pr_rows_selected) & is.null(input$protein_brush_dm_pr)){
+        p <- volcano_input_dm_pr()
+      }
+      else{
+        p <- volcano_input_selected_dm_pr()
+      }
+      print(p)
       dev.off()
     }
   )
@@ -7776,7 +7806,15 @@ server <- function(input, output,session){
     },
     content = function(file) {
       pdf(file)
-      print(volcano_input_selected_dm_nr())
+      # print(volcano_input_selected_dm_nr())
+      # dev.off()
+      if(is.null(input$contents_dm_nr_rows_selected) & is.null(input$protein_brush_dm_nr)){
+        p <- volcano_input_dm_nr()
+      }
+      else{
+        p <- volcano_input_selected_dm_nr()
+      }
+      print(p)
       dev.off()
     }
   )
