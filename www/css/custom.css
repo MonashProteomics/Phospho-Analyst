@@ -1,63 +1,15 @@
-/*.main-header .logo {
-font-family: "Georgia", Times, "Times New Roman", serif;
-font-weight: bold;
-font-size: 24px;
-} 
-*/
+/*Tab tooptips */
 
-/* navbar (rest of the header) */
-.skin-blue .main-header .logo {
-                                background-color: #4054b3;
-                                }
-                                
-.skin-blue .main-header .logo:hover {
-                                background-color: #4054b3;
-                                } 
-                                  
-.skin-blue .main-header .navbar {
-                                background-color: #4054b3;
-                                }
-
-
-.box.box-solid.box-primary>.box-header {
-  color:#fff;
-  background:#9b99c8 
-                    }
-
-.box.box-solid.box-primary{
-border-bottom-color:#9b99c8;
-border-left-color:#9b99c8;
-border-right-color:#9b99c8;
-border-top-color:#9b99c8;
+.tooltip-inner {
+    max-width: 275px;
+    background-color: #f4f4f4;
+    color: black;
+    text-align: justify;
+    font-size: 13px;
+    border: 1px solid #737373;
 }
 
-.box.box-solid.box-danger>.box-header {
-  color:#fff;
-  background:#9b99c8 
-                    }
-
-.box.box-solid.box-danger{
-border-bottom-color:#9b99c8;
-border-left-color:#9b99c8;
-border-right-color:#9b99c8;
-border-top-color:#9b99c8;
-}
-
-.responsive {
-  max-width: 100%;
-  height: auto;
-}
-
-.footer {
-  position:absolute;
-  bottom:10;
-  width:80%;
-  height:20px; /* Height of the footer */
-  color: white;
-  background-color: #4054b3;
-  z-index: 1000;
-  }
-
-.sidebar .text {
-  line-height: 200px;
+/*avoid transparent*/
+.tooltip.in {
+    opacity: 1; 
 }
