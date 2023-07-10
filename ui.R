@@ -257,12 +257,12 @@ ui <- function(request){
                                     tags$b("'mqpar.xml' "),"file 
                                                                  from MaxQuant. ", " Use the ", tags$b("Datasets ")," tab to download example files provided.")
                           ),
-                          br(),
+                          # br(),
                           fluidRow(
-                            column(4),
-                            column(4,
-                                   HTML('<center><img src="./Phospho_Analyst.svg" width="100%"></center>')),
-                            column(4)
+                            column(3),
+                            column(6,
+                                   HTML('<center><img src="./analyst_workflow.jpg" width="100%"></center>')),
+                            column(3)
                           ),
                           # HTML('<center><img src="./Phospho_Analyst.svg" width="100%"></center>'),
                           width = 12,
@@ -1350,12 +1350,7 @@ ui <- function(request){
                                                tabBox(title = "QC Plots", width = 12,
                                                       tabPanel(tooltips_ui("PCA Plot"),
                                                                shinycssloaders::withSpinner(plotOutput("pca_plot_dm", height=600), color = "#bec8da"),
-                                                               downloadButton('download_pca_svg_dm', "Save svg"),
-                                                               tippy_this(
-                                                                 "pca_plot_dm",
-                                                                 tooltip = "<span style='font-size:12px;'>A Principal Component Analysis (PCA) is a technique used to emphasize variation and bring out strong patterns in a dataset. In brief, the more similar 2 samples are, the closer they cluster together.<span>",
-                                                                 placement = "top"
-                                                               )
+                                                               downloadButton('download_pca_svg_dm', "Save svg")
                                                       ),
                                                       tabPanel(tooltips_ui("Sample Correlation"),
                                                                shinycssloaders::withSpinner(plotOutput("sample_corr_dm", height = 600), color = "#bec8da"),
