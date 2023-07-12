@@ -222,23 +222,11 @@ get_cluster_heatmap <- function(dep, type = c("contrast", "centered"),
                 ...)
   # return (row_order(ht1))
   # Return data.frame
-  draw(ht1, heatmap_legend_side = "top")
+  p <- draw(ht1, heatmap_legend_side = "top")
   row_clusters<- row_order(ht1)
   #mat<-as.matrix(df)
-  
-  # for (i in 1:length(row_clusters)){
-  #   if (i==1){
-  #     clu <-t(t(row.names(ht1[row_clusters[[i]],])))
-  #     out <-cbind (clu, paste("cluster", i, sep=""))
-  #     colnames(out)<- c("ProteinID", "Cluster")
-  #   }
-  #   else{
-  #     clu <- t(t(row.names(ht1[row_clusters[[i]],])))
-  #     clu <- cbind(clu, paste("cluster", i, sep = ""))
-  #     out <- cbind(out, clu)
-  #   }
-  # }
-  return(row_clusters)
+  heatmap_list <- list(p, row_clusters)
+  return(heatmap_list)
 }
 
 # Internal function to get ComplexHeatmap::HeatmapAnnotation object
