@@ -4360,7 +4360,7 @@ server <- function(input, output,session){
     # select result table columns
     df <- data_ex  %>% select("peptide.sequence", "Phosphosite", "Protein", "Amino.acid",
                               "Localization.prob",all_of(intensity_names_new),"Gene.names","Protein.names","Reverse", "Potential.contaminant")
-    
+    df$Phosphosite <- make.unique(df$Phosphosite)
     colnames(df) <- colnames(df)  %>% gsub("Intensity.", "", .) 
     intensity_names_new <- intensity_names_new %>% gsub("Intensity.", "", .) 
     
@@ -4539,24 +4539,25 @@ server <- function(input, output,session){
     if(length(condition_list()) < 2){
       stop(safeError("Venn plot should contain at least two sets"))
     } else if(length(condition_list()) < 3){
-      set1 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
-      set2 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
+      set1 <- df$Phosphosite[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
+      set2 <- df$Phosphosite[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
       x <- list(set1,set2)
-      names(x) <- c("Condition 1", "Condition 2")
+      names(x) <- c(input$condition_1, input$condition_2)
     } else {
-      set1 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
-      set2 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
-      set3 <- df$Protein[df[grep(paste0("#Occurences",sep = "_",input$condition_3),colnames(df))] != 0]
+      set1 <- df$Phosphosite[df[grep(paste0("#Occurences",sep = "_",input$condition_1),colnames(df))] != 0]
+      set2 <- df$Phosphosite[df[grep(paste0("#Occurences",sep = "_",input$condition_2),colnames(df))] != 0]
+      set3 <- df$Phosphosite[df[grep(paste0("#Occurences",sep = "_",input$condition_3),colnames(df))] != 0]
       x <- list(set1,set2,set3)
-      names(x) <- c("Condition 1", "Condition 2", "Condition 3")
+      names(x) <- c(input$condition_1, input$condition_2, input$condition_3)
       if (!is.null(input$condition_3)){
         if (input$condition_3 == "NONE"){
           x <- list(set1,set2)
-          names(x) <- c("Condition 1", "Condition 2")
+          names(x) <- c(input$condition_1, input$condition_2)
         }
       }
     }
     ggVennDiagram::ggVennDiagram(x,label_alpha = 0) +
+      scale_x_continuous(expand = expansion(mult = .2)) +
       scale_fill_gradient(low = "#F4FAFE", high = "#4981BF")
   })
   
@@ -7961,6 +7962,7 @@ server <- function(input, output,session){
   
   data_attendance_dm <-reactive({
     df <- attendance_dm()
+    df$Phosphosite <- make.unique(df$Phosphosite)
     # get conditions
     exp_design <- exp_design_demo()
     conditions <- exp_design$condition %>% unique()
@@ -8099,19 +8101,20 @@ server <- function(input, output,session){
   venn_plot_input_dm <- reactive({
     df<- data_attendance_filtered_dm()
     
-    set1 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_1_dm),colnames(df))] != 0] %>% unique()
-    set2 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_2_dm),colnames(df))] != 0] %>% unique()
-    set3 <- df$Protein[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_3_dm),colnames(df))] != 0] %>% unique()
+    set1 <- df$Phosphosite[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_1_dm),colnames(df))] != 0]
+    set2 <- df$Phosphosite[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_2_dm),colnames(df))] != 0]
+    set3 <- df$Phosphosite[df[grep(paste0("#Occurences_Pharmacological",sep = "_",input$condition_3_dm),colnames(df))] != 0]
     x <- list(set1,set2,set3)
-    names(x) <- c("Condition 1", "Condition 2", "Condition 3")
+    names(x) <- c(input$condition_1_dm, input$condition_2_dm, input$condition_3_dm)
     if (!is.null(input$condition_3_dm)){
       if (input$condition_3_dm == "NONE"){
         x <- list(set1,set2)
-        names(x) <- c("Condition 1", "Condition 2")
+        names(x) <- c(input$condition_1_dm, input$condition_2_dm)
       }
     }
     
     ggVennDiagram::ggVennDiagram(x,label_alpha = 0) +
+      scale_x_continuous(expand = expansion(mult = .2)) + 
       scale_fill_gradient(low = "#F4FAFE", high = "#4981BF")
   })
   
