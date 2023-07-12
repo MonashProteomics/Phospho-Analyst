@@ -679,7 +679,7 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input<-reactive({ 
+  heatmap_cluster <- reactive({
     if(input$analyze==0 ){
       return()
     }
@@ -688,6 +688,11 @@ server <- function(input, output,session){
                         k=input$k_number, col_limit = 6,
                         indicate = "condition"
     )
+  })
+  
+  
+  heatmap_input<-reactive({ 
+    heatmap_cluster()[[1]]
   })
   
   ### Volcano Plot
@@ -1510,7 +1515,7 @@ server <- function(input, output,session){
   
   individual_cluster <- reactive({
     cluster_number <- input$cluster_number
-    cluster_all <- heatmap_input()
+    cluster_all <- heatmap_cluster()[[2]]
     single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
     data_result()[single_cluster,]
   })
@@ -1850,7 +1855,7 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input_pr<-reactive({
+  heatmap_cluster_pr <- reactive({
     if(input$analyze==0 ){
       return()
     }
@@ -1859,6 +1864,10 @@ server <- function(input, output,session){
                         k=input$k_number_pr, col_limit = 6,
                         indicate = "condition"
     )
+  })
+
+  heatmap_input_pr<-reactive({
+    heatmap_cluster_pr()[[1]]
   })
   
   ### Volcano Plot
@@ -2527,7 +2536,7 @@ server <- function(input, output,session){
   
   individual_cluster_pr <- reactive({
     cluster_number <- input$cluster_number_pr
-    cluster_all <- heatmap_input_pr()
+    cluster_all <- heatmap_cluster_pr()[[2]]
     single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
     data_result_pr()[single_cluster,]
   })
@@ -3586,7 +3595,7 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input_nr<-reactive({ 
+  heatmap_cluster_nr<-reactive({ 
     if(input$analyze==0 ){
       return()
     }
@@ -3595,6 +3604,10 @@ server <- function(input, output,session){
                         k=input$k_number_nr, col_limit = 6,
                         indicate = "condition"
     )
+  })
+  
+  heatmap_input_nr<-reactive({
+    heatmap_cluster_nr()[[1]]
   })
   
   ### Volcano Plot
@@ -4112,7 +4125,7 @@ server <- function(input, output,session){
   
   individual_cluster_nr <- reactive({
     cluster_number <- input$cluster_number_nr
-    cluster_all <- heatmap_input_nr()
+    cluster_all <- heatmap_cluster_nr()[[2]]
     single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
     data_result_nr()[single_cluster,]
   })
@@ -4738,12 +4751,16 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input_dm<-reactive({ 
+  heatmap_cluster_dm<-reactive({ 
     get_cluster_heatmap(dep_dm(),
                         type="centered",kmeans = TRUE,
                         k=input$k_number_dm, col_limit = 6,
                         indicate = "condition"
     )
+  })
+  
+  heatmap_input_dm <- reactive({
+    heatmap_cluster_dm()[[1]]
   })
   
   ### Volcano Plot
@@ -5520,7 +5537,7 @@ server <- function(input, output,session){
   
   individual_cluster_dm <- reactive({
     cluster_number <- input$cluster_number_dm
-    cluster_all <- heatmap_input_dm()
+    cluster_all <- heatmap_cluster_dm()[[1]]
     single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
     data_result_dm()[single_cluster,]
   })
@@ -5536,7 +5553,7 @@ server <- function(input, output,session){
   )
   
   output$download_hm_svg_dm <-downloadHandler(
-    filename = function() { "heatmap.svg" }, 
+    filename = function() { "heatmap.svg" },
     content = function(file) {
       heatmap_plot_dm<-DEP::plot_heatmap(dep_dm(),"centered", k=6, indicate = "condition")
       svg(file)
@@ -5887,12 +5904,16 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input_dm_pr<-reactive({ 
+  heatmap_cluster_dm_pr<-reactive({ 
     get_cluster_heatmap(dep_dm_pr(),
                         type="centered",kmeans = TRUE,
                         k=input$k_number_dm_pr, col_limit = 6,
                         indicate = "condition"
     )
+  })
+  
+  heatmap_input_dm_pr<-reactive({
+    heatmap_cluster_dm_pr()[[1]]
   })
   
   ### Volcano Plot
@@ -6355,7 +6376,7 @@ server <- function(input, output,session){
   
   individual_cluster_dm_pr <- reactive({
     cluster_number <- input$cluster_number_dm_pr
-    cluster_all <- heatmap_input_dm_pr()
+    cluster_all <- heatmap_cluster_dm_pr()[[2]]
     single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
     data_result_dm_pr()[single_cluster,]
   })
@@ -7283,12 +7304,16 @@ server <- function(input, output,session){
   })
   
   ### Heatmap Differentially expressed proteins
-  heatmap_input_dm_nr<-reactive({
+  heatmap_cluster_dm_nr<-reactive({
     get_cluster_heatmap(dep_dm_nr(),
                         type="centered",kmeans = TRUE,
                         k=input$k_number_dm_nr, col_limit = 6,
                         indicate = "condition"
     )
+  })
+  
+  heatmap_input_dm_nr<-reactive({
+    heatmap_cluster_dm_nr()[[1]]
   })
   
   ### Volcano Plot
@@ -7776,7 +7801,7 @@ server <- function(input, output,session){
   
   individual_cluster_dm_nr <- reactive({
     cluster_number <- input$cluster_number_dm_nr
-    cluster_all <- heatmap_input_dm_nr()
+    cluster_all <-  heatmap_cluster_dm_nr()[[2]]
     single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
     data_result_dm_nr()[single_cluster,]
   })
