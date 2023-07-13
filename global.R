@@ -36,3 +36,4 @@ library("shiny.info") # new added
 library("ggVennDiagram") # new added
 library("scales") # new added
 source("R/tab_tooltips.R")
+source("R/save_plot_module.R")
