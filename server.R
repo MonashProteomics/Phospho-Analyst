@@ -1,6 +1,6 @@
 #Define server logic to read selected file ----
 server <- function(input, output,session){
-  options(shiny.maxRequestSize=120*1024^2)## Set maximum upload size to 120MB
+  options(shiny.maxRequestSize=150*1024^2)## Set maximum upload size to 150MB
   
   # check validation of uploaded files
   start_analysis <- eventReactive(input$analyze,{ 
