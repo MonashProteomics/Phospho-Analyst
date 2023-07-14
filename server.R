@@ -487,7 +487,7 @@ server <- function(input, output,session){
     intensity_ints <- grep("^Intensity.", colnames(data_unique_names))
     
     ### remove columns of samples not in experiment design table
-    # new_intensity_names <- colnames(data_unique_names)[intensity_ints] %>% gsub("Intensity.", "", .) %>% gsub("Pharmacological_", "", .) # modified for demo
+    new_intensity_names <- colnames(data_unique_names)[intensity_ints] %>% gsub("Intensity.", "", .)
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
     # remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
@@ -2025,7 +2025,7 @@ server <- function(input, output,session){
     lfq_columns<-grep("LFQ.", colnames(data_unique))
     
     ### remove columns of samples not in experiment design table
-    # new_intensity_names <- colnames(data_unique[,lfq_columns]) %>% gsub("LFQ.intensity.", "", .) %>% gsub("Pharmacological_", "", .) # modified for demo
+    new_intensity_names <- colnames(data_unique[,lfq_columns]) %>% gsub("LFQ.intensity.", "", .)
     new_intensity_names[grepl("^[[:digit:]]", new_intensity_names)] <- paste("X",new_intensity_names,sep = '')
     
     # remove_columns <- new_intensity_names[make.names(delete_prefix(new_intensity_names)) %in% make.names(delete_prefix(exp_design()$label)) ==FALSE]
