@@ -1,11 +1,11 @@
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 ![GitHub](https://img.shields.io/github/license/Monashbioinformaticsplatform/LFQ-Analyst?color=brightgreen)
-![R](https://img.shields.io/badge/R-%3E3.4--3.5-brightgreen)
+![R](https://img.shields.io/badge/R-%3E4.2-brightgreen)
 
 # Phospho-Analyst
-A tool for analysing label-free quantitative proteomics dataset on both peptide and protein level https://phosphoanalyst.erc.monash.edu/
+A tool for analysing label-free quantitative proteomics dataset on both peptide and protein level https://analyst-suites.org/apps/phospho-analyst/
 
-![LFQ-analyst_pipeline](./www/Phospho_Analyst.svg)
+![TMT-analyst_pipeline](./www/Phospho_Analyst.svg)
 
 
 
@@ -43,8 +43,7 @@ A tool for analysing label-free quantitative proteomics dataset on both peptide 
   - A number of missing value imputation options including knn, Minpob etc.
 - Type of FDR correction
   -   Benjamin Hochberg (BH) method
-  -   t-statistics correction: Implemented in
-    [fdrtools](http://strimmerlab.org/software/fdrtool/)
+  -   t-statistics correction: Implemented in fdrtools
 - Option to include phosphosites/proteins identified/quantified with a single unique peptide.
 - Select how many clusters of differentially expressed phosphosites/proteins needed for the heatmap (default is 6)
 
@@ -94,7 +93,7 @@ A tool for analysing label-free quantitative proteomics dataset on both peptide 
 
 ### Local installation
 
-The current version of Phospho-Analyst is hosted on `R - 4.1.0`. The detailed dependency information can be found in the `dependencies.txt` file.
+The current version of Phospho-Analyst is hosted on `R - 4.2.1`. The required packages can be installed by running the **install.R**.
 
 Once installed all the dependencies following steps to run the server locally.
 
@@ -118,6 +117,11 @@ cd Phospho-Analyst
 Install & start Docker demon on your PC
 
 ```
+# Option one：
+## Pull Phospho-Analyst image from Docker Hub (From terminal)
+> docker pull haileyzhang/phospho-analyst:tagname
+
+# Option two：
 ## Clone the repository
 git clone https://github.com/MonashProteomics/Phospho-Analyst.git
 
@@ -125,24 +129,16 @@ git clone https://github.com/MonashProteomics/Phospho-Analyst.git
 cd Phospho-Analyst
 
 ## Build Phospho-Analyst (Any name after -t)
-> docker build -f Dockerfile -t Phospho-Analyst .
+> docker build -f Dockerfile -t phospho-analyst .
 
 ## Run Phospho-Analyst (From terminal)
 
-> docker run -p 3838:3838 Phospho-Analyst
+> docker run -p 3838:3838 phospho-analyst
 
 ## Open local interface
 
-https://localhost:3838/LFQ-Analyst
+https://localhost:3838/phospho-analyst
 
 
 ```
 
-
-
-If you are using more recent versions of R i.e `R  3.6.0`, please clone the **dev** branch. 
-
-```
-# cloning single branch
-git clone https://github.com/MonashBioinformaticsPlatform/LFQ-Analyst.git -b dev --single-branch /your_folder/location/
-```
