@@ -1120,8 +1120,8 @@ ui <- function(request){
                                                    ),
                                                    box(width =3,
                                                        title = "Options",
-                                                       tags$p("Pre-filter Results table and Venn plot by the Sliders of each condition/group below, 
-                                                              and/or the Filter Condition"),
+                                                       tags$p("Pre-filter Results table, Venn plot and Upset plot by the Sliders of each condition/group below, 
+                                                    and/or the Filter Condition"),
                                                        tags$hr(),
                                                        tags$h4("Number of replicates present"),
                                                        tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"), # hide minor ticks of a sliderInput
@@ -1149,33 +1149,30 @@ ui <- function(request){
                                                               downloadButton('download_attendance', 'Download Table'),
                                                               status = "success",
                                                               solidHeader = TRUE),
-                                                          box(width = NULL,
+                                                          tabBox(
+                                                            width = NULL,
+                                                            height = 620,
+                                                            tabPanel(
                                                               title = "Venn Plot",
                                                               tags$p('Select conditions/groups to generate the Venn plot. By default, more than three conditions/groups generates a 3D Venn plot, 
-                                                                     set Condition 3 as "NONE" to generate a 2D Venn plot'),
-                                                              column(12,
-                                                                     box(width = 4,id = "con_1",uiOutput("condition_1")),
-                                                                     box(width = 4,id = "con_2", uiOutput("condition_2")),
-                                                                     box(width = 4,id = "con_3", uiOutput("condition_3"))),
-                                                              column(12,
-                                                                     shinycssloaders::withSpinner(plotOutput("venn_plot"),
-                                                                                                  color = "#bec8da")),
-                                                              column(12, downloadButton('download_venn_svg', "Save svg")),
-                                                              status = "success",
-                                                              solidHeader = TRUE)
+                                                                     set last option as "NONE" to generate a 2D Venn plot'),
+                                                              fluidRow(
+                                                                box(width = 4,id = "con_1",uiOutput("condition_1")),
+                                                                box(width = 4,id = "con_2", uiOutput("condition_2")),
+                                                                box(width = 4,id = "con_3", uiOutput("condition_3"))
+                                                              ),
+                                                              shinycssloaders::withSpinner(plotOutput("venn_plot", height = 400),
+                                                                                           color = "#bec8da"),
+                                                              save_plot_left_ui("venn")
+                                                            ),
+                                                            tabPanel(
+                                                              title = "UpSet Plot",
+                                                              shinycssloaders::withSpinner(plotOutput("upset_plot",width = "100%", height = 520), 
+                                                                                           color = "#bec8da"),
+                                                              save_plot_left_ui("upset")
+                                                            )
+                                                          ) # Venn and UpSet tabBox close
                                                    ) # Venn plot column closed
-                                                   # 
-                                                   # 
-                                                   # 
-                                                   # 
-                                                   # 
-                                                   # box(width = 9,
-                                                   #     title = "Results Table",
-                                                   #     shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ"), color = "#bec8da"),
-                                                   #     downloadButton('download_attendance', 'Download Table'),
-                                                   #     status = "success",
-                                                   #     solidHeader = TRUE
-                                                   # )
                                                  ) # fuildrow close
                                                  )) # tabPanel list closed
                         ) # panelBox closed
@@ -2022,7 +2019,7 @@ ui <- function(request){
                                        fluidRow(
                                          box(width =3,
                                              title = "Options",
-                                             tags$p("Pre-filter Results table and Venn plot by the Sliders of each condition/group below, 
+                                             tags$p("Pre-filter Results table, Venn plot and Upset plot by the Sliders of each condition/group below, 
                                                     and/or the Filter Condition"),
                                              tags$hr(),
                                              tags$h4("Number of replicates present"),
@@ -2051,27 +2048,30 @@ ui <- function(request){
                                                     downloadButton('download_attendance_dm', 'Download Table'),
                                                     status = "success",
                                                     solidHeader = TRUE),
-                                                box(width = NULL,
+                                                tabBox(
+                                                  width = NULL,
+                                                  height = 620,
+                                                  tabPanel(
                                                     title = "Venn Plot",
-                                                    column(12,
-                                                           box(width = 4,id = "con_1_dm",uiOutput("condition_1_dm")),
-                                                           box(width = 4,id = "con_2_dm", uiOutput("condition_2_dm")),
-                                                           box(width = 4,id = "con_3_dm", uiOutput("condition_3_dm"))),
-                                                    column(12,
-                                                           shinycssloaders::withSpinner(plotOutput("venn_plot_dm"),
-                                                                                        color = "#bec8da")),
-                                                    column(12, downloadButton('download_venn_svg_dm', "Save svg")),
-                                                    status = "success",
-                                                    solidHeader = TRUE)
-                                         ) # Venn plot column closed
-                    
-                                         # box(width = 9,
-                                         #     title = "Results Table",
-                                         #     shinycssloaders::withSpinner(DT::dataTableOutput("contents_occ_dm"), color = "#bec8da"),
-                                         #     downloadButton('download_attendance_dm', 'Download Table'),
-                                         #     status = "success",
-                                         #     solidHeader = TRUE
-                                         # )
+                                                    tags$p('Select conditions/groups to generate the Venn plot. By default, more than three conditions/groups generates a 3D Venn plot, 
+                                                                     set last option as "NONE" to generate a 2D Venn plot'),
+                                                    fluidRow(
+                                                      box(width = 4,id = "con_1_dm",uiOutput("condition_1_dm")),
+                                                      box(width = 4,id = "con_2_dm", uiOutput("condition_2_dm")),
+                                                      box(width = 4,id = "con_3_dm", uiOutput("condition_3_dm"))
+                                                    ),
+                                                    shinycssloaders::withSpinner(plotOutput("venn_plot_dm", height = 400),
+                                                                                 color = "#bec8da"),
+                                                    save_plot_left_ui("venn_dm")
+                                                  ),
+                                                  tabPanel(
+                                                    title = "UpSet Plot",
+                                                    shinycssloaders::withSpinner(plotOutput("upset_plot_dm",width = "100%", height = 520), 
+                                                                                 color = "#bec8da"),
+                                                    save_plot_left_ui("upset_dm")
+                                                  )
+                                                ) # Venn and UpSet tabBox close
+                                         )
                                        ) # fuildrow close
                               ) # phosphosite(absence/presence) demo page closed
                               

@@ -35,5 +35,6 @@ library("shinycssloaders") # new added
 library("shiny.info") # new added
 library("ggVennDiagram") # new added
 library("scales") # new added
+library("UpSetR")
 source("R/tab_tooltips.R")
 source("R/save_plot_module.R")

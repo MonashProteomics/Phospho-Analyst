@@ -4523,7 +4523,8 @@ server <- function(input, output,session){
   output$condition_1 <- renderUI({
     if (!is.null(condition_list())){
       selectizeInput("condition_1",
-                     "Condition 1",
+                     # "Condition 1",
+                     NULL,
                      choices = condition_list(),
                      selected = condition_list()[1])
     }
@@ -4532,7 +4533,8 @@ server <- function(input, output,session){
   output$condition_2 <- renderUI({
     if (!is.null(condition_list()) & length(condition_list()) > 1){
       selectizeInput("condition_2",
-                     "Condition 2",
+                     # "Condition 2",
+                     NULL,
                      choices = condition_list()[condition_list() != input$condition_1],
                      selected = condition_list()[2])
     }
@@ -4541,7 +4543,8 @@ server <- function(input, output,session){
   output$condition_3 <- renderUI({
     if (!is.null(condition_list())  & length(condition_list()) > 2){
       selectizeInput("condition_3",
-                     "Condition 3",
+                     # "Condition 3",
+                     NULL,
                      choices = c("NONE", condition_list()[condition_list() != input$condition_1 & condition_list() != input$condition_2]),
                      selected = condition_list()[3])
     }
@@ -4588,6 +4591,38 @@ server <- function(input, output,session){
       dev.off()
     }
   )
+  
+  ## UpSet plot
+  upset_plot_input <- reactive({
+    df <- data_attendance_filtered()
+    df <- df[,grep("Phosphosite|#Occurences", colnames(df))]
+    df$Phosphosite <- make.unique(df$Phosphosite)
+    df <- df %>% column_to_rownames("Phosphosite")
+    
+    # change occurences to binary value
+    df <- ifelse(df != 0, 1,0)
+    
+    df <- data.frame(df)
+    colnames(df) <- colnames(df) %>% gsub("X.Occurences_","",.)
+    UpSetR::upset(df,nsets = ncol(df),
+                  mb.ratio = c(0.6, 0.4),
+                  text.scale = 1.5,
+                  point.size = 3,
+                  order.by = "freq",
+                  decreasing = T,
+                  nintersects = NA,
+                  mainbar.y.label = "#Phosphosites in intersection",
+                  sets.x.label = "#Phosphosites",
+                  set_size.scale_max = nrow(df),
+                  set_size.show = T
+    )
+  })
+  
+  output$upset_plot <- renderPlot({
+    upset_plot_input()
+  })
+  
+  save_plot_server("upset", upset_plot_input)
   
   
   #### Demo logic (Phosphosite)========== #############
@@ -8157,7 +8192,8 @@ server <- function(input, output,session){
   output$condition_1_dm <- renderUI({
     if (!is.null(condition_list_dm())){
       selectizeInput("condition_1_dm",
-                     "Condition 1",
+                     # "Condition 1",
+                     NULL,
                      choices = condition_list_dm(),
                      selected = condition_list_dm()[1])
     }
@@ -8166,7 +8202,8 @@ server <- function(input, output,session){
   output$condition_2_dm <- renderUI({
     if (!is.null(condition_list_dm()) & length(condition_list_dm()) > 1){
       selectizeInput("condition_2_dm",
-                     "Condition 2",
+                     # "Condition 2",
+                     NULL,
                      choices = condition_list_dm()[condition_list_dm() != input$condition_1_dm],
                      selected = condition_list_dm()[2])
     }
@@ -8175,7 +8212,8 @@ server <- function(input, output,session){
   output$condition_3_dm <- renderUI({
     if (!is.null(condition_list_dm())  & length(condition_list_dm()) > 2){
       selectizeInput("condition_3_dm",
-                     "Condition 3",
+                     # "Condition 3",
+                     NULL,
                      # choices = condition_list_dm(),
                      choices = c("NONE", condition_list_dm()[condition_list_dm() != input$condition_1_dm & condition_list_dm() != input$condition_2_dm]),
                      selected = condition_list_dm()[3])
@@ -8208,14 +8246,48 @@ server <- function(input, output,session){
     }
   })
   
-  output$download_venn_svg_dm<-downloadHandler(
-    filename = function() { "venn_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(venn_plot_input_dm())
-      dev.off()
-    }
-  )
+  # output$download_venn_svg_dm<-downloadHandler(
+  #   filename = function() { "venn_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(venn_plot_input_dm())
+  #     dev.off()
+  #   }
+  # )
+  save_plot_server("venn_dm", venn_plot_input_dm)
+  
+  ## UpSet plot
+  upset_plot_input_dm <- reactive({
+    df <- data_attendance_filtered_dm()
+    df <- df[,grep("Phosphosite|#Occurences", colnames(df))]
+    df$Phosphosite <- make.unique(df$Phosphosite)
+    df <- df %>% column_to_rownames("Phosphosite")
+
+    # change occurences to binary value
+    df <- ifelse(df != 0, 1,0)
+
+    df <- data.frame(df)
+    colnames(df) <- colnames(df) %>% gsub("X.Occurences_Pharmacological_","",.)
+    UpSetR::upset(df,nsets = ncol(df),
+                  mb.ratio = c(0.6, 0.4),
+                  text.scale = 1.5,
+                  point.size = 3,
+                  order.by = "freq",
+                  decreasing = T,
+                  nintersects = NA,
+                  mainbar.y.label = "#Phosphosites in intersection",
+                  sets.x.label = "#Phosphosites",
+                  set_size.scale_max = nrow(df),
+                  set_size.show = T
+    )
+  })
+  
+  output$upset_plot_dm <- renderPlot({
+    upset_plot_input_dm()
+  })
+  
+  save_plot_server("upset_dm", upset_plot_input_dm)
+  
   
   # # used for save demo data
   # observeEvent(input$analyze ,{
