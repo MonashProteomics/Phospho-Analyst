@@ -504,7 +504,10 @@ ui <- function(request){
                                                                                                 "KEGG"="KEGG_2021_Human",
                                                                                                 "Reactome"="Reactome_2022"))
                                                                            ),
-                                                                           column(12,actionButton("go_analysis", "Run Enrichment")),
+                                                                           column(12,
+                                                                                  column(6, actionButton("go_analysis", "Run Enrichment")),
+                                                                                  column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                                  ),
                                                                            column(12,
                                                                                   box(width = 12,uiOutput("spinner_go"),height = 400)
                                                                            ),
@@ -745,7 +748,10 @@ ui <- function(request){
                                                                                                 "Cellular Component"="GO_Cellular_Component_2021",
                                                                                                 "Biological Process"="GO_Biological_Process_2021"))
                                                                            ),
-                                                                           column(12,actionButton("go_analysis_pr", "Run Enrichment")),
+                                                                           column(12,
+                                                                                  column(6, actionButton("go_analysis_pr", "Run Enrichment")),
+                                                                                  column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                                  ),
                                                                            column(12,
                                                                                   box(width = 12,uiOutput("spinner_go_pr"),height = 400)
                                                                            ),
@@ -761,7 +767,10 @@ ui <- function(request){
                                                                                               c("KEGG"="KEGG_2021_Human",
                                                                                                 "Reactome"="Reactome_2022"))
                                                                            ),
-                                                                           column(12,actionButton("pathway_analysis_pr", "Run Enrichment")),
+                                                                           column(12,
+                                                                                  column(6, actionButton("pathway_analysis_pr", "Run Enrichment")),
+                                                                                  column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                                  ),
                                                                            column(12,
                                                                                   box(width = 12,uiOutput("spinner_pa_pr"),height = 400)
                                                                            ),
@@ -1073,7 +1082,10 @@ ui <- function(request){
                                                                                                 "KEGG"="KEGG_2021_Human",
                                                                                                 "Reactome"="Reactome_2022"))
                                                                            ),
-                                                                           column(12,actionButton("go_analysis_nr", "Run Enrichment")),
+                                                                           column(12,
+                                                                                  column(6, actionButton("go_analysis_nr", "Run Enrichment")),
+                                                                                  column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                                  ),
                                                                            column(12,
                                                                                   box(width = 12,uiOutput("spinner_go_nr"),height = 400)
                                                                            ),
@@ -1420,7 +1432,10 @@ ui <- function(request){
                                                                                       "KEGG"="KEGG_2021_Human",
                                                                                       "Reactome"="Reactome_2022"))
                                                                  ),
-                                                                 column(12,actionButton("go_analysis_dm", "Run Enrichment")),
+                                                                 column(12,
+                                                                        column(6, actionButton("go_analysis_dm", "Run Enrichment")),
+                                                                        column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                        ),
                                                                  column(12,
                                                                         box(width = 12,uiOutput("spinner_go_dm"),height = 400)
                                                                  ),
@@ -1645,7 +1660,10 @@ ui <- function(request){
                                                                                       "Cellular Component"="GO_Cellular_Component_2021",
                                                                                       "Biological Process"="GO_Biological_Process_2021"))
                                                                  ),
-                                                                 column(12,actionButton("go_analysis_dm_pr", "Run Enrichment")),
+                                                                 column(12,
+                                                                        column(6, actionButton("go_analysis_dm_pr", "Run Enrichment")),
+                                                                        column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                        ),
                                                                  column(12,
                                                                         box(width = 12,uiOutput("spinner_go_dm_pr"),height = 400)
                                                                  ),
@@ -1661,7 +1679,10 @@ ui <- function(request){
                                                                                     c("KEGG"="KEGG_2021_Human",
                                                                                       "Reactome"="Reactome_2022"))
                                                                  ),
-                                                                 column(12,actionButton("pathway_analysis_dm_pr", "Run Enrichment")),
+                                                                 column(12,
+                                                                        column(6, actionButton("pathway_analysis_dm_pr", "Run Enrichment")),
+                                                                        column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                        ),
                                                                  column(12,
                                                                         box(width = 12,uiOutput("spinner_pa_dm_pr"),height = 400)
                                                                  ),
@@ -1981,7 +2002,10 @@ ui <- function(request){
                                                                                "KEGG"="KEGG_2021_Human",
                                                                                "Reactome"="Reactome_2022"))
                                                           ),
-                                                          column(12,actionButton("go_analysis_dm_nr", "Run Enrichment")),
+                                                          column(12,
+                                                                 column(6, actionButton("go_analysis_dm_nr", "Run Enrichment")),
+                                                                 column(6, tags$b(" Note:")," Currently, only human data is supported")
+                                                                 ),
                                                           column(12,
                                                                  box(width = 12,uiOutput("spinner_go_dm_nr"),height = 400)
                                                           ),
