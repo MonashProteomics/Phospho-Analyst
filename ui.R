@@ -2162,13 +2162,8 @@ ui <- function(request){
                         tags$li("Ralf Schittenhelm: ralf.schittenhelm(at)monash.edu")
                       ),
                       
-                      #                       h4("How to Cite Phospho-Analyst?"),
-                      # 
-                      #                       div(p(HTML(paste0("Please Cite: Shah AD, Goode RJA, Huang C, Powell DR, Schittenhelm RB.
-                      # 		Phospho-Analyst: An easy-to-use interactive web-platform to analyze and
-                      # 		visualize proteomics data preprocessed with MaxQuant. DOI:",
-                      #                                         a(href = 'https://pubs.acs.org/doi/10.1021/acs.jproteome.9b00496',
-                      #                                           target='_blank', tags$b("0.1021/acs.jproteome.9b00496")))))),
+                      p("Or leave comments to our GitHub: " , tags$a(href = "https://github.com/MonashProteomics/Phospho-Analyst",
+                                                                    target = "_blank", tags$b("here."))),
                       
                       
                       h4("News and Updates"),
@@ -2176,7 +2171,11 @@ ui <- function(request){
                       tags$ul(
                         tags$li(p(HTML(paste0("Related App: ", tags$b("LFQ-Analyst")," for analysing label-free quantitative proteomics dataset",
                                               a(href = 'https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst',
-                                                target='_blank', tags$b("https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst"))))))
+                                                target='_blank', tags$b("https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst")))))),
+                        
+                        tags$li(p(HTML(paste0("Landing page ", tags$b("Analyst Suites")," for additional analyst Apps: ",
+                                              a(href = 'https://analyst-suites.org/',
+                                                target='_blank', tags$b("https://analyst-suites.org/"))))))
                         
                       ),   
                       width = 12,
