@@ -1039,3 +1039,93 @@ median_sub_function <- function(imputed_data){
                                         colData = colData(imputed_data))
   return(normalised_data)
 }
+
+#### ===== customized plot imputation and normalisation  ===== #####
+plot_imputation_new <- function(labels,se, ...) {
+  # Get arguments from call and remove "labels" from the list
+  call <- match.call()
+  call <- call[-1] 
+  arglist <- lapply(call[-1], function(x) x)
+  # var.names <- vapply(arglist, deparse, character(1))
+  arglist <- lapply(arglist, eval.parent, n = 2)
+  # names(arglist) <- var.names
+  names(arglist) <- labels
+
+  # Show error if inputs are not the required classes
+  lapply(arglist, function(x) {
+    assertthat::assert_that(inherits(x,
+                                     "SummarizedExperiment"),
+                            msg = "input objects need to be of class 'SummarizedExperiment'")
+    if (any(!c("label", "ID", "condition", "replicate") %in% colnames(colData(x)))) {
+      stop("'label', 'ID', 'condition' and/or 'replicate' ",
+           "columns are not present in (one of) the input object(s)",
+           "\nRun make_se() or make_se_parse() to obtain the required columns",
+           call. = FALSE)
+    }
+  })
+  
+  # Function to get a long data.frame of the assay data
+  # annotated with sample info
+  gather_join <- function(se) {
+    assay(se) %>%
+      data.frame() %>%
+      gather(ID, val) %>%
+      left_join(., data.frame(colData(se)), by = "ID")
+  }
+  
+  df <- map_df(arglist, gather_join, .id = "var") %>%
+    mutate(var = factor(var, levels = names(arglist)))
+  
+  # Density plots for different conditions with facet_wrap
+  # for original and imputed samles
+  ggplot(df, aes(val, col = condition)) +
+    geom_density(na.rm = TRUE) +
+    facet_wrap(~var, ncol = 1) +
+    labs(x = expression(log[2]~"Intensity"), y = "Density") +
+    theme_DEP1()
+}
+
+plot_normalization_new <- function(labels,se, ...) {
+  # Get arguments from call and remove "labels" from the list
+  call <- match.call()
+  call <- call[-1] 
+  arglist <- lapply(call[-1], function(x) x)
+  # var.names <- vapply(arglist, deparse, character(1))
+  arglist <- lapply(arglist, eval.parent, n = 2)
+  # names(arglist) <- var.names
+  names(arglist) <- labels
+  
+  # Show error if inputs are not the required classes
+  lapply(arglist, function(x) {
+    assertthat::assert_that(inherits(x,
+                                     "SummarizedExperiment"),
+                            msg = "input objects need to be of class 'SummarizedExperiment'")
+    if (any(!c("label", "ID", "condition", "replicate") %in% colnames(colData(x)))) {
+      stop("'label', 'ID', 'condition' and/or 'replicate' ",
+           "columns are not present in (one of) the input object(s)",
+           "\nRun make_se() or make_se_parse() to obtain the required columns",
+           call. = FALSE)
+    }
+  })
+  
+  # Function to get a long data.frame of the assay data
+  # annotated with sample info
+  gather_join <- function(se) {
+    assay(se) %>%
+      data.frame() %>%
+      gather(ID, val) %>%
+      left_join(., data.frame(colData(se)), by = "ID")
+  }
+  
+  df <- map_df(arglist, gather_join, .id = "var") %>%
+    mutate(var = factor(var, levels = names(arglist)))
+  
+  # Boxplots for conditions with facet_wrap
+  # for the original and normalized values
+  ggplot(df, aes(x = ID, y = val, fill = condition)) +
+    geom_boxplot(notch = TRUE, na.rm = TRUE) +
+    coord_flip() +
+    facet_wrap(~var, ncol = 1) +
+    labs(x = "", y = expression(log[2]~"Intensity")) +
+    theme_DEP1()
+}

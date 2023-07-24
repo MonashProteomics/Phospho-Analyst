@@ -803,8 +803,10 @@ server <- function(input, output,session){
   
   ## QC Inputs
   norm_input <- reactive({
-    plot_normalization(processed_data(),
-                       normalised_data())
+    # plot_normalization(processed_data(),
+    #                    normalised_data())
+    plot_normalization_new(labels = c("original", "normalised"), 
+                           processed_data(),normalised_data())
   })
   
   missval_input <- reactive({
@@ -816,8 +818,10 @@ server <- function(input, output,session){
   })
   
   imputation_input <- reactive({
-    plot_imputation(processed_data(),
-                    diff_all())
+    # plot_imputation(processed_data(),
+    #                 diff_all())
+    plot_imputation_new(labels = c("original", "imputed"), 
+                        processed_data(),diff_all())
   })
   
   p_hist_input <- reactive({
@@ -2190,8 +2194,10 @@ server <- function(input, output,session){
   
   ## QC Inputs
   norm_input_pr <- reactive({
-    plot_normalization(processed_data_pr(),
-                       normalised_data_pr())
+    # plot_normalization(processed_data_pr(),
+    #                    normalised_data_pr())
+    plot_normalization_new(labels = c("original", "normalised"), 
+                           processed_data_pr(),normalised_data_pr())
   })
   
   missval_input_pr <- reactive({
@@ -2203,8 +2209,10 @@ server <- function(input, output,session){
   })
   
   imputation_input_pr <- reactive({
-    plot_imputation(processed_data_pr(),
-                    diff_all_pr())
+    # plot_imputation(processed_data_pr(),
+    #                 diff_all_pr())
+    plot_imputation_new(labels = c("original", "imputed"), 
+                        processed_data_pr(),diff_all_pr())
   })
   
   p_hist_input_pr <- reactive({
@@ -3806,17 +3814,17 @@ server <- function(input, output,session){
   
   ## QC Inputs
   norm_input_nr <- reactive({
-    # plot_normalization(normalized_phospho_data(),
+    # plot_normalization(normalised_data(),
     #                    normalised_data_nr())
-    plot_normalization(normalised_data(),
-                       normalised_data_nr())
+    plot_normalization_new(labels = c("normal", "corrected"), 
+                           normalised_data(),normalised_data_nr())
   })
   
   imputation_input_nr <- reactive({
-    # plot_imputation(normalized_phospho_data(),
-    #                 diff_all_nr())
-    plot_imputation(imputed_data(),
-                    imputed_data_nr())
+    # plot_imputation(imputed_data(),
+    #                 imputed_data_nr())
+    plot_imputation_new(labels = c("normal", "corrected"), 
+                        imputed_data(),imputed_data_nr())
   })
   
   correlation_input_nr<-reactive({
@@ -4982,8 +4990,10 @@ server <- function(input, output,session){
   
   ## QC Inputs
   norm_input_dm <- reactive({
-    plot_normalization(processed_data_dm(),
-                       normalised_data_dm())
+    # plot_normalization(processed_data_dm(),
+    #                    normalised_data_dm())
+    plot_normalization_new(labels = c("original", "normalised"), 
+                           processed_data_dm(),normalised_data_dm())
   })
   
   missval_input_dm <- reactive({
@@ -4995,8 +5005,10 @@ server <- function(input, output,session){
   })
   
   imputation_input_dm <- reactive({
-    plot_imputation(processed_data_dm(),
-                    diff_all_dm())
+    # plot_imputation(processed_data_dm(),
+    #                 diff_all_dm())
+    plot_imputation_new(labels = c("original", "imputed"), 
+                        processed_data_dm(),diff_all_dm())
   })
   
   p_hist_input_dm <- reactive({
@@ -6192,8 +6204,10 @@ server <- function(input, output,session){
   
   ## QC Inputs
   norm_input_dm_pr <- reactive({
-    plot_normalization(processed_data_dm_pr(),
-                       normalised_data_dm_pr())
+    # plot_normalization(processed_data_dm_pr(),
+    #                    normalised_data_dm_pr())
+    plot_normalization_new(labels = c("original", "normalised"), 
+                           processed_data_dm_pr(),normalised_data_dm_pr())
   })
   
   missval_input_dm_pr <- reactive({
@@ -6205,8 +6219,10 @@ server <- function(input, output,session){
   })
   
   imputation_input_dm_pr <- reactive({
-    plot_imputation(processed_data_dm_pr(),
-                    diff_all_dm_pr())
+    # plot_imputation(processed_data_dm_pr(),
+    #                 diff_all_dm_pr())
+    plot_imputation_new(labels = c("original", "imputed"), 
+                        processed_data_dm_pr(),diff_all_dm_pr())
   })
   
   p_hist_input_dm_pr <- reactive({
@@ -7632,13 +7648,17 @@ server <- function(input, output,session){
   
   ## QC Inputs
   norm_input_dm_nr <- reactive({
-    plot_normalization(normalised_data_dm(),
-                       normalised_data_dm_nr())
+    # plot_normalization(normalised_data_dm(),
+    #                    normalised_data_dm_nr())
+    plot_normalization_new(labels = c("normal", "corrected"), 
+                           normalised_data_dm(),normalised_data_dm_nr())
   })
   
   imputation_input_dm_nr <- reactive({
-    plot_imputation(imputed_data_dm(),
-                    imputed_data_dm_nr())
+    # plot_imputation(imputed_data_dm(),
+    #                 imputed_data_dm_nr())
+    plot_imputation_new(labels = c("normal", "corrected"), 
+                        imputed_data_dm(),imputed_data_dm_nr())
   })
   
   correlation_input_dm_nr<-reactive({
