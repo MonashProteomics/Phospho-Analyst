@@ -1129,7 +1129,7 @@ ui <- function(request){
                                                             width = NULL,
                                                             height = 620,
                                                             tabPanel(
-                                                              title = "Venn Plot",
+                                                              tooltips_ui("Venn Plot"),
                                                               tags$p('Select conditions/groups to generate the Venn plot. By default, more than three conditions/groups generates a 3D Venn plot, 
                                                                      set last option as "NONE" to generate a 2D Venn plot'),
                                                               fluidRow(
@@ -1142,7 +1142,7 @@ ui <- function(request){
                                                               save_plot_left_ui("venn")
                                                             ),
                                                             tabPanel(
-                                                              title = "UpSet Plot",
+                                                              tooltips_ui("UpSet Plot"),
                                                               shinycssloaders::withSpinner(plotOutput("upset_plot",width = "100%", height = 520), 
                                                                                            color = "#bec8da"),
                                                               save_plot_left_ui("upset")
@@ -2033,7 +2033,7 @@ ui <- function(request){
                                                   width = NULL,
                                                   height = 620,
                                                   tabPanel(
-                                                    title = "Venn Plot",
+                                                    tooltips_ui("Venn Plot"),
                                                     tags$p('Select conditions/groups to generate the Venn plot. By default, more than three conditions/groups generates a 3D Venn plot, 
                                                                      set last option as "NONE" to generate a 2D Venn plot'),
                                                     fluidRow(
@@ -2046,7 +2046,7 @@ ui <- function(request){
                                                     save_plot_left_ui("venn_dm")
                                                   ),
                                                   tabPanel(
-                                                    title = "UpSet Plot",
+                                                    tooltips_ui("UpSet Plot"),
                                                     shinycssloaders::withSpinner(plotOutput("upset_plot_dm",width = "100%", height = 520), 
                                                                                  color = "#bec8da"),
                                                     save_plot_left_ui("upset_dm")

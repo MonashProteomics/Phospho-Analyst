@@ -41,7 +41,11 @@ tooltips_ui <- function(tab){
                                     and the size of points represents the mean intensity values of a same phosphosite",
                   # special on Phosphosite(corrected) page
                   "Normalization (normal vs corrected)" = "These two plots represent the normal and corrected phosphosite intensity distribution in each sample",
-                  "Imputation (normal vs corrected)" = "A density plot of phosphosite intensity (log2) distribution for each condition after and before protein abundances correction being performed"
+                  "Imputation (normal vs corrected)" = "A density plot of phosphosite intensity (log2) distribution for each condition after and before protein abundances correction being performed",
+                  
+                  # Absence/Presence page
+                  "Venn Plot" = "Illustrates relationships between two or three selected conditions, colored by the counted number of phosphosites or proteins",
+                  "UpSet Plot" = "Visualize intersections between intensity columns. For each sample(row), the cells that are part of an intersection are filled in"
                   
   )
   span(tab, title = title,`data-toggle`="tooltip")
