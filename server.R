@@ -1287,39 +1287,65 @@ server <- function(input, output,session){
     }
   })
   
-  output$downloadAbundance_rank <- downloadHandler(
-    filename = function() {
-      "Abundance_rank.svg"
-    },
-    content = function(file) {
-      if(is.null(input$contents_rows_selected)){
-        p <- abundance_rank_input()
-      }
-      else{
-        p <- abundance_rank_input_selected()
-      }
-      svg(file, width = 8, height = 8)
-      print(p)
-      dev.off()
+  # output$downloadAbundance_rank <- downloadHandler(
+  #   filename = function() {
+  #     "Abundance_rank.svg"
+  #   },
+  #   content = function(file) {
+  #     if(is.null(input$contents_rows_selected)){
+  #       p <- abundance_rank_input()
+  #     }
+  #     else{
+  #       p <- abundance_rank_input_selected()
+  #     }
+  #     svg(file, width = 8, height = 8)
+  #     print(p)
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$downloadAbundance_comp <- downloadHandler(
+  #   filename = function() {
+  #     paste0("Abundance_", input$abundance_cntrst, ".svg")
+  #   },
+  #   content = function(file) {
+  #     if(is.null(input$contents_rows_selected)){
+  #       p <- abundance_comp_input()
+  #     }
+  #     else{
+  #       p <- abundance_comp_input_selected()
+  #     }
+  #     svg(file, width = 8, height = 8)
+  #     print(p)
+  #     dev.off()
+  #   }
+  # )
+  saved_abundance_rank <- reactive({
+    if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
+      p <- abundance_rank_input()
     }
-  )
+    else{
+      p <- abundance_rank_input_selected()
+    }
+    return(p)
+  })
   
-  output$downloadAbundance_comp <- downloadHandler(
-    filename = function() {
-      paste0("Abundance_", input$abundance_cntrst, ".svg")
-    },
-    content = function(file) {
-      if(is.null(input$contents_rows_selected)){
-        p <- abundance_comp_input()
-      }
-      else{
-        p <- abundance_comp_input_selected()
-      }
-      svg(file, width = 8, height = 8)
-      print(p)
-      dev.off()
+  saved_abundance_comp <- reactive({
+    if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
+      p <- abundance_comp_input()
     }
-  )
+    else{
+      p <- abundance_comp_input_selected()
+    }
+    return(p)
+  })
+  
+  abundance_cntrst <- reactive({
+    input$abundance_cntrst
+  })
+  
+  save_plot_server("abundance_rank", saved_abundance_rank)
+  save_plot_server("abundance_comp", saved_abundance_comp, abundance_cntrst)
   
   ## Select rows dynamically in abundance rank plot
   observeEvent(input$protein_brush_rank,{
@@ -1405,58 +1431,40 @@ server <- function(input, output,session){
                    columnDefs= list(list(width = '400px', targets = c(-1))))
     )
   })
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  ### QC Outputs
+
+  ## QC Outputs
   output$sample_corr <-renderPlot({
     correlation_input()
   })
-  
+
   output$sample_cvs <- renderPlot({
     cvs_input()
   })
-  
+
   output$norm <- renderPlot({
     norm_input()
   })
-  
+
   output$missval <- renderPlot({
     missval_input()
   })
-  
+
   output$detect <- renderPlot({
     detect_input()
   })
-  
+
   output$imputation <- renderPlot({
     imputation_input()
   })
-  
+
   # output$p_hist <- renderPlot({
   #   p_hist_input()
   # })
-  
+
   output$numbers <- renderPlot({
     numbers_input()
   })
-  
+
   output$coverage <- renderPlot({
     coverage_input()
   })
@@ -1534,45 +1542,66 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  output$download_hm_svg<-downloadHandler(
-    filename = function() { "heatmap.svg" }, 
-    content = function(file) {
-      heatmap_plot<-DEP::plot_heatmap(dep(),"centered", k=6, indicate = "condition")
-      svg(file)
-      print(heatmap_plot)
-      dev.off()
+  # output$download_hm_svg<-downloadHandler(
+  #   filename = function() { "heatmap.svg" }, 
+  #   content = function(file) {
+  #     heatmap_plot<-DEP::plot_heatmap(dep(),"centered", k=6, indicate = "condition")
+  #     svg(file)
+  #     print(heatmap_plot)
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$downloadVolcano <- downloadHandler(
+  #   filename = function() {
+  #     paste0("Volcano_", input$volcano_cntrst, ".pdf")
+  #   },
+  #   content = function(file) {
+  #     pdf(file)
+  #     if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
+  #       p <- volcano_input()
+  #     }
+  #     else{
+  #       p <- volcano_input_selected()
+  #     }
+  #     print(p)
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # 
+  # ## Protein plot download
+  # output$downloadProtein <- downloadHandler(
+  #   filename = function() {
+  #     paste0(input$type,".pdf")
+  #   },
+  #   content = function(file) {
+  #     pdf(file)
+  #     print(protein_input())
+  #     dev.off()
+  #   }
+  # )
+  saved_volcano <- reactive({
+    if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
+      p <- volcano_input()
     }
-  )
-  
-  output$downloadVolcano <- downloadHandler(
-    filename = function() {
-      paste0("Volcano_", input$volcano_cntrst, ".pdf")
-    },
-    content = function(file) {
-      pdf(file)
-      if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
-        p <- volcano_input()
-      }
-      else{
-        p <- volcano_input_selected()
-      }
-      print(p)
-      dev.off()
+    else{
+      p <- volcano_input_selected()
     }
-  )
+    return(p)
+  })
   
+  volcano_cntrst <- reactive({
+    input$volcano_cntrst
+  })
   
-  ## Protein plot download
-  output$downloadProtein <- downloadHandler(
-    filename = function() {
-      paste0(input$type,".pdf")
-    },
-    content = function(file) {
-      pdf(file)
-      print(protein_input())
-      dev.off()
-    }
-  )
+  type <- reactive({
+    input$type
+  })
+  
+  save_plot_server("heatmap", heatmap_input)
+  save_plot_server("volcano", saved_volcano, volcano_cntrst)
+  save_plot_server("protein_plot", protein_input,type)
   
   ###### ==== DOWNLOAD GO TABLE ==== ####
   output$downloadGO <- downloadHandler(
@@ -1659,79 +1688,88 @@ server <- function(input, output,session){
     }
   )
   
-  ###### ==== DOWNLOAD QC plots svg ==== ####
+  ###### ==== DOWNLOAD QC plots ==== ####
   
-  output$download_pca_svg<-downloadHandler(
-    filename = function() { "PCA_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(pca_input())
-      dev.off()
-    }
-  )
+  # output$download_pca_svg<-downloadHandler(
+  #   filename = function() { "PCA_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(pca_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_corr_svg<-downloadHandler(
+  #   filename = function() { "Correlation_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(correlation_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_cvs_svg<-downloadHandler(
+  #   filename = function() { "Sample_CV.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(cvs_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_num_svg<-downloadHandler(
+  #   filename = function() { "Phosphosites_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(numbers_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_cov_svg<-downloadHandler(
+  #   filename = function() { "Coverage_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(coverage_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_norm_svg<-downloadHandler(
+  #   filename = function() { "Normalization_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(norm_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_missval_svg<-downloadHandler(
+  #   filename = function() { "Missing_value_heatmap.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(missval_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_imp_svg<-downloadHandler(
+  #   filename = function() { "Imputation_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(imputation_input())
+  #     dev.off()
+  #   }
+  # )
   
-  output$download_corr_svg<-downloadHandler(
-    filename = function() { "Correlation_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(correlation_input())
-      dev.off()
-    }
-  )
-  
-  output$download_cvs_svg<-downloadHandler(
-    filename = function() { "Sample_CV.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(cvs_input())
-      dev.off()
-    }
-  )
-  
-  output$download_num_svg<-downloadHandler(
-    filename = function() { "Phosphosites_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(numbers_input())
-      dev.off()
-    }
-  )
-  
-  output$download_cov_svg<-downloadHandler(
-    filename = function() { "Coverage_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(coverage_input())
-      dev.off()
-    }
-  )
-  
-  output$download_norm_svg<-downloadHandler(
-    filename = function() { "Normalization_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(norm_input())
-      dev.off()
-    }
-  )
-  
-  output$download_missval_svg<-downloadHandler(
-    filename = function() { "Missing_value_heatmap.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(missval_input())
-      dev.off()
-    }
-  )
-  
-  output$download_imp_svg<-downloadHandler(
-    filename = function() { "Imputation_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(imputation_input())
-      dev.off()
-    }
-  )
+  save_plot_server("pca", pca_input)
+  save_plot_server("correlation", correlation_input)
+  save_plot_server("cvs", cvs_input)
+  save_plot_server("numbers", numbers_input)
+  save_plot_server("coverage", coverage_input)
+  save_plot_server("normalization", norm_input)
+  save_plot_server("missing-values", missval_input)
+  save_plot_server("imputation", imputation_input)
   
   
   #### Protein page logic ========== #############
@@ -2551,47 +2589,69 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  output$download_hm_svg_pr<-downloadHandler(
-    filename = function() { "heatmap.svg" }, 
-    content = function(file) {
-      heatmap_plot_pr<-DEP::plot_heatmap(dep_pr(),"centered", k=6, indicate = "condition")
-      svg(file)
-      print(heatmap_plot_pr)
-      dev.off()
-    }
-  )
+  # output$download_hm_svg_pr<-downloadHandler(
+  #   filename = function() { "heatmap.svg" }, 
+  #   content = function(file) {
+  #     heatmap_plot_pr<-DEP::plot_heatmap(dep_pr(),"centered", k=6, indicate = "condition")
+  #     svg(file)
+  #     print(heatmap_plot_pr)
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$downloadVolcano_pr <- downloadHandler(
+  #   filename = function() {
+  #     paste0("Volcano_", input$volcano_cntrst_pr, ".pdf")
+  #   },
+  #   content = function(file) {
+  #     pdf(file)
+  #     # print(volcano_input_selected_pr())
+  #     # dev.off()
+  #     if(is.null(input$contents_pr_rows_selected) & is.null(input$protein_brush_pr)){
+  #       p <- volcano_input_pr()
+  #     }
+  #     else{
+  #       p <- volcano_input_selected_pr()
+  #     }
+  #     print(p)
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # 
+  # ## Protein plot download
+  # output$downloadProtein_pr <- downloadHandler(
+  #   filename = function() {
+  #     paste0(input$type_pr,".pdf")
+  #   },
+  #   content = function(file) {
+  #     pdf(file)
+  #     print(protein_input_pr())
+  #     dev.off()
+  #   }
+  # )
   
-  output$downloadVolcano_pr <- downloadHandler(
-    filename = function() {
-      paste0("Volcano_", input$volcano_cntrst_pr, ".pdf")
-    },
-    content = function(file) {
-      pdf(file)
-      # print(volcano_input_selected_pr())
-      # dev.off()
-      if(is.null(input$contents_pr_rows_selected) & is.null(input$protein_brush_pr)){
-        p <- volcano_input_pr()
-      }
-      else{
-        p <- volcano_input_selected_pr()
-      }
-      print(p)
-      dev.off()
+  saved_volcano_pr <- reactive({
+    if(is.null(input$contents_pr_rows_selected) & is.null(input$protein_brush_pr)){
+      p <- volcano_input_pr()
     }
-  )
-  
-  
-  ## Protein plot download
-  output$downloadProtein_pr <- downloadHandler(
-    filename = function() {
-      paste0(input$type_pr,".pdf")
-    },
-    content = function(file) {
-      pdf(file)
-      print(protein_input_pr())
-      dev.off()
+    else{
+      p <- volcano_input_selected_pr()
     }
-  )
+    return(p)
+  })
+  
+  volcano_cntrst_pr <- reactive({
+    input$volcano_cntrst_pr
+  })
+  
+  type_pr <- reactive({
+    input$type_pr
+  })
+  
+  save_plot_server("heatmap_pr", heatmap_input_pr)
+  save_plot_server("volcano_pr", saved_volcano_pr, volcano_cntrst_pr)
+  save_plot_server("protein_plot_pr", protein_input_pr,type_pr)
   
   ###### ==== DOWNLOAD GO TABLE ==== ####
   output$downloadGO_pr <- downloadHandler(
@@ -2666,77 +2726,86 @@ server <- function(input, output,session){
   
   ###### ==== DOWNLOAD QC plots svg (proteinGroup)==== ####
   
-  output$download_pca_svg_pr<-downloadHandler(
-    filename = function() { "PCA_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(pca_input_pr())
-      dev.off()
-    }
-  )
+  # output$download_pca_svg_pr<-downloadHandler(
+  #   filename = function() { "PCA_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(pca_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_corr_svg_pr<-downloadHandler(
+  #   filename = function() { "Correlation_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(correlation_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_cvs_svg_pr<-downloadHandler(
+  #   filename = function() { "Sample_CV.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(cvs_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_num_svg_pr<-downloadHandler(
+  #   filename = function() { "Proteins_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(numbers_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_cov_svg_pr<-downloadHandler(
+  #   filename = function() { "Coverage_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(coverage_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_norm_svg_pr<-downloadHandler(
+  #   filename = function() { "Normalization_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(norm_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_missval_svg_pr<-downloadHandler(
+  #   filename = function() { "Missing_value_heatmap.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(missval_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_imp_svg_pr<-downloadHandler(
+  #   filename = function() { "Imputation_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(imputation_input_pr())
+  #     dev.off()
+  #   }
+  # )
   
-  output$download_corr_svg_pr<-downloadHandler(
-    filename = function() { "Correlation_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(correlation_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_cvs_svg_pr<-downloadHandler(
-    filename = function() { "Sample_CV.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(cvs_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_num_svg_pr<-downloadHandler(
-    filename = function() { "Proteins_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(numbers_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_cov_svg_pr<-downloadHandler(
-    filename = function() { "Coverage_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(coverage_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_norm_svg_pr<-downloadHandler(
-    filename = function() { "Normalization_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(norm_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_missval_svg_pr<-downloadHandler(
-    filename = function() { "Missing_value_heatmap.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(missval_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_imp_svg_pr<-downloadHandler(
-    filename = function() { "Imputation_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(imputation_input_pr())
-      dev.off()
-    }
-  )
+  save_plot_server("pca_pr", pca_input_pr)
+  save_plot_server("correlation_pr", correlation_input_pr)
+  save_plot_server("cvs_pr", cvs_input_pr)
+  save_plot_server("numbers_pr", numbers_input_pr)
+  save_plot_server("coverage_pr", coverage_input_pr)
+  save_plot_server("normalization_pr", norm_input_pr)
+  save_plot_server("missing-values_pr", missval_input_pr)
+  save_plot_server("imputation_pr", imputation_input_pr)
   
   #### Comparison page logic ========== #############
   ####======= Render Functions
@@ -3165,129 +3234,150 @@ server <- function(input, output,session){
   
   ###### ==== DOWNLOAD plots svg (Comparison) ==== ####
   
-  output$download_scatter_svg <- downloadHandler(
-    filename = function() {
-      paste0("Scatter_", input$volcano_comp, ".svg")
-    },
-    content = function(file) {
-      svg(file)
-      print(scatter_plot())
-      dev.off()
-    }
-  )
+  # output$download_scatter_svg <- downloadHandler(
+  #   filename = function() {
+  #     paste0("Scatter_", input$volcano_comp, ".svg")
+  #   },
+  #   content = function(file) {
+  #     svg(file)
+  #     print(scatter_plot())
+  #     dev.off()
+  #   }
+  # )
+# 
+#   output$download_pca_svg_c<-downloadHandler(
+#     filename = function() { "PCA_plot.svg" }, 
+#     content = function(file) {
+#       svg(file)
+#       print(pca_input_c())
+#       dev.off()
+#     }
+#   )
+#   
+#   output$download_corr_svg_c<-downloadHandler(
+#     filename = function() { "Correlation_plot.pdf_Phopspho.svg" }, 
+#     content = function(file) {
+#       svg(file)
+#       print(correlation_input())
+#       dev.off()
+#     }
+#   )
+#   
+#   output$download_corr_svg_c_1<-downloadHandler(
+#     filename = function() { "Correlation_plot.pdf_Protein.svg" }, 
+#     content = function(file) {
+#       svg(file)
+#       print(correlation_input_pr())
+#       dev.off()
+#     }
+#   )
+# 
+#   output$download_cvs_svg_c<-downloadHandler(
+#     filename = function() { "Sample_CV.svg" }, 
+#     content = function(file) {
+#       svg(file)
+#       print(sample_cvs_input_c())
+#       dev.off()
+#     }
+#   )
+#   
+#   output$download_num_svg_c<-downloadHandler(
+#     filename = function() { "Numbers_plot.svg" }, 
+#     content = function(file) {
+#       svg(file)
+#       print(numbers_input_c())
+#       dev.off()
+#     }
+#   )
+  # 
+  # output$download_cov_svg_c<-downloadHandler(
+  #   filename = function() { "Coverage_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(coverage_input_c())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_norm_svg_c<-downloadHandler(
+  #   filename = function() { "Normalization_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(norm_input_c())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_missval_svg_c<-downloadHandler(
+  #   filename = function() { "Missing_value_heatmap_Phopspho.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(missval_input())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_missval_svg_c_1<-downloadHandler(
+  #   filename = function() { "Missing_value_heatmap_Protein.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(missval_input_pr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_imp_svg_c<-downloadHandler(
+  #   filename = function() { "Imputation_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(imputation_input_c())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_inter_svg_c<-downloadHandler(
+  #   filename = function() {
+  #     paste0("Interaction_plot_", input$selected_gene, ".svg")
+  #   },
+  #   content = function(file) {
+  #     svg(file)
+  #     print(combined_inter())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_point_svg_c<-downloadHandler(
+  #   filename = function() {
+  #     paste0("Bubble_plot_", input$selected_gene, ".svg")
+  #   },
+  #   content = function(file) {
+  #     svg(file)
+  #     print(combined_point())
+  #     dev.off()
+  #   }
+  # )
   
-  output$download_pca_svg_c<-downloadHandler(
-    filename = function() { "PCA_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(pca_input_c())
-      dev.off()
-    }
-  )
+  # scatter plot download
+  volcano_comp <- reactive({
+    input$volcano_comp
+  })
+  save_plot_server("scatter_plot", scatter_plot, volcano_comp)
   
-  output$download_corr_svg_c<-downloadHandler(
-    filename = function() { "Correlation_plot.pdf_Phopspho.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(correlation_input())
-      dev.off()
-    }
-  )
+  # QC plots
+  save_plot_server("pca_plot_c",pca_input_c)
+  save_plot_server("Phospho-correlation", correlation_input)
+  save_plot_server("Protein-correlation", correlation_input_pr)
+  save_plot_server("cvs_c", sample_cvs_input_c)
+  save_plot_server("numbers_c", numbers_input_c)
+  save_plot_server("coverage_c", coverage_input_c)
+  save_plot_server("normalization_c", norm_input_c)
+  save_plot_server("Phospho-missing-values", missval_input)
+  save_plot_server("Protein-missing-values", missval_input_pr)
+  save_plot_server("imputation_c", imputation_input_c)
   
-  output$download_corr_svg_c_1<-downloadHandler(
-    filename = function() { "Correlation_plot.pdf_Protein.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(correlation_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_cvs_svg_c<-downloadHandler(
-    filename = function() { "Sample_CV.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(sample_cvs_input_c())
-      dev.off()
-    }
-  )
-  
-  output$download_num_svg_c<-downloadHandler(
-    filename = function() { "Numbers_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(numbers_input_c())
-      dev.off()
-    }
-  )
-  
-  output$download_cov_svg_c<-downloadHandler(
-    filename = function() { "Coverage_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(coverage_input_c())
-      dev.off()
-    }
-  )
-  
-  output$download_norm_svg_c<-downloadHandler(
-    filename = function() { "Normalization_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(norm_input_c())
-      dev.off()
-    }
-  )
-  
-  output$download_missval_svg_c<-downloadHandler(
-    filename = function() { "Missing_value_heatmap_Phopspho.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(missval_input())
-      dev.off()
-    }
-  )
-  
-  output$download_missval_svg_c_1<-downloadHandler(
-    filename = function() { "Missing_value_heatmap_Protein.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(missval_input_pr())
-      dev.off()
-    }
-  )
-  
-  output$download_imp_svg_c<-downloadHandler(
-    filename = function() { "Imputation_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(imputation_input_c())
-      dev.off()
-    }
-  )
-  
-  output$download_inter_svg_c<-downloadHandler(
-    filename = function() {
-      paste0("Interaction_plot_", input$selected_gene, ".svg")
-    },
-    content = function(file) {
-      svg(file)
-      print(combined_inter())
-      dev.off()
-    }
-  )
-  
-  output$download_point_svg_c<-downloadHandler(
-    filename = function() {
-      paste0("Bubble_plot_", input$selected_gene, ".svg")
-    },
-    content = function(file) {
-      svg(file)
-      print(combined_point())
-      dev.off()
-    }
-  )
-  
+  #  side-by-side interactive plots
+  save_plot_server("interaction_comp",combined_inter)
+  save_plot_server("bubble_comp",combined_point)
   
   #### Phosphosite(corrected) page logic ========== #############
   ####======= Render Functions
@@ -4142,47 +4232,70 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
-  output$download_hm_svg_nr<-downloadHandler(
-    filename = function() { "heatmap.svg" }, 
-    content = function(file) {
-      heatmap_plot_nr<-DEP::plot_heatmap(dep_nr(),"centered", k=6, indicate = "condition")
-      svg(file)
-      print(heatmap_plot_nr)
-      dev.off()
-    }
-  )
+  # output$download_hm_svg_nr<-downloadHandler(
+  #   filename = function() { "heatmap.svg" }, 
+  #   content = function(file) {
+  #     heatmap_plot_nr<-DEP::plot_heatmap(dep_nr(),"centered", k=6, indicate = "condition")
+  #     svg(file)
+  #     print(heatmap_plot_nr)
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$downloadVolcano_nr <- downloadHandler(
+  #   filename = function() {
+  #     paste0("Volcano_", input$volcano_cntrst_nr, ".pdf")
+  #   },
+  #   content = function(file) {
+  #     pdf(file)
+  #     # print(volcano_input_selected_nr())
+  #     # dev.off()
+  #     if(is.null(input$contents_nr_rows_selected) & is.null(input$protein_brush_nr)){
+  #       p <- volcano_input_nr()
+  #     }
+  #     else{
+  #       p <- volcano_input_selected_nr()
+  #     }
+  #     print(p)
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # 
+  # ## Protein plot download
+  # output$downloadProtein_nr <- downloadHandler(
+  #   filename = function() {
+  #     paste0(input$type_nr,".pdf")
+  #   },
+  #   content = function(file) {
+  #     pdf(file)
+  #     print(protein_input_nr())
+  #     dev.off()
+  #   }
+  # )
   
-  output$downloadVolcano_nr <- downloadHandler(
-    filename = function() {
-      paste0("Volcano_", input$volcano_cntrst_nr, ".pdf")
-    },
-    content = function(file) {
-      pdf(file)
-      # print(volcano_input_selected_nr())
-      # dev.off()
-      if(is.null(input$contents_nr_rows_selected) & is.null(input$protein_brush_nr)){
-        p <- volcano_input_nr()
-      }
-      else{
-        p <- volcano_input_selected_nr()
-      }
-      print(p)
-      dev.off()
+  ### === Results Plot Download ==== ####
+  saved_volcano_nr <- reactive({
+    if(is.null(input$contents_nr_rows_selected) & is.null(input$protein_brush_nr)){
+      p <- volcano_input_nr()
     }
-  )
-  
-  
-  ## Protein plot download
-  output$downloadProtein_nr <- downloadHandler(
-    filename = function() {
-      paste0(input$type_nr,".pdf")
-    },
-    content = function(file) {
-      pdf(file)
-      print(protein_input_nr())
-      dev.off()
+    else{
+      p <- volcano_input_selected_nr()
     }
-  )
+    return(p)
+  })
+  
+  volcano_cntrst_nr <- reactive({
+    input$volcano_cntrst_nr
+  })
+  
+  type_nr <- reactive({
+    input$type_nr
+  })
+  
+  save_plot_server("heatmap_nr", heatmap_input_nr)
+  save_plot_server("volcano_nr", saved_volcano_nr, volcano_cntrst_nr)
+  save_plot_server("protein_plot_nr", protein_input_nr,type_nr)
   
   ###### ==== DOWNLOAD GO TABLE ==== ####
   output$downloadGO_nr <- downloadHandler(
@@ -4256,78 +4369,56 @@ server <- function(input, output,session){
   )
   
   ###### ==== DOWNLOAD QC plots svg (phosphosite_corrected)==== ####
-  
-  output$download_pca_svg_nr<-downloadHandler(
-    filename = function() { "PCA_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(pca_input_nr())
-      dev.off()
-    }
-  )
-  
-  output$download_corr_svg_nr<-downloadHandler(
-    filename = function() { "Correlation_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(correlation_input_nr())
-      dev.off()
-    }
-  )
-  
-  output$download_cvs_svg_nr<-downloadHandler(
-    filename = function() { "Sample_CV.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(cvs_input_nr())
-      dev.off()
-    }
-  )
-  
-  # output$download_num_svg<-downloadHandler(
-  #   filename = function() { "Proteins_plot.svg" }, 
+ 
+  # output$download_pca_svg_nr<-downloadHandler(
+  #   filename = function() { "PCA_plot.svg" }, 
   #   content = function(file) {
   #     svg(file)
-  #     print(numbers_input_pr())
+  #     print(pca_input_nr())
   #     dev.off()
   #   }
   # )
-  
-  # output$download_cov_svg<-downloadHandler(
-  #   filename = function() { "Coverage_plot.svg" }, 
+  # 
+  # output$download_corr_svg_nr<-downloadHandler(
+  #   filename = function() { "Correlation_plot.svg" }, 
   #   content = function(file) {
   #     svg(file)
-  #     print(coverage_input_pr())
+  #     print(correlation_input_nr())
   #     dev.off()
   #   }
   # )
-  
-  output$download_norm_svg_nr<-downloadHandler(
-    filename = function() { "Normalization_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(norm_input_nr())
-      dev.off()
-    }
-  )
-  
-  # output$download_missval_svg<-downloadHandler(
-  #   filename = function() { "Missing_value_heatmap.svg" }, 
+  # 
+  # output$download_cvs_svg_nr<-downloadHandler(
+  #   filename = function() { "Sample_CV.svg" }, 
   #   content = function(file) {
   #     svg(file)
-  #     print(missval_input_pr())
+  #     print(cvs_input_nr())
   #     dev.off()
   #   }
   # )
-  
-  output$download_imp_svg_nr<-downloadHandler(
-    filename = function() { "Imputation_plot.svg" }, 
-    content = function(file) {
-      svg(file)
-      print(imputation_input_nr())
-      dev.off()
-    }
-  )
+  # 
+  # output$download_norm_svg_nr<-downloadHandler(
+  #   filename = function() { "Normalization_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(norm_input_nr())
+  #     dev.off()
+  #   }
+  # )
+  # 
+  # output$download_imp_svg_nr<-downloadHandler(
+  #   filename = function() { "Imputation_plot.svg" }, 
+  #   content = function(file) {
+  #     svg(file)
+  #     print(imputation_input_nr())
+  #     dev.off()
+  #   }
+  # )
+  save_plot_server("pca_plot_nr", pca_input_nr)
+  save_plot_server("correlation_nr", correlation_input_nr)
+  save_plot_server("cvs_nr", cvs_input_nr)
+  save_plot_server("normalization_nr", norm_input_nr)
+  save_plot_server("imputation_nr", imputation_input_nr)
   
   #### Phosphosite Occurrence page logic ========== #############
   data_attendance<-reactive({
@@ -5832,10 +5923,10 @@ server <- function(input, output,session){
   save_plot_server("pca_dm", pca_input_dm)
   save_plot_server("correlation_dm", correlation_input_dm)
   save_plot_server("cvs_dm", cvs_input_dm)
-  save_plot_server("phosphosites_dm", numbers_input_dm)
+  save_plot_server("numbers_dm", numbers_input_dm)
   save_plot_server("coverage_dm", coverage_input_dm)
   save_plot_server("normalization_dm", norm_input_dm)
-  save_plot_server("missing_value_dm", missval_input_dm)
+  save_plot_server("missing-values_dm", missval_input_dm)
   save_plot_server("imputation_dm", imputation_input_dm)
   
   #### Demo logic (Protein Group)========== #############
