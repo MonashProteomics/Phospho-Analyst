@@ -800,9 +800,11 @@ ui <- function(request){
                                                                             uiOutput("downloadreport_comp")
                                                                      ),
                                                               ),
-                                                              column(12, shinycssloaders::withSpinner(plotOutput("scatter_plot", height=600), color = "#bec8da")),
-                                                              # downloadButton('download_scatter_svg', "Save svg")  
-                                                              save_plot_left_ui("scatter_plot")
+                                                              column(12, 
+                                                                     shinycssloaders::withSpinner(plotOutput("scatter_plot", height=600), color = "#bec8da"),
+                                                                     save_plot_left_ui("scatter_plot")
+                                                                     ),
+                                                              # downloadButton('download_scatter_svg', "Save svg")
                                                           )
                                                  ), # fluid colsed
                                                  tags$style(type='text/css', "#downloadreport_comp { width:100%; vertical-align- middle; margin-top: 5px;}"),
@@ -1577,15 +1579,16 @@ ui <- function(request){
                                                       
                                                       fluidRow(
                                                         shinycssloaders::withSpinner(plotOutput("volcano_dm_pr", height = 600,
-                                                                   # hover = "protein_hover"),
-                                                                   #),
-                                                                   # click = "protein_click"),
                                                                    brush = "protein_brush_dm_pr",
-                                                                   click = "protein_click_dm_pr"), color = "#bec8da"),
-                                                        downloadButton('downloadVolcano_dm_pr', 'Save Highlighted Plot'),
-                                                        actionButton("resetPlot_dm_pr", "Clear Selection")
-                                                        #)),
-                                                      )),
+                                                                   click = "protein_click_dm_pr"), color = "#bec8da")
+                                                      ),
+                                                      fluidRow(
+                                                        column(9,
+                                                               actionButton("resetPlot_dm_pr", "Clear Selection")),
+                                                        column(3,
+                                                               save_plot_right_ui("volcano_dm_pr"))
+                                                      )
+                                                      ),
                                              tabPanel(tooltips_ui("Heatmap"),
                                                       fluidRow(
                                                         box(tags$div(class="inline", numericInput("k_number_dm_pr",
@@ -1600,13 +1603,14 @@ ui <- function(request){
                                                         box(numericInput("cluster_number_dm_pr",
                                                                          "Cluster to download",
                                                                          min=1, max=6, value = 1), width = 6),
-                                                        box(downloadButton('downloadCluster_dm_pr',"Save Cluster"),
-                                                            downloadButton('download_hm_svg_dm_pr', "Save svg"),
-                                                            width = 5)
+                                                        box(downloadButton('downloadCluster_dm_pr',"Save Cluster"),width = 3),
+                                                        box(
+                                                          save_plot_right_ui("heatmap_dm_pr"),
+                                                          width = 3)
                                                       ),
                                                       # align save button
                                                       tags$style(type='text/css', "#downloadCluster_dm_pr {margin-top: 25px;}"),
-                                                      tags$style(type='text/css', "#download_hm_svg_dm_pr {margin-top: 25px;}")
+                                                      tags$style(type='text/css', "#heatmap_dm_pr-plot_dropdown {margin-top: 25px;}")
                                              ),
                                              tabPanel(tooltips_ui("Individual Plot"),
                                                       fluidRow(
@@ -1626,7 +1630,8 @@ ui <- function(request){
                                                       ),
                                                       fluidRow(
                                                         shinycssloaders::withSpinner(plotOutput("protein_plot_dm_pr"), color = "#bec8da"),
-                                                        downloadButton('downloadProtein_dm_pr', 'Download Plot')
+                                                        # downloadButton('downloadProtein_dm_pr', 'Download Plot')
+                                                        save_plot_left_ui("protein_plot_dm_pr")
                                                       )
                                              )
                                            )
@@ -1645,39 +1650,47 @@ ui <- function(request){
                                                tabBox(title = "QC Plots", width = 12,
                                                       tabPanel(tooltips_ui("PCA Plot"),
                                                                shinycssloaders::withSpinner(plotOutput("pca_plot_dm_pr", height=600), color = "#bec8da"),
-                                                               downloadButton('download_pca_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_pca_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("pca_plot_dm_pr")
                                                       ),
                                                       tabPanel(tooltips_ui("Sample Correlation"),
                                                                shinycssloaders::withSpinner(plotOutput("sample_corr_dm_pr", height = 600), color = "#bec8da"),
-                                                               downloadButton('download_corr_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_corr_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("correlation_dm_pr")
                                                       ),
                                                       tabPanel(tooltips_ui("Sample CVs"),
                                                                shinycssloaders::withSpinner(plotOutput("sample_cvs_dm_pr", height = 600), color = "#bec8da"),
-                                                               downloadButton('download_cvs_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_cvs_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("cvs_dm_pr")
                                                       ),
                                                       tabPanel(tooltips_ui("Protein Numbers"),
                                                                shinycssloaders::withSpinner(plotOutput("numbers_dm_pr", height = 600), color = "#bec8da"),
-                                                               downloadButton('download_num_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_num_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("numbers_dm_pr")
                                                       ),
                                                       
                                                       tabPanel(tooltips_ui("Sample coverage"),
                                                                shinycssloaders::withSpinner(plotOutput("coverage_dm_pr", height = 600), color = "#bec8da"),
-                                                               downloadButton('download_cov_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_cov_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("coverage_dm_pr")
                                                       ),
                                                       tabPanel(tooltips_ui("Normalization"),
                                                                shinycssloaders::withSpinner(plotOutput("norm_dm_pr", height = 600), color = "#bec8da"),
-                                                               downloadButton('download_norm_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_norm_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("normalization_dm_pr")
                                                       ),
                                                       # tabPanel(title = "Missing values - Quant",
                                                       #          plotOutput("detect", height = 600)
                                                       # ),
                                                       tabPanel(tooltips_ui("Missing values - Heatmap"),
                                                                shinycssloaders::withSpinner(plotOutput("missval_dm_pr", height = 600), color = "#bec8da"),
-                                                               downloadButton('download_missval_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_missval_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("missing-values_dm_pr")
                                                       ),
                                                       tabPanel(tooltips_ui("Imputation"),
                                                                shinycssloaders::withSpinner(plotOutput("imputation_dm_pr", height = 600), color = "#bec8da"),
-                                                               downloadButton('download_imp_svg_dm_pr', "Save svg")
+                                                               # downloadButton('download_imp_svg_dm_pr', "Save svg")
+                                                               save_plot_left_ui("imputation_dm_pr")
                                                       )#,
                                                       # tabPanel(title = "p-value Histogram",
                                                       #          plotOutput("p_hist", height = 600)
@@ -1744,13 +1757,13 @@ ui <- function(request){
                                                     column(6,
                                                            br(),
                                                            uiOutput("downloadreport_comp_dm")
-                                                           # prettyCheckbox("check_anova_comp_dm",
-                                                           #                "Apply ANOVA",
-                                                           #                value = FALSE)
                                                     ),
                                              ),
-                                             column(12, shinycssloaders::withSpinner(plotOutput("scatter_plot_dm", height=600), color = "#bec8da")),
-                                             downloadButton('download_scatter_svg_dm', "Save svg")
+                                             column(12, 
+                                                    shinycssloaders::withSpinner(plotOutput("scatter_plot_dm", height=600), color = "#bec8da"),
+                                                    save_plot_left_ui("scatter_plot_dm")
+                                                    ),
+                                             # downloadButton('download_scatter_svg_dm', "Save svg")
                                          )
                                 ), # fluid colsed
                                 tags$style(type='text/css', "#downloadreport_comp_dm { width:100%; vertical-align- middle; margin-top: 5px;}"),
@@ -1762,50 +1775,64 @@ ui <- function(request){
                                              tabBox(title = "", width = 12,
                                                     tabPanel(tooltips_ui("PCA Plot"),
                                                              shinycssloaders::withSpinner(plotOutput("pca_plot_c_dm", height=600), color = "#bec8da"),
-                                                             downloadButton('download_pca_svg_c_dm', "Save svg")
+                                                             # downloadButton('download_pca_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("pca_plot_c_dm")
                                                     ),
                                                     tabPanel(tooltips_ui("Sample Correlation"),
                                                              fluidRow(height=600,
                                                                       column(6,'Phosphosite',
                                                                              shinycssloaders::withSpinner(plotOutput("sample_corr_c1_dm", height = 600), color = "#bec8da"),
-                                                                             downloadButton('download_corr_svg_c_dm', "Save svg")),
+                                                                             # downloadButton('download_corr_svg_c_dm', "Save svg")
+                                                                             save_plot_left_ui("Phospho-correlation_dm")
+                                                                             ),
                                                                       column(6,'Protein',
                                                                              shinycssloaders::withSpinner(plotOutput("sample_corr_c2_dm", height = 600), color = "#bec8da"),
-                                                                             downloadButton('download_corr_svg_c_dm_1', "Save svg"))
+                                                                             # downloadButton('download_corr_svg_c_dm_1', "Save svg")
+                                                                             save_plot_left_ui("Protein-correlation_dm")
+                                                                             )
                                                              )
                                                              # downloadButton('download_corr_pdf_c_dm', "Save pdf")
                                                              
                                                     ),
                                                     tabPanel(tooltips_ui("Sample CVs"),
                                                              shinycssloaders::withSpinner(plotOutput("sample_cvs_c_dm", height = 600), color = "#bec8da"),
-                                                             downloadButton('download_cvs_svg_c_dm', "Save svg")
+                                                             # downloadButton('download_cvs_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("cvs_c_dm")
                                                     ),
                                                     tabPanel(tooltips_ui("Numbers"),
                                                              shinycssloaders::withSpinner(plotOutput("numbers_c_dm", height = 600), color = "#bec8da"),
-                                                             downloadButton('download_num_svg_c_dm', "Save svg")
+                                                             # downloadButton('download_num_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("numbers_c_dm")
                                                     ),
                                                     
                                                     tabPanel(tooltips_ui("Sample coverage"),
                                                              shinycssloaders::withSpinner(plotOutput("coverage_c_dm", height = 600), color = "#bec8da"),
-                                                             downloadButton('download_cov_svg_c_dm', "Save svg")
+                                                             # downloadButton('download_cov_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("coverage_c_dm")
                                                     ),
                                                     tabPanel(tooltips_ui("Normalization"),
                                                              shinycssloaders::withSpinner(plotOutput("norm_c_dm", height = 600), color = "#bec8da"),
-                                                             downloadButton('download_norm_svg_c_dm', "Save svg")
+                                                             # downloadButton('download_norm_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("normalization_c_dm")
                                                     ),
                                                     tabPanel(tooltips_ui("Missing values - Heatmap"),
                                                              fluidRow(height=600,
                                                                       column(6,'Phosphosite',
                                                                              shinycssloaders::withSpinner(plotOutput("missval_c1_dm", height = 600), color = "#bec8da"),
-                                                                             downloadButton('download_missval_svg_c_dm', "Save svg")),
+                                                                             # downloadButton('download_missval_svg_c_dm', "Save svg")
+                                                                             save_plot_left_ui("Phospho-missing-values_dm")
+                                                                             ),
                                                                       column(6,'Protein',
                                                                              shinycssloaders::withSpinner(plotOutput("missval_c2_dm", height = 600), color = "#bec8da"),
-                                                                             downloadButton('download_missval_svg_c_dm_1', "Save svg"))
+                                                                             # downloadButton('download_missval_svg_c_dm_1', "Save svg")
+                                                                             save_plot_left_ui("Protein-missing-values_dm")
+                                                                             )
                                                              )
                                                     ),
                                                     tabPanel(tooltips_ui("Imputation"),
                                                              shinycssloaders::withSpinner(plotOutput("imputation_c_dm", height = 600), color = "#bec8da"),
-                                                             downloadButton('download_imp_svg_c_dm', "Save svg")   
+                                                             # downloadButton('download_imp_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("imputation_c_dm")
                                                     )
                                              ) # Tab box close
                                          )
@@ -1819,10 +1846,14 @@ ui <- function(request){
                                              tabBox(width = 12,
                                                     tabPanel(tooltips_ui("Interaction plot"),
                                                              shinycssloaders::withSpinner(plotOutput("combined_inter_dm", height = 600), color = "#bec8da"),
-                                                             downloadButton('download_inter_svg_c_dm', "Save svg")),
+                                                             # downloadButton('download_inter_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("interaction_comp_dm")
+                                                             ),
                                                     tabPanel(tooltips_ui("Bubble plot"),
                                                              shinycssloaders::withSpinner(plotOutput("combined_point_dm", height = 600), color = "#bec8da"),
-                                                             downloadButton('download_point_svg_c_dm', "Save svg"))
+                                                             # downloadButton('download_point_svg_c_dm', "Save svg")
+                                                             save_plot_left_ui("bubble_comp_dm")
+                                                             )
                                              )
                                          )
                                 )
@@ -1861,7 +1892,6 @@ ui <- function(request){
                                 tags$br(), # Blank lines
                                 tags$br(),
                                 ## Data table and result plots box
-                                
                                 
                                 fluidRow(
                                   box(
@@ -1911,15 +1941,16 @@ ui <- function(request){
                                                
                                                fluidRow(
                                                  shinycssloaders::withSpinner(plotOutput("volcano_dm_nr", height = 600,
-                                                            # hover = "protein_hover"),
-                                                            #),
-                                                            # click = "protein_click"),
                                                             brush = "protein_brush_dm_nr",
-                                                            click = "protein_click_dm_nr"), color = "#bec8da"),
-                                                 downloadButton('downloadVolcano_dm_nr', 'Save Highlighted Plot'),
-                                                 actionButton("resetPlot_dm_nr", "Clear Selection")
-                                                 #)),
-                                               )),
+                                                            click = "protein_click_dm_nr"), color = "#bec8da")
+                                               ),
+                                               fluidRow(
+                                                 column(9,
+                                                        actionButton("resetPlot_dm_nr", "Clear Selection")),
+                                                 column(3,
+                                                        save_plot_right_ui("volcano_dm_nr"))
+                                               )
+                                               ),
                                       tabPanel(tooltips_ui("Heatmap"),
                                                fluidRow(
                                                  box(tags$div(class="inline", numericInput("k_number_dm_nr",
@@ -1934,13 +1965,14 @@ ui <- function(request){
                                                  box(numericInput("cluster_number_dm_nr",
                                                                   "Cluster to download",
                                                                   min=1, max=6, value = 1), width = 6),
-                                                 box(downloadButton('downloadCluster_dm_nr',"Save Cluster"),
-                                                     downloadButton('download_hm_svg_dm_nr', "Save svg"),
-                                                     width = 5)
+                                                 box(downloadButton('downloadCluster_dm_nr',"Save Cluster"),width = 3),
+                                                 box(
+                                                   save_plot_right_ui("heatmap_dm_nr"),
+                                                   width = 3)
                                                ),
                                                # align save button
                                                tags$style(type='text/css', "#downloadCluster_dm_nr {margin-top: 25px;}"),
-                                               tags$style(type='text/css', "#download_hm_svg_dm_nr {margin-top: 25px;}")
+                                               tags$style(type='text/css', "#heatmap_dm_nr-plot_dropdown {margin-top: 25px;}")
                                       ),
                                       tabPanel(tooltips_ui("Individual Plot"),
                                                fluidRow(
@@ -1960,7 +1992,8 @@ ui <- function(request){
                                                ),
                                                fluidRow(
                                                  shinycssloaders::withSpinner(plotOutput("protein_plot_dm_nr"), color = "#bec8da"),
-                                                 downloadButton('downloadProtein_dm_nr', 'Download Plot')
+                                                 # downloadButton('downloadProtein_dm_nr', 'Download Plot')
+                                                 save_plot_left_ui("protein_plot_dm_nr")
                                                )
                                       )
                                       # verbatimTextOutput("protein_info"))
@@ -1980,25 +2013,30 @@ ui <- function(request){
                                         tabBox(title = "QC Plots", width = 12,
                                                tabPanel(tooltips_ui("PCA Plot"),
                                                         shinycssloaders::withSpinner(plotOutput("pca_plot_dm_nr", height=600), color = "#bec8da"),
-                                                        downloadButton('download_pca_svg_dm_nr', "Save svg")
+                                                        # downloadButton('download_pca_svg_dm_nr', "Save svg")
+                                                        save_plot_left_ui("pca_plot_dm_nr")
                                                ),
                                                tabPanel(tooltips_ui("Sample Correlation"),
                                                         shinycssloaders::withSpinner(plotOutput("sample_corr_dm_nr", height = 600), color = "#bec8da"),
-                                                        downloadButton('download_corr_svg_dm_nr', "Save svg")
+                                                        # downloadButton('download_corr_svg_dm_nr', "Save svg")
+                                                        save_plot_left_ui("correlation_dm_nr")
                                                ),
                                                tabPanel(tooltips_ui("Sample CVs"),
                                                         shinycssloaders::withSpinner(plotOutput("sample_cvs_dm_nr", height = 600), color = "#bec8da"),
-                                                        downloadButton('download_cvs_svg_dm_nr', "Save svg")
+                                                        # downloadButton('download_cvs_svg_dm_nr', "Save svg")
+                                                        save_plot_left_ui("cvs_dm_nr")
                                                ),
                                                
                                                tabPanel(tooltips_ui("Normalization (normal vs corrected)"),
                                                         shinycssloaders::withSpinner(plotOutput("norm_dm_nr", height = 600), color = "#bec8da"),
-                                                        downloadButton('download_norm_svg_dm_nr', "Save svg")
+                                                        # downloadButton('download_norm_svg_dm_nr', "Save svg")
+                                                        save_plot_left_ui("normalization_dm_nr")
                                                ),
                                                
                                                tabPanel(tooltips_ui("Imputation (normal vs corrected)"),
                                                         shinycssloaders::withSpinner(plotOutput("imputation_dm_nr", height = 600), color = "#bec8da"),
-                                                        downloadButton('download_imp_svg_dm_nr', "Save svg")
+                                                        # downloadButton('download_imp_svg_dm_nr', "Save svg")
+                                                        save_plot_left_ui("imputation_dm_nr")
                                                )
                                                # tabPanel(title = "Phosphosite Numbers",
                                                #          plotOutput("numbers_dm_nr", height = 600),
