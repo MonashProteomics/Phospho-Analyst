@@ -124,16 +124,6 @@ ui <- function(request){
                                    tags$hr(style = 'border-top: 4px double #2E3440'),
                                    actionButton("analyze", "Start Analysis"),
                                    br()
-                                   # tags$hr(),
-                                   # p(a("Example Phosphoproteomics data", target= "_blank",
-                                   #     href="data/Phospho (STY)Sites_example.txt", 
-                                   #     download="Phospho (STY)Sites_example.txt")),
-                                   # p(a("Example ProteinGroup data", target= "_blank",
-                                   #     href="data/proteinGroups_example.txt", 
-                                   #     download="proteinGroups_example.txt")),
-                                   # p(a("Example Experimental Design file", target= "_blank",
-                                   #     href="data/experimental_design_example.txt", 
-                                   #     download="experimental_design_example.txt"))
           ), tabName = 'analysis'),
           convertMenuItem(
             menuItem('Demo', icon=icon("eye"), tabName = "demo"), tabName = "demo"),
@@ -290,17 +280,6 @@ ui <- function(request){
                                                    
                                                  ), # fluidRow closed
                                                  
-                                                 # box(
-                                                 #   column(7,uiOutput("downloadTable"),offset = 1),
-                                                 #   column(4,uiOutput("downloadButton")), # make the button on same line
-                                                 #   width = 4),
-                                                 # infoBoxOutput("significantBox",width = 4),
-                                                 # box(
-                                                 #   column(4,uiOutput("downloadreport")), # offset for dist between buttons
-                                                 #   #tags$br(),
-                                                 #   #column(5,uiOutput('downloadPlots')),
-                                                 #   width = 4)),
-                                                 # align save button
                                                  tags$style(type='text/css', "#downloadTable { width:100%; margin-top: 15px;}"),
                                                  tags$style(type='text/css', "#downloadButton { width:100%; margin-top: 40px;}"), 
                                                  tags$style(type='text/css', "#downloadreport { width:100%; vertical-align- middle; margin-top: 40px;
@@ -549,19 +528,6 @@ ui <- function(request){
                                                                            )
                                                                          )
                                                                 )
-                                                                
-                                                                # tabPanel(title= "Pathway enrichment",
-                                                                #          box(uiOutput("contrast_1"), width = 6),
-                                                                #          box(
-                                                                #            selectInput("pathway_database", "Pathway database:",
-                                                                #                        c("KEGG"="KEGG_2016",
-                                                                #                          "Reactome"="Reactome_2016")),
-                                                                #            width= 5),
-                                                                #          actionButton("pathway_analysis", "Run Enrichment"),
-                                                                #          plotOutput("pathway_enrichment"),
-                                                                #          downloadButton('downloadPA', 'Download Table')
-                                                                # )
-                                                                # 
                                                          ) # Tab box close
                                                        )
                                                    )) # fluidrow qc close
@@ -917,16 +883,6 @@ ui <- function(request){
                                                    column(3,
                                                           uiOutput("downloadreport_nr")
                                                    )
-                                                   # box(
-                                                   #   column(6,uiOutput("downloadTable_nr"),offset = 1),
-                                                   #   column(4,uiOutput("downloadButton_nr")), # make the button on same line
-                                                   #   width = 4),
-                                                   # infoBoxOutput("significantBox_nr",width = 4),
-                                                   # box(
-                                                   #   column(5,uiOutput("downloadreport_nr")), # offset for dist between buttons
-                                                   #   #tags$br(),
-                                                   #   #column(5,uiOutput('downloadPlots')),
-                                                   #   width = 4)
                                                  ),
                                                  # align save button
                                                  tags$style(type='text/css', "#downloadTable_nr { width:100%; margin-top: 15px;}"),
@@ -1045,12 +1001,7 @@ ui <- function(request){
                                                        # verbatimTextOutput("protein_info"))
                                                      )
                                                    ) # box or column end
-                                                   
-                                                   
-                                                   
-                                                 ), # result plot colsed
-                                                 
-                                                 
+                                                 ), # result plot closed
                                                  ## QC Box
                                                  fluidRow(
                                                    div(id="qc_tab",
@@ -1082,28 +1033,6 @@ ui <- function(request){
                                                                          # downloadButton('download_imp_svg_nr', "Save svg")
                                                                          save_plot_left_ui("imputation_nr")
                                                                 )
-                                                                # tabPanel(title = "Phosphosite Numbers",
-                                                                #          plotOutput("numbers_nr", height = 600),
-                                                                #          downloadButton('download_num_svg_nr', "Save svg")
-                                                                # ),
-                                                                
-                                                                # tabPanel(title = "Sample coverage",
-                                                                #          plotOutput("coverage_nr", height = 600),
-                                                                #          downloadButton('download_cov_svg_nr', "Save svg")
-                                                                # ),
-                                                                
-                                                                # tabPanel(title = "Missing values - Quant",
-                                                                #          plotOutput("detect", height = 600)
-                                                                # ),
-                                                                # tabPanel(title = "Missing values - Heatmap",
-                                                                #          plotOutput("missval_nr", height = 600),
-                                                                #          downloadButton('download_missval_svg_nr', "Save svg")
-                                                                # ),
-                                                                
-                                                                #,
-                                                                # tabPanel(title = "p-value Histogram",
-                                                                #          plotOutput("p_hist", height = 600)
-                                                                # )
                                                          ) # Tab box close
                                                        ),
                                                        column(
@@ -1153,13 +1082,9 @@ ui <- function(request){
                                                                            )
                                                                          )
                                                                 )
-                                                                
                                                          ) # Tab box close
                                                        )
-                                                   )) # fluidrow qc close
-                                                 
-                                                 
-                                                 
+                                                   )) # fluidrow qc close  
                                         ),
                                         tabPanel("Phosphosite Absence/Presence",
                                                  br(),
@@ -1400,12 +1325,8 @@ ui <- function(request){
                                                         )
                                              ) # navbarMenu close
                                            )
-                                         ) # box or column end
-                                         
-                                         
-                                         
+                                         ) # box or column end 
                                        ), # result plot colsed
-                                       
                                        
                                        ## QC Box
                                        fluidRow(
@@ -1502,7 +1423,6 @@ ui <- function(request){
                                                                  )
                                                                ) 
                                                       )
-                                                      
                                                ) # Tab box close
                                              )
                                          )) # fluidrow qc close
@@ -1529,8 +1449,7 @@ ui <- function(request){
                                        tags$br(), # Blank lines
                                        tags$br(),
                                        ## Data table and result plots box
-                                       
-                                       
+
                                        fluidRow(
                                          box(
                                            title = "Results Table",
@@ -1635,13 +1554,9 @@ ui <- function(request){
                                                       )
                                              )
                                            )
-                                         ) # box or column end
-                                         
-                                         
-                                         
+                                         ) # box or column end 
                                        ), # result plot colsed
-                                       
-                                       
+
                                        ## QC Box
                                        fluidRow(
                                          div(id="qc_tab",
@@ -1792,7 +1707,6 @@ ui <- function(request){
                                                                              )
                                                              )
                                                              # downloadButton('download_corr_pdf_c_dm', "Save pdf")
-                                                             
                                                     ),
                                                     tabPanel(tooltips_ui("Sample CVs"),
                                                              shinycssloaders::withSpinner(plotOutput("sample_cvs_c_dm", height = 600), color = "#bec8da"),
@@ -1873,16 +1787,6 @@ ui <- function(request){
                                   column(3,
                                          uiOutput("downloadreport_dm_nr")
                                   )
-                                  # box(
-                                  #   column(6,uiOutput("downloadTable_dm_nr"),offset = 1),
-                                  #   column(4,uiOutput("downloadButton_dm_nr")), # make the button on same line
-                                  #   width = 4),
-                                  # infoBoxOutput("significantBox_dm_nr",width = 4),
-                                  # box(
-                                  #   column(5,uiOutput("downloadreport_dm_nr")), # offset for dist between buttons
-                                  #   #tags$br(),
-                                  #   #column(5,uiOutput('downloadPlots')),
-                                  #   width = 4)
                                 ),
                                 # align save button
                                 tags$style(type='text/css', "#downloadTable_dm_nr { width:100%; margin-top: 15px;}"),
@@ -2038,28 +1942,6 @@ ui <- function(request){
                                                         # downloadButton('download_imp_svg_dm_nr', "Save svg")
                                                         save_plot_left_ui("imputation_dm_nr")
                                                )
-                                               # tabPanel(title = "Phosphosite Numbers",
-                                               #          plotOutput("numbers_dm_nr", height = 600),
-                                               #          downloadButton('download_num_svg_dm_nr', "Save svg")
-                                               # ),
-                                               # 
-                                               # tabPanel(title = "Sample coverage",
-                                               #          plotOutput("coverage_dm_nr", height = 600),
-                                               #          downloadButton('download_cov_svg_dm_nr', "Save svg")
-                                               # ),
-                                               
-                                               # tabPanel(title = "Missing values - Quant",
-                                               #          plotOutput("detect", height = 600)
-                                               # ),
-                                               # tabPanel(title = "Missing values - Heatmap",
-                                               #          plotOutput("missval_dm_nr", height = 600),
-                                               #          downloadButton('download_missval_svg_dm_nr', "Save svg")
-                                               # ),
-                                               
-                                               #,
-                                               # tabPanel(title = "p-value Histogram",
-                                               #          plotOutput("p_hist", height = 600)
-                                               # )
                                         ) # Tab box close
                                       ),
                                       column(
