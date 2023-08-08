@@ -342,8 +342,8 @@ plot_abundance <- function(df, contrast, plot = TRUE) {
   p_rank <- df %>%
     ggplot(aes(x = rank, y=mean_abundance)) + 
     geom_point(shape = 1) +
-    labs(x = "Protein Rank",
-         y = "Mean Abundance") + 
+    labs(x = "Phosphopeptide Rank",
+         y = expression("Mean "~log[2]~" Abundance")) + 
     ylim(min(df[,x_index],df[,y_index],df[,mean_index]), max(df[,x_index],df[,y_index],df[,mean_index])) +
     theme_DEP1() +
     scale_color_manual(values = c("TRUE" = "black", "FALSE" = "grey"))
@@ -352,8 +352,8 @@ plot_abundance <- function(df, contrast, plot = TRUE) {
     ggplot(aes(x = df[,x_index],
                y = df[,y_index])) + 
     geom_point() +
-    labs(x = paste("Mean abundance for ", contrast1, sep = ""),
-         y = paste("Mean abundance for ", contrast2, sep = "")) +
+    labs(x = substitute(paste("Mean "~log[2]~" abundance for ",contrast),list(contrast = contrast1)),
+         y = substitute(paste("Mean "~log[2]~" abundance for ",contrast),list(contrast = contrast2))) +
     xlim(min(df[,x_index],df[,y_index],df[,mean_index]), max(df[,x_index],df[,y_index],df[,mean_index])) +
     ylim(min(df[,x_index],df[,y_index],df[,mean_index]), max(df[,x_index],df[,y_index],df[,mean_index])) +
     geom_abline(slope=1,intercept=0, linetype = "dashed") + 
