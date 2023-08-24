@@ -189,6 +189,16 @@ ui <- function(request){
                         tags$li(tags$b("Datasets: "),"download example dataset files"),
                         tags$li(tags$b("User Guide: "), "download an in-depth manual") 
                       ),
+                      h4("Related Tools"),
+                      tags$ul(
+                        tags$li(p(HTML(paste0(tags$b("LFQ-Analyst")," for analysing label-free quantitative proteomics dataset",
+                                              a(href = 'https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst',
+                                                target='_blank', tags$b("https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst")))))),
+                        
+                        tags$li(p(HTML(paste0(tags$b("Analyst Suites")," for additional analyst Apps: ",
+                                              a(href = 'https://analyst-suites.org/',
+                                                target='_blank', tags$b("https://analyst-suites.org/"))))))
+                      ),
                       width = 12,
                       solidHeader = TRUE,
                       #status = "info"
@@ -2126,14 +2136,8 @@ ui <- function(request){
                       h4("News and Updates"),
                       
                       tags$ul(
-                        tags$li(p(HTML(paste0("Related App: ", tags$b("LFQ-Analyst")," for analysing label-free quantitative proteomics dataset",
-                                              a(href = 'https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst',
-                                                target='_blank', tags$b("https://bioinformatics.erc.monash.edu/apps/LFQ-Analyst")))))),
-                        
-                        tags$li(p(HTML(paste0("Landing page ", tags$b("Analyst Suites")," for additional analyst Apps: ",
-                                              a(href = 'https://analyst-suites.org/',
-                                                target='_blank', tags$b("https://analyst-suites.org/"))))))
-                        
+                        tags$li("16-08-2023: Phospho-Analyst paper published online in Journal of Proteome Research (JPR)"),
+                        tags$li("18-07-2023: Phospho-Analyst GitHub repository made public")
                       ),   
                       width = 12,
                       solidHeader = TRUE,
@@ -2143,7 +2147,7 @@ ui <- function(request){
           )# info tab close
         ),
         tags$footer(
-          tags$p("Supported by: Monash Proteomics and Metabolomics Facility & Monash Bioinformatics Platform, 
+          tags$p("Supported by: Monash Proteomics and Metabolomics Platform & Monash Bioinformatics Platform, 
          Monash University"),
           align = "right"),
         shiny.info::version(position = "bottom right"))  # Dasbboardbody close 
