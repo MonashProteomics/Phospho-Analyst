@@ -259,7 +259,7 @@ plot_protein<-function(dep, protein, type){
   df_CI$rowname <- parse_factor(as.character(df_CI$rowname), levels = protein)
   
   if(type=="violin"){
-    p<-ggplot(df_reps, aes(condition, val))+
+    p<-ggplot(df_reps, aes(forcats::fct_inorder(condition), val))+
       geom_violin(fill="grey90", scale = "width",
                   draw_quantiles = 0.5,
                   trim =TRUE) +
@@ -275,8 +275,8 @@ plot_protein<-function(dep, protein, type){
   }
   
   if(type=="boxplot"){
-    p<-ggplot(df_reps, aes(condition, val))+
-      geom_boxplot()+
+    p<-ggplot(df_reps, aes(forcats::fct_inorder(condition), val))+
+      geom_boxplot(outlier.shape = NA)+
       geom_jitter(aes(color = factor(replicate)),
                   size = 3, position = position_dodge(width=0.3)) +
       labs(
@@ -289,7 +289,7 @@ plot_protein<-function(dep, protein, type){
   }
   
   if(type=="interaction"){
-    p<-ggplot(df_reps, aes(condition, val))+
+    p<-ggplot(df_reps, aes(forcats::fct_inorder(condition), val))+
       geom_point(aes(color = factor(replicate)),
                  size = 3) +
       geom_line(aes(group= factor(replicate), color= factor(replicate)))+
@@ -303,7 +303,7 @@ plot_protein<-function(dep, protein, type){
   }
   
   if(type=="dot"){
-    p<-ggplot(df_CI, aes(condition, mean))+
+    p<-ggplot(df_CI, aes(forcats::fct_inorder(condition), mean))+
       geom_point(data=df_reps, aes(x=condition, y=val, color = factor(replicate)),
                  size = 3, position= position_dodge(width = 0.2)) +
       geom_errorbar(aes(ymin = CI.L, ymax = CI.R), width = 0.2)+
