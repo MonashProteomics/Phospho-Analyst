@@ -5703,7 +5703,7 @@ server <- function(input, output,session){
   
   individual_cluster_dm <- reactive({
     cluster_number <- input$cluster_number_dm
-    cluster_all <- heatmap_cluster_dm()[[1]]
+    cluster_all <- heatmap_cluster_dm()[[2]]
     single_cluster <- cluster_all[names(cluster_all)==cluster_number] %>% unlist()
     data_result_dm()[single_cluster,]
   })
@@ -8050,6 +8050,16 @@ server <- function(input, output,session){
     data_result_dm_nr()[single_cluster,]
   })
   
+  output$downloadCluster_dm_nr <- downloadHandler(
+    filename = function() { paste("Cluster_info_",input$cluster_number_dm_nr, ".csv", sep = "") }, ## use = instead of <-
+    content = function(file) {
+      write.table(individual_cluster_dm_nr(),
+                  file,
+                  col.names = TRUE,
+                  row.names = FALSE,
+                  sep =",") }
+  )
+  
   # output$download_hm_svg_dm_nr <-downloadHandler(
   #   filename = function() { "heatmap.svg" }, 
   #   content = function(file) {
@@ -8060,15 +8070,6 @@ server <- function(input, output,session){
   #   }
   # )
   # 
-  # output$downloadCluster_dm_nr <- downloadHandler(
-  #   filename = function() { paste("Cluster_info_",input$cluster_number_dm_nr, ".csv", sep = "") }, ## use = instead of <-
-  #   content = function(file) {
-  #     write.table(individual_cluster_dm_nr(),
-  #                 file,
-  #                 col.names = TRUE,
-  #                 row.names = FALSE,
-  #                 sep =",") }
-  # )
   # 
   # output$downloadVolcano_dm_nr <- downloadHandler(
   #   filename = function() {
