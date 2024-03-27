@@ -510,18 +510,23 @@ server <- function(input, output,session){
     
     ## Check for matching columns in maxquant and experiment design file
     # Check number of replicates
-    if(max(exp_design()$replicate)<3){
-      threshold<-0
-    } else  if(max(exp_design()$replicate)==3){
-      threshold<-1
-    } else if(max(exp_design()$replicate)<6 ){
-      threshold<-2
-    } else if (max(exp_design()$replicate)>=6){
-      threshold<-trunc(max(exp_design()$replicate)/2)
-    }
+    # if(max(exp_design()$replicate)<3){
+    #   threshold<-0
+    # } else  if(max(exp_design()$replicate)==3){
+    #   threshold<-1
+    # } else if(max(exp_design()$replicate)<6 ){
+    #   threshold<-2
+    # } else if (max(exp_design()$replicate)>=6){
+    #   threshold<-trunc(max(exp_design()$replicate)/2)
+    # }
+    # 
+    # # removing multipple missing value rows
+    # filter_missval(data_se,thr = threshold)
+    exp_df <- exp_design() %>% dplyr::count(condition)
+    exp_df <- exp_df %>% dplyr::mutate(thr = lapply(exp_df$n, threshold_detect)) # function:threshold_detect
+    condition_list <- exp_df$condition
     
-    # removing multipple missing value rows
-    filter_missval(data_se,thr = threshold)
+    data_filtered <- filter_missval_new(data_se,condition_list,exp_df)
   })
   
   unimputed_table<-reactive({
