@@ -214,11 +214,24 @@ server <- function(input, output,session){
   # Creates handsontable template table
   phospho_exp_data1 <- reactive({
     req(input$file1)
-    df <- read.delim(input$file1$datapath,
-                     header = TRUE,
-                     fill= TRUE, # to fill any missing data
-                     sep = "\t")
-    tempTable =  get_exp_design(df)
+    # df <- read.delim(input$file1$datapath,
+    #                  header = TRUE,
+    #                  fill= TRUE, # to fill any missing data
+    #                  sep = "\t")
+    # tempTable =  get_exp_design(df)
+    if (!is.null(input$file3)){
+      tempTable <- read.delim(input$file3$datapath,
+                              header = TRUE,
+                              sep="\t",
+                              stringsAsFactors = FALSE,
+                              colClasses = c(label = "character",condition = "character"))
+    } else {
+      df <- read.delim(input$file1$datapath,
+                       header = TRUE,
+                       fill= TRUE, # to fill any missing data
+                       sep = "\t")
+      tempTable =  get_exp_design(df)
+    }
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
       hot_col("label", readOnly = T) 
@@ -319,12 +332,26 @@ server <- function(input, output,session){
   # Creates handsontable template table
   protein_exp_data1 <- reactive({
     req(input$file2)
-    df <- read.delim(input$file2$datapath,
-                     header = TRUE,
-                     fill= TRUE, # to fill any missing data
-                     sep = "\t")
+    # df <- read.delim(input$file2$datapath,
+    #                  header = TRUE,
+    #                  fill= TRUE, # to fill any missing data
+    #                  sep = "\t")
+    # 
+    # tempTable =  get_exp_design_pr(df)
+    if (!is.null(input$file4)){
+      tempTable <- read.delim(input$file4$datapath,
+                              header = TRUE,
+                              sep="\t",
+                              stringsAsFactors = FALSE,
+                              colClasses = c(label = "character",condition = "character"))
+    } else {
+      df <- read.delim(input$file2$datapath,
+                       header = TRUE,
+                       fill= TRUE, # to fill any missing data
+                       sep = "\t")
+      tempTable =  get_exp_design(df)
+    }
     
-    tempTable =  get_exp_design_pr(df)
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
       hot_col("label", readOnly = T) 
