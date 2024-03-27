@@ -452,7 +452,10 @@ ui <- function(request){
                                                          width=6,
                                                          tabBox(title = "QC Plots", width = 12,
                                                                 tabPanel(tooltips_ui("PCA Plot"),
-                                                                         shinycssloaders::withSpinner(plotOutput("pca_plot", height=600), color = "#bec8da"),
+                                                                         checkboxInput("pca_label",
+                                                                                       "Show labels",
+                                                                                       value = FALSE),
+                                                                         shinycssloaders::withSpinner(plotOutput("pca_plot", height=560), color = "#bec8da"),
                                                                          save_plot_left_ui("pca")
                                                                 ),
                                                                 tabPanel(tooltips_ui("Sample Correlation"),
@@ -681,7 +684,10 @@ ui <- function(request){
                                                          width=6,
                                                          tabBox(title = "QC Plots", width = 12,
                                                                 tabPanel(tooltips_ui("PCA Plot"),
-                                                                         shinycssloaders::withSpinner(plotOutput("pca_plot_pr", height=600), color = "#bec8da"),
+                                                                         checkboxInput("pca_label_pr",
+                                                                                       "Show labels",
+                                                                                       value = FALSE),
+                                                                         shinycssloaders::withSpinner(plotOutput("pca_plot_pr", height=560), color = "#bec8da"),
                                                                          save_plot_left_ui("pca_pr")
                                                                 ),
                                                                 tabPanel(tooltips_ui("Sample Correlation"),
@@ -1019,7 +1025,10 @@ ui <- function(request){
                                                          width=6,
                                                          tabBox(title = "QC Plots", width = 12,
                                                                 tabPanel(tooltips_ui("PCA Plot"),
-                                                                         shinycssloaders::withSpinner(plotOutput("pca_plot_nr", height=600), color = "#bec8da"),
+                                                                         checkboxInput("pca_label_nr",
+                                                                                       "Show labels",
+                                                                                       value = FALSE),
+                                                                         shinycssloaders::withSpinner(plotOutput("pca_plot_nr", height=560), color = "#bec8da"),
                                                                          # downloadButton('download_pca_svg_nr', "Save svg")
                                                                          save_plot_left_ui("pca_plot_nr")
                                                                 ),
@@ -1345,7 +1354,10 @@ ui <- function(request){
                                                width=6,
                                                tabBox(title = "QC Plots", width = 12,
                                                       tabPanel(tooltips_ui("PCA Plot"),
-                                                               shinycssloaders::withSpinner(plotOutput("pca_plot_dm", height=600), color = "#bec8da"),
+                                                               checkboxInput("pca_label_dm",
+                                                                             "Show labels",
+                                                                             value = FALSE),
+                                                               shinycssloaders::withSpinner(plotOutput("pca_plot_dm", height=560), color = "#bec8da"),
                                                                # downloadButton('download_pca_svg_dm', "Save svg")
                                                                save_plot_left_ui("pca_dm")
                                                       ),
@@ -1574,7 +1586,10 @@ ui <- function(request){
                                                width=6,
                                                tabBox(title = "QC Plots", width = 12,
                                                       tabPanel(tooltips_ui("PCA Plot"),
-                                                               shinycssloaders::withSpinner(plotOutput("pca_plot_dm_pr", height=600), color = "#bec8da"),
+                                                               checkboxInput("pca_label_dm_pr",
+                                                                             "Show labels",
+                                                                             value = FALSE),
+                                                               shinycssloaders::withSpinner(plotOutput("pca_plot_dm_pr", height=560), color = "#bec8da"),
                                                                # downloadButton('download_pca_svg_dm_pr', "Save svg")
                                                                save_plot_left_ui("pca_plot_dm_pr")
                                                       ),
@@ -1926,7 +1941,10 @@ ui <- function(request){
                                         width=6,
                                         tabBox(title = "QC Plots", width = 12,
                                                tabPanel(tooltips_ui("PCA Plot"),
-                                                        shinycssloaders::withSpinner(plotOutput("pca_plot_dm_nr", height=600), color = "#bec8da"),
+                                                        checkboxInput("pca_label_dm_nr",
+                                                                      "Show labels",
+                                                                      value = FALSE),
+                                                        shinycssloaders::withSpinner(plotOutput("pca_plot_dm_nr", height=560), color = "#bec8da"),
                                                         # downloadButton('download_pca_svg_dm_nr', "Save svg")
                                                         save_plot_left_ui("pca_plot_dm_nr")
                                                ),

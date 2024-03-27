@@ -665,45 +665,30 @@ server <- function(input, output,session){
   ## Results plot inputs
   
   ## PCA Plot
-  pca_input<-eventReactive(input$analyze ,{ 
+  pca_input<-reactive({ 
     if(input$analyze==0 ){
       return()
     }
     if (num_total()<=500){
       if(length(levels(as.factor(colData(dep())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep(), n=num_total(), point_size = 4)
+        pca_plot<-plot_pca_new(dep(), n=num_total(), point_size = 4, label = input$pca_label)
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
       else{
-        pca_plot<-DEP::plot_pca(dep(), n=num_total(), point_size = 4, indicate = "condition") 
+        pca_plot<-plot_pca_new(dep(), n=num_total(), point_size = 4, indicate = "condition", label = input$pca_label) 
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
-    }
-    else{
+    }else{
       if(length(levels(as.factor(colData(dep())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep(), point_size = 4)
+        pca_plot<-plot_pca_new(dep(), point_size = 4, label = input$pca_label)
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
       else{
-        #pca_label<-SummarizedExperiment::colData(dep())$replicate
-        pca_plot<-DEP::plot_pca(dep(), point_size = 4, indicate = "condition")
-        #pca_plot<-pca_plot + geom_point()
-        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
-                                                      size = 4,
-                                                      box.padding = unit(0.1, 'lines'),
-                                                      point.padding = unit(0.1, 'lines'),
-                                                      segment.size = 0.5)
+        pca_plot<-plot_pca_new(dep(), point_size = 4, indicate = "condition", label = input$pca_label)
         pca_plot<-pca_plot + labs(title = "PCA Plot")
-        
-        #        pca_plot<-DEP::plot_pca(dep(), point_size = 4, indicate = "condition")
-        #         pca_plot + ggrepel::geom_text_repel(aes(label=SummarizedExperiment::colData(dep())$replicate),
-        #                                        size = 5,
-        #                                           box.padding = unit(0.1, 'lines'),
-        #                                          point.padding = unit(0.1, 'lines'),
-        #                                         segment.size = 0.5)
         return(pca_plot)
       }
     }
@@ -1884,43 +1869,30 @@ server <- function(input, output,session){
   
   ## Results plot inputs
   
-  ## PCA Plot
-  
-  pca_label_pr<-reactive({
-    pca_label<-levels(as.factor(colData(dep_pr())$replicate))
-    print(pca_label)
-  })
-  
-  pca_input_pr<-eventReactive(input$analyze ,{
+  ## PCA Plot 
+  pca_input_pr<-reactive({
     if(input$analyze==0 ){
       return()
     }
     if (num_total_pr()<=500){
       if(length(levels(as.factor(colData(dep_pr())$replicate))) <= 6){
-        pca_plot<- DEP::plot_pca(dep_pr(), n=num_total_pr(), point_size = 4)
+        pca_plot<- plot_pca_new(dep_pr(), n=num_total_pr(), point_size = 4, label = input$pca_label_pr)
         pca_plot<-pca_plot + labs(title = "PCA plot")
         return(pca_plot)
       }
       else{
-        pca_plot<-DEP::plot_pca(dep_pr(), n=num_total_pr(), point_size = 4, indicate = "condition")
+        pca_plot<-plot_pca_new(dep_pr(), n=num_total_pr(), point_size = 4, indicate = "condition", label = input$pca_label_pr)
         pca_plot<-pca_plot + labs(title = "PCA plot")
         return(pca_plot)
       }
     }
     else{
       if(length(levels(as.factor(colData(dep_pr())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_pr(), point_size = 4)
+        pca_plot<-plot_pca_new(dep_pr(), point_size = 4, label = input$pca_label_pr)
         pca_plot<-pca_plot + labs(title = "PCA plot")
         return(pca_plot)
       }else{
-        pca_label<-SummarizedExperiment::colData(dep_pr())$replicate
-        pca_plot<-DEP::plot_pca(dep_pr(), point_size = 4, indicate = "condition")
-        #pca_plot<-pca_plot + geom_point()
-        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
-                                                      size = 4,
-                                                      box.padding = unit(0.1, 'lines'),
-                                                      point.padding = unit(0.1, 'lines'),
-                                                      segment.size = 0.5)
+        pca_plot<-plot_pca_new(dep_pr(), point_size = 4, indicate = "condition", label = input$pca_label_pr)
         pca_plot<-pca_plot + labs(title = "PCA plot")
         return(pca_plot)
       }
@@ -3686,37 +3658,30 @@ server <- function(input, output,session){
   ## Results plot inputs in Normalized page
   
   ## PCA Plot
-  pca_input_nr<-eventReactive(input$analyze ,{ 
+  pca_input_nr<-reactive({ 
     if(input$analyze==0 ){
       return()
     }
     if (num_total_nr()<=500){
       if(length(levels(as.factor(colData(dep_nr())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_nr(), n=num_total_nr(), point_size = 4)
+        pca_plot<-plot_pca_new(dep_nr(), n=num_total_nr(), point_size = 4, label = input$pca_label_nr)
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
       else{
-        pca_plot<-DEP::plot_pca(dep_nr(), n=num_total_nr(), point_size = 4, indicate = "condition") 
+        pca_plot<-plot_pca_new(dep_nr(), n=num_total_nr(), point_size = 4, indicate = "condition", label = input$pca_label_nr) 
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
     }
     else{
       if(length(levels(as.factor(colData(dep_nr())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_nr(),point_size = 4)
+        pca_plot<-plot_pca_new(dep_nr(),point_size = 4, label = input$pca_label_nr)
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
       else{
-        #pca_label<-SummarizedExperiment::colData(dep_nr())$replicate
-        pca_plot<-DEP::plot_pca(dep_nr(), point_size = 4, indicate = "condition")
-        #pca_plot<-pca_plot + geom_point()
-        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
-                                                      size = 4,
-                                                      box.padding = unit(0.1, 'lines'),
-                                                      point.padding = unit(0.1, 'lines'),
-                                                      segment.size = 0.5)
+        pca_plot<-plot_pca_new(dep_nr(), point_size = 4, indicate = "condition", label = input$pca_label_nr)
         pca_plot<-pca_plot + labs(title = "PCA Plot")
         return(pca_plot)
       }
@@ -4473,6 +4438,9 @@ server <- function(input, output,session){
     # ensure all intensity columns are numeric type
     peptide_data[,intensity_cols] <- sapply(peptide_data[,intensity_cols],as.numeric)
     
+    # replace NA to 0
+    peptide_data <- peptide_data %>% dplyr::mutate_if(is.numeric,~tidyr::replace_na(.,0))
+    
     # get the intensity columns need to be dropped
     drop_cols <- setdiff(intensity, intensity_cols)
     # drop columns
@@ -4877,43 +4845,16 @@ server <- function(input, output,session){
   ## Results plot inputs in Normalized page
   
   ## PCA Plot
-  pca_label_dm<-reactive({
-    pca_label<-levels(as.factor(colData(dep_dm())$replicate))
-    print(pca_label)
-  })
-  
   pca_input_dm<-reactive({
-    if (num_total_dm()<=500){
-      if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 6){
-        pca_plot<- DEP::plot_pca(dep_dm(), n=num_total_dm(), point_size = 4)
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }
-      else{
-        pca_plot<-DEP::plot_pca(dep_dm(), n=num_total_dm(), point_size = 4, indicate = "condition")
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }
+    if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 6){
+      pca_plot<-plot_pca_new(dep_dm(), point_size = 4, label = input$pca_label_dm)
+      pca_plot<-pca_plot + labs(title = "PCA plot")
+      return(pca_plot)
+    }else{
+      pca_plot<-plot_pca_new(dep_dm(), point_size = 4, indicate = "condition", label = input$pca_label_dm)
+      pca_plot<-pca_plot + labs(title = "PCA plot")
+      return(pca_plot)
     }
-    else{
-      if(length(levels(as.factor(colData(dep_dm())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_dm(), point_size = 4)
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }else{
-        pca_label<-SummarizedExperiment::colData(dep_dm())$replicate
-        pca_plot<-DEP::plot_pca(dep_dm(), point_size = 4, indicate = "condition")
-        #pca_plot<-pca_plot + geom_point()
-        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
-                                                      size = 4,
-                                                      box.padding = unit(0.1, 'lines'),
-                                                      point.padding = unit(0.1, 'lines'),
-                                                      segment.size = 0.5)
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }
-    }
-    
   })
   
   ### Heatmap Differentially expressed proteins
@@ -6093,43 +6034,16 @@ server <- function(input, output,session){
   ## Results plot inputs in Normalized page
   
   ## PCA Plot
-  pca_label_dm_pr<-reactive({
-    pca_label<-levels(as.factor(colData(dep_dm_pr())$replicate))
-    print(pca_label)
-  })
-  
   pca_input_dm_pr<-reactive({
-    if (num_total_dm_pr()<=500){
-      if(length(levels(as.factor(colData(dep_dm_pr())$replicate))) <= 6){
-        pca_plot<- DEP::plot_pca(dep_dm_pr(), n=num_total_dm_pr(), point_size = 4)
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }
-      else{
-        pca_plot<-DEP::plot_pca(dep_dm_pr(), n=num_total_dm_pr(), point_size = 4, indicate = "condition")
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }
+    if(length(levels(as.factor(colData(dep_dm_pr())$replicate))) <= 6){
+      pca_plot<-plot_pca_new(dep_dm_pr(), point_size = 4, label = input$pca_label_dm_pr)
+      pca_plot<-pca_plot + labs(title = "PCA plot")
+      return(pca_plot)
+    }else{
+      pca_plot<-plot_pca_new(dep_dm_pr(), point_size = 4, indicate = "condition", label = input$pca_label_dm_pr)
+      pca_plot<-pca_plot + labs(title = "PCA plot")
+      return(pca_plot)
     }
-    else{
-      if(length(levels(as.factor(colData(dep_dm_pr())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_dm_pr(), point_size = 4)
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }else{
-        pca_label<-SummarizedExperiment::colData(dep_dm_pr())$replicate
-        pca_plot<-DEP::plot_pca(dep_dm_pr(), point_size = 4, indicate = "condition")
-        #pca_plot<-pca_plot + geom_point()
-        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
-                                                      size = 4,
-                                                      box.padding = unit(0.1, 'lines'),
-                                                      point.padding = unit(0.1, 'lines'),
-                                                      segment.size = 0.5)
-        pca_plot<-pca_plot + labs(title = "PCA plot")
-        return(pca_plot)
-      }
-    }
-    
   })
   
   ### Heatmap Differentially expressed proteins
@@ -7535,44 +7449,17 @@ server <- function(input, output,session){
   ## Results plot inputs in Normalized page
   
   ## PCA Plot
-  pca_label_dm_nr<-reactive({
-    pca_label<-levels(as.factor(colData(dep_dm_nr())$replicate))
-    print(pca_label)
-  })
-  
   pca_input_dm_nr<-reactive({
-    if (num_total_dm_nr()<=500){
-      if(length(levels(as.factor(colData(dep_dm_nr())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_dm_nr(), n=num_total_dm_nr(), point_size = 4)
-        pca_plot<-pca_plot + labs(title = "PCA Plot")
-        return(pca_plot)
-      }
-      else{
-        pca_plot<-DEP::plot_pca(dep_dm_nr(), n=num_total_dm_nr(), point_size = 4, indicate = "condition")
-        pca_plot<-pca_plot + labs(title = "PCA Plot")
-        return(pca_plot)
-      }
+    if(length(levels(as.factor(colData(dep_dm_nr())$replicate))) <= 6){
+      pca_plot<-plot_pca_new(dep_dm_nr(),point_size = 4, label = input$pca_label_dm_nr)
+      pca_plot<-pca_plot + labs(title = "PCA Plot")
+      return(pca_plot)
     }
     else{
-      if(length(levels(as.factor(colData(dep_dm_nr())$replicate))) <= 6){
-        pca_plot<-DEP::plot_pca(dep_dm_nr(),point_size = 4)
-        pca_plot<-pca_plot + labs(title = "PCA Plot")
-        return(pca_plot)
-      }
-      else{
-        #pca_label<-SummarizedExperiment::colData(dep_dm_nr())$replicate
-        pca_plot<-DEP::plot_pca(dep_dm_nr(), point_size = 4, indicate = "condition")
-        #pca_plot<-pca_plot + geom_point()
-        pca_plot<-pca_plot + ggrepel::geom_text_repel(aes(label=factor(rowname)),
-                                                      size = 4,
-                                                      box.padding = unit(0.1, 'lines'),
-                                                      point.padding = unit(0.1, 'lines'),
-                                                      segment.size = 0.5)
-        pca_plot<-pca_plot + labs(title = "PCA Plot")
-        return(pca_plot)
-      }
+      pca_plot<-plot_pca_new(dep_dm_nr(), point_size = 4, indicate = "condition", label = input$pca_label_dm_nr)
+      pca_plot<-pca_plot + labs(title = "PCA Plot")
+      return(pca_plot)
     }
-    
   })
   
   ### Heatmap Differentially expressed proteins

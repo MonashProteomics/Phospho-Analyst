@@ -1186,3 +1186,142 @@ filter_missval_new <- function(se,one_condition,exp_df){
   se_fltrd <- se[keep1$rowname, ]
   return(se_fltrd)
 }
+
+#### customize PCA plot from DEP package ####
+plot_pca_new <- function(dep, x = 1, y = 2, indicate = c("condition", "replicate"),
+                         label = FALSE, n = 500, point_size = 4, label_size = 4, plot = TRUE) {
+  if(is.integer(x)) x <- as.numeric(x)
+  if(is.integer(y)) y <- as.numeric(y)
+  if(is.integer(n)) n <- as.numeric(n)
+  if(is.integer(point_size)) point_size <- as.numeric(point_size)
+  if(is.integer(label_size)) label_size <- as.numeric(label_size)
+  # Show error if inputs are not the required classes
+  assertthat::assert_that(inherits(dep, "SummarizedExperiment"),
+                          is.numeric(x),
+                          length(x) == 1,
+                          is.numeric(y),
+                          length(y) == 1,
+                          is.numeric(n),
+                          length(n) == 1,
+                          is.character(indicate),
+                          is.logical(label),
+                          is.numeric(point_size),
+                          length(point_size) == 1,
+                          is.numeric(label_size),
+                          length(label_size) == 1,
+                          is.logical(plot),
+                          length(plot) == 1)
+  
+  # Check for valid x and y values
+  if(x > ncol(dep) | y > ncol(dep)) {
+    stop(paste0("'x' and/or 'y' arguments are not valid\n",
+                "Run plot_pca() with 'x' and 'y' <= ",
+                ncol(dep), "."),
+         call. = FALSE)
+  }
+  
+  # Check for valid 'n' value
+  if(n > nrow(dep)) {
+    stop(paste0("'n' argument is not valid.\n",
+                "Run plot_pca() with 'n' <= ",
+                nrow(dep),
+                "."),
+         call. = FALSE)
+  }
+  
+  # Check for valid 'indicate'
+  columns <- colnames(colData(dep))
+  if(!is.null(indicate)) {
+    if(length(indicate) > 3) {
+      stop("Too many features in 'indicate'
+        Run plot_pca() with a maximum of 3 indicate features")
+    }
+    if(any(!indicate %in% columns)) {
+      stop(paste0("'",
+                  paste0(indicate, collapse = "' and/or '"),
+                  "' column(s) is/are not present in ",
+                  deparse(substitute(dep)),
+                  ".\nValid columns are: '",
+                  paste(columns, collapse = "', '"),
+                  "'."),
+           call. = FALSE)
+    }
+  }
+  
+  # Get the variance per protein and take the top n variable proteins
+  var <- apply(assay(dep), 1, sd)
+  df <- assay(dep)[order(var, decreasing = TRUE)[seq_len(n)],]
+  df <- stats::na.omit(df) # remove incomplete cases
+  
+  # Check for valid 'n' value
+  if(n > nrow(df)) {
+    message(paste("'n' argument is larger than number of features availble(",
+                  nrow(df), ").", nrow(df), "features will be used for PCA calculation."))
+    n <- nrow(df)
+  } else {
+    n <- n
+  }
+  
+  # Calculate PCA
+  pca <- prcomp(t(df), scale = FALSE)
+  pca_df <- pca$x %>%
+    data.frame() %>%
+    rownames_to_column() %>%
+    left_join(., data.frame(colData(dep)), by = c("rowname" = "ID"))
+  
+  # Calculate the percentage of variance explained
+  percent <- round(100 * pca$sdev^2 / sum(pca$sdev^2), 1)
+  
+  # Make factors of indicate features
+  for(feat in indicate) {
+    pca_df[[feat]] <- as.factor(pca_df[[feat]])
+  }
+  
+  # Plot the PCA plot
+  p <- ggplot(pca_df, aes(get(paste0("PC", x)), get(paste0("PC", y)))) +
+    labs(title = paste0("PCA plot - top ", n, " variable proteins"),
+         x = paste0("PC", x, ": ", percent[x], "%"),
+         y = paste0("PC", y, ": ", percent[y], "%")) +
+    coord_fixed() +
+    theme_DEP1()
+  
+  if(length(indicate) == 0) {
+    p <- p + geom_point(size = point_size)
+  }
+  if(length(indicate) == 1) {
+    p <- p + geom_point(aes(col = .data[[indicate[1]]]),
+                        size = point_size) +
+      labs(col = indicate[1])
+  }
+  if(length(indicate) == 2) {
+    p <- p + geom_point( aes(col = .data[[indicate[1]]],
+                             shape = .data[[indicate[2]]]),
+                         size = point_size) +
+      labs(col = indicate[1],
+           shape = indicate[2])
+  }
+  if(length(indicate) == 3) {
+    p <- p + geom_point(aes(col = .data[[indicate[1]]],
+                            shape = .data[[indicate[2]]]),
+                        size = point_size) +
+      facet_wrap(~.data[[indicate[3]]])
+    labs(col = indicate[1],
+         shape = indicate[2])
+  }
+  if(label) {
+    # p <- p + geom_text(aes(label = rowname), size = label_size)
+    p <- p + ggrepel::geom_text_repel(aes(label=factor(rowname)),
+                                      size = label_size,
+                                      box.padding = unit(0.1, 'lines'),
+                                      point.padding = unit(0.1, 'lines'),
+                                      segment.size = 0.5)
+  }
+  if(plot) {
+    return(p)
+  } else {
+    df <- pca_df %>%
+      select(rowname, paste0("PC", c(x, y)), match(indicate, colnames(pca_df)))
+    colnames(df)[1] <- "sample"
+    return(df)
+  }
+}
