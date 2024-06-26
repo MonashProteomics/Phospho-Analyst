@@ -483,8 +483,16 @@ ui <- function(request){
                                                                 #          plotOutput("detect", height = 600)
                                                                 # ),
                                                                 tabPanel(tooltips_ui("Missing values - Heatmap"),
-                                                                         shinycssloaders::withSpinner(plotOutput("missval", height = 600), color = "#bec8da"),
-                                                                         save_plot_left_ui("missing-values")
+                                                                         fluidRow(
+                                                                           column(12,
+                                                                                  column(8),
+                                                                                  column(4,
+                                                                                         checkboxInput("full_missval","Show full dataset",value = FALSE))),
+                                                                           column(12,
+                                                                                  shinycssloaders::withSpinner(plotOutput("missval", height = 560), color = "#bec8da"),
+                                                                                  save_plot_left_ui("missing-values")
+                                                                           )
+                                                                         )
                                                                 ),
                                                                 tabPanel(tooltips_ui("Imputation"),
                                                                          shinycssloaders::withSpinner(plotOutput("imputation", height = 600), color = "#bec8da"),
