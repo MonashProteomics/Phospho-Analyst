@@ -76,3 +76,15 @@ plot_missval_new <- function(se, full_dataset = FALSE) {
   }
   return(p)
 }
+
+# convert protein id to 
+convert_uniprot <- function(df, Accession){
+  df$UniProt <- df[[Accession]] %>% gsub(";.*", "", .) 
+  uniprot_df <- mapUniProt("UniProtKB_AC-ID", "UniProtKB", query = df$UniProt)
+  uniprot_df <- uniprot_df  %>% dplyr::select("From","Gene.Names") %>% group_by(From) %>% summarize(Gene.Names = paste(Gene.Names, collapse = ";"))
+  uniprot_df$Gene.Names <- uniprot_df$Gene.Names  %>% gsub("[[:space:]].*","",.)
+  df <- df %>% left_join(uniprot_df, by =  c("UniProt" = "From"))
+  df <- df %>% dplyr::relocate(Gene.Names, .after = Accession)
+  colnames(df)[colnames(df) == "Gene.Names"] = "Gene.names"
+  return(df)
+}

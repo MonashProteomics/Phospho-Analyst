@@ -553,7 +553,7 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
     pattern <- paste(condition,"[[:digit:]]",sep = '_')
     intensity_df[paste0('mean',sep = "_",condition)] <- rowMeans(
       as.matrix(intensity_df %>% 
-                  select(grep(pattern, colnames(intensity_df)))), na.rm = TRUE)
+                  dplyr::select(grep(pattern, colnames(intensity_df)))), na.rm = TRUE)
   }
   
   mean_df <- intensity_df %>%
@@ -940,7 +940,8 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   
   # get row data
   phospho_df <- rowData(phospho_imp)   %>% data.frame() %>% dplyr::select('Protein')
-  protein_df <- rowData(protein_imp)   %>% data.frame() %>% dplyr::select('Majority.protein.IDs')
+  # protein_df <- rowData(protein_imp)   %>% data.frame() %>% dplyr::select('Majority.protein.IDs')
+  protein_df <- rowData(protein_imp)   %>% data.frame() %>% dplyr::select('Protein.IDs')
   
   # merge phospho data with its intensity values
   phospho_df_1 <- merge(phospho_df, phospho_intensity,by='row.names',all=TRUE)
@@ -963,11 +964,13 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   }
   
   protein_median <- protein_df_2 %>% 
-    select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
+    # select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
+    select("Protein.IDs",grep("median", colnames(protein_df_2)))
   
   # join two raw data 
   phospho_protein <- phospho_df_1 %>% 
-    left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
+    # left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
+    left_join(., protein_median, by = c("Protein" = "Protein.IDs")) %>% 
     data.frame (row.names = 1) %>% 
     dplyr::select(-'Protein')
   
