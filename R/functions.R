@@ -965,7 +965,7 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   
   protein_median <- protein_df_2 %>% 
     # select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
-    select("Protein.IDs",grep("median", colnames(protein_df_2)))
+    dplyr::select("Protein.IDs",grep("median", colnames(protein_df_2)))
   
   # join two raw data 
   phospho_protein <- phospho_df_1 %>% 
@@ -1022,7 +1022,7 @@ phosphomatics_input <- function(phospho_data_input, exp_design) {
   intensity_main <- colnames( phospho_data_input[,intensity_ints])
   intensity_main <- stringr::str_sort(intensity_main, numeric = TRUE) # sort the intensity columns
   # select required columns
-  phosphomatics_input <- phospho_data_input %>% select('Protein', 'Position', 'Amino.acid', c(intensity_main))
+  phosphomatics_input <- phospho_data_input %>% dplyr::select('Protein', 'Position', 'Amino.acid', c(intensity_main))
   # ensure the format of intensities are correct
   phosphomatics_input[,intensity_main] <- sapply(phosphomatics_input[,intensity_main],as.numeric)
   # create column names
@@ -1323,7 +1323,7 @@ plot_pca_new <- function(dep, x = 1, y = 2, indicate = c("condition", "replicate
     return(p)
   } else {
     df <- pca_df %>%
-      select(rowname, paste0("PC", c(x, y)), match(indicate, colnames(pca_df)))
+      dplyr::select(rowname, paste0("PC", c(x, y)), match(indicate, colnames(pca_df)))
     colnames(df)[1] <- "sample"
     return(df)
   }
