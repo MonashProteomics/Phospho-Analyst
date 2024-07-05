@@ -963,28 +963,63 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
                   dplyr::select(grep(pattern, colnames(protein_df_2)))), na.rm = TRUE)
   }
   
+  # protein_median <- protein_df_2 %>% 
+  #   # select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
+  #   dplyr::select("Protein.IDs",grep("median", colnames(protein_df_2)))
+  # 
+  # # join two raw data 
+  # phospho_protein <- phospho_df_1 %>% 
+  #   # left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
+  #   left_join(., protein_median, by = c("Protein" = "Protein.IDs")) %>% 
+  #   data.frame (row.names = 1) %>% 
+  #   dplyr::select(-'Protein')
+  # 
+  # # use each phosphosite intensity value to divide median protein intensity of a same group
+  # df_corrected <- row.names(phospho_protein) %>% data.frame()
+  # 
+  # for (i in 1: length(conditions)) {
+  #   condition <- conditions[i]
+  #   one_group <- colnames(phospho_protein %>% dplyr::select(dplyr::starts_with(condition)))           
+  #   df <- phospho_protein[one_group]                
+  #   median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
+  #   
+  #   # division get factor
+  #   df_factor <- df/phospho_protein[,median_col]
+  #   df_factor[is.na(df_factor)] <- 1
+  #   
+  #   # correct phosphosite data by using factor
+  #   df_corrected <- cbind(df_corrected, df*df_factor)
+  # }
+  protein_df_2$median_pr <- rowMedians(as.matrix(protein_df_1[, -c(1,2)]), na.rm = T)
+  
+  
   protein_median <- protein_df_2 %>% 
     # select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
     dplyr::select("Protein.IDs",grep("median", colnames(protein_df_2)))
+  
+  protein_median$fac_Control <- protein_median$median_pr/protein_median$median_Control
+  protein_median$fac_AKT <- protein_median$median_pr/protein_median$median_AKT
   
   # join two raw data 
   phospho_protein <- phospho_df_1 %>% 
     # left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
     left_join(., protein_median, by = c("Protein" = "Protein.IDs")) %>% 
-    data.frame (row.names = 1) %>% 
+    data.frame (row.names = 1) %>%
     dplyr::select(-'Protein')
   
   # use each phosphosite intensity value to divide median protein intensity of a same group
   df_corrected <- row.names(phospho_protein) %>% data.frame()
-  
   for (i in 1: length(conditions)) {
     condition <- conditions[i]
     one_group <- colnames(phospho_protein %>% dplyr::select(dplyr::starts_with(condition)))           
     df <- phospho_protein[one_group]                
-    median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
+    # median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
+    fac_col <- grep(paste0('fac',sep = "_",condition), colnames(phospho_protein)) 
+    
     
     # division get factor
-    df_factor <- df/phospho_protein[,median_col]
+    # df_factor <- df/phospho_protein[,median_col]
+    df_factor <- phospho_protein[,fac_col]
     df_factor[is.na(df_factor)] <- 1
     
     # correct phosphosite data by using factor
