@@ -2964,7 +2964,7 @@ server <- function(input, output,session){
       phospho_intensity <- assay(dep())  %>% as.data.frame()
       phospho_df <- merge(phospho_row, phospho_intensity, by = 0) # Merge data according to row names
       
-      col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
+      col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',"Protein ID",
                           paste(input$volcano_comp, "_log2 fold change", sep = ""),
                           paste(input$volcano_comp, "_p.val", sep = ""))
         
@@ -3004,7 +3004,8 @@ server <- function(input, output,session){
       # phospho_df <- phospho_df()
       # protein_df <- protein_df()
       df <- phospho_df() %>%
-        left_join(., protein_df(), by = "Gene.names")
+        # left_join(., protein_df(), by = "Gene.names")
+        left_join(., protein_df(), by = "Protein ID")
       # df$protein_diff[is.na(df$protein_diff)] <- 0
       df$normalized_diff <- df$phospho_diff - df$protein_diff
       # get index of the p.val
@@ -3040,7 +3041,8 @@ server <- function(input, output,session){
   phospho_df_long <- reactive({
     if (!is.null(phospho_df()) & !is.null(protein_df())){
       combined_df <- phospho_df() %>%
-        inner_join(., protein_df(), by = "Gene.names")
+        # inner_join(., protein_df(), by = "Gene.names")
+        inner_join(., protein_df(), by = "Protein ID")
       exp_design <- exp_design_input()
       # phospho_cols <- colnames(combined_df %>% select(dplyr::ends_with(".x")))
       
@@ -3049,9 +3051,11 @@ server <- function(input, output,session){
       
       
       phospho_df_11 <- subset(combined_df, select = phospho_cols)
-      names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names','phospho_diff',"p.val")
+      # names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names','phospho_diff',"p.val")
+      names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names',"Protein ID",'phospho_diff',"p.val")
       phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>%
-        gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+        # gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+        gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names",  -"Protein ID", -"phospho_diff")
       phospho_df_33 <- phospho_df_22 %>%
         left_join(., exp_design, by = "label")
       
@@ -3070,16 +3074,19 @@ server <- function(input, output,session){
   protein_df_long <- reactive({
     if (!is.null(phospho_df()) & !is.null(protein_df())){
       combined_df <- phospho_df() %>%
-        inner_join(., protein_df(), by = "Gene.names")
+        # inner_join(., protein_df(), by = "Gene.names")
+        inner_join(., protein_df(), by = "Protein ID")
       exp_design <- exp_design_input_1()
       # protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
       protein_cols <- colnames(combined_df %>% dplyr::select((ncol(phospho_df())+1):ncol(combined_df)))
       protein_cols_1 <- exp_design$label
       
-      protein_df_11 <- subset(combined_df, select = c(protein_cols,'Gene.names'))
-      names(protein_df_11) <- c(protein_cols_1,"protein_id",'protein_diff','p.val','Gene.names')
+      # protein_df_11 <- subset(combined_df, select = c(protein_cols,'Gene.names'))
+      protein_df_11 <- subset(combined_df, select = c(protein_cols,'Protein ID'))
+      # names(protein_df_11) <- c(protein_cols_1,"protein_id",'protein_diff','p.val','Gene.names')
+      names(protein_df_11) <- c(protein_cols_1,'Gene.names','protein_diff','p.val',"Protein ID")
       protein_df_22 <- protein_df_11 %>% rownames_to_column() %>%
-        gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
+        gather(label, intensity, -rowname,-"p.val", -"Protein ID", -"Gene.names",-"protein_diff")
       protein_df_33 <- protein_df_22 %>%
         left_join(., exp_design, by = "label")
       
