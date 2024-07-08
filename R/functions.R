@@ -1047,15 +1047,43 @@ limma_norm_function <- function(imputed_data){
 }
 
 #### ===== generate input data for Phosphomatics ===== #####
-phosphomatics_input <- function(phospho_data_input, exp_design) {
-  # get all intensity columns
-  intensity_total <- grep("^Intensity[.]", colnames(phospho_data_input)) 
-  # get the multiplicity intensity columns
-  intensity_mult <- grep("^Intensity.+___\\d", colnames(phospho_data_input))
-  # get the main intensity columns
-  intensity_ints <- setdiff(intensity_total, intensity_mult)
+phosphomatics_input <- function(phospho_data_input, exp_design_input) {
+  if (any(grep("PTM.Quantity", colnames(phospho_data_input)))){ # output from spectronaut
+    
+    phospho_data_input <- phospho_data_input %>% filter(PTM.ModificationTitle == "Phospho (STY)")
+    
+    # get intensity columns
+    intensity_ints <- grep("PTM.Quantity", colnames(phospho_data_input)) 
+    # change intensity column names to be same as MaxQuant one
+    colnames(phospho_data_input)[intensity_ints] <- colnames(phospho_data_input)[intensity_ints] %>%
+      sub("^.*?\\.\\.","",.) %>%
+      gsub(".PTM.Quantity","",.) %>%
+      gsub(".raw","",.)
+    colnames(phospho_data_input)[intensity_ints] <- paste0("Intensity.", colnames(phospho_data_input)[intensity_ints])
+    
+    # if included, replace "Filtered" with NA (some spectronaut's output)
+    phospho_data_input <- replace(phospho_data_input, phospho_data_input == "Filtered", NA) 
+    # ensure all intensity columns are numeric type
+    phospho_data_input[,intensity_ints] <- sapply(phospho_data_input[,intensity_ints],as.numeric)
+    
+    # change inconsistency column names
+    colnames(phospho_data_input)[names(phospho_data_input) == "PTM.SiteLocation"] <- "Position"
+    colnames(phospho_data_input)[names(phospho_data_input) == "PTM.ProteinId"] <- "Protein"
+    colnames(phospho_data_input)[names(phospho_data_input) == "PTM.SiteAA" ] <- "Amino.acid"
+  
+    
+  } else {
+    # get all intensity columns
+    intensity_total <- grep("^Intensity[.]", colnames(phospho_data_input)) 
+    # get the multiplicity intensity columns
+    intensity_mult <- grep("^Intensity.+___\\d", colnames(phospho_data_input))
+    # get the main intensity columns
+    intensity_ints <- setdiff(intensity_total, intensity_mult)
+  }
+  
   intensity_main <- colnames( phospho_data_input[,intensity_ints])
   intensity_main <- stringr::str_sort(intensity_main, numeric = TRUE) # sort the intensity columns
+  
   # select required columns
   phosphomatics_input <- phospho_data_input %>% dplyr::select('Protein', 'Position', 'Amino.acid', c(intensity_main))
   # ensure the format of intensities are correct
