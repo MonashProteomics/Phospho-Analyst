@@ -483,7 +483,7 @@ server <- function(input, output,session){
       filtered_data[,grep("PTM.SiteProbability", colnames(filtered_data))] <- sapply(filtered_data[,grep("PTM.SiteProbability", colnames(filtered_data))],as.numeric)
     
       # generate same columns as MaxQuant dataset
-      data_pre <- filtered_data %>% dplyr::mutate(Residue.Both = paste(PTM.SiteAA, PTM.SiteLocation, sep = "_"))
+      data_pre <- filtered_data %>% dplyr::mutate(Residue.Both = paste(PTM.SiteAA, PTM.SiteLocation, sep = ""))
       data_pre$name = data_pre$PTM.CollapseKey
       data_pre$ID = data_pre$PTM.CollapseKey
       data_pre$peptide.sequence <- data_pre$PTM.FlankingRegion
