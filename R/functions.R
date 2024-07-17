@@ -997,8 +997,11 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
     # select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
     dplyr::select("Protein.IDs",grep("median", colnames(protein_df_2)))
   
-  protein_median$fac_Control <- protein_median$median_pr/protein_median$median_Control
-  protein_median$fac_AKT <- protein_median$median_pr/protein_median$median_AKT
+  # calculate factor
+  for (i in 1: length(conditions_pr)){
+    condition <- conditions_pr[i]
+    protein_median[paste0("fac_", condition)] <- protein_median$median_pr/protein_median[paste0("median_", condition)]
+  }
   
   # join two raw data 
   phospho_protein <- phospho_df_1 %>% 
