@@ -4358,7 +4358,7 @@ server <- function(input, output,session){
   
   output$downloadData_nr <- downloadHandler(
     filename = function() { 
-      if(input$dataset_nr != "Rdata"){
+      if(input$dataset_nr != "RData"){
         paste(input$dataset_nr, ".csv", sep = "") 
       } else {
         "RData_output_phospho_corrected.RData"
