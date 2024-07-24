@@ -1577,25 +1577,42 @@ server <- function(input, output,session){
              "Original_matrix"= unimputed_table(),
              "Imputed_matrix" = imputed_table(),
              "Full_dataset" = get_df_wide(dep()),
-             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()))
+             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()),
+             "RData")
     } else {
       switch(input$dataset,
              "Results" = get_results_phospho(dep(), TRUE),
              "Original_matrix"= unimputed_table(),
              "Imputed_matrix" = imputed_table(),
              "Full_dataset" = get_df_wide(dep()),
-             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()))
+             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()),
+             "RData")
     }
   })
   
   output$downloadData <- downloadHandler(
-    filename = function() { paste(input$dataset, ".csv", sep = "") }, 
+    filename = function() { 
+      if(input$dataset != "RData"){
+        paste(input$dataset, ".csv", sep = "") 
+      } else {
+        "RData_output_phospho.RData"
+      }
+      }, 
     content = function(file) {
-      write.table(datasetInput(),
-                  file,
-                  col.names = TRUE,
-                  row.names = FALSE,
-                  sep =",") }
+      if (input$dataset != "RData"){
+        write.table(datasetInput(),
+                    file,
+                    col.names = TRUE,
+                    row.names = FALSE,
+                    sep =",")
+      } else {
+        filtered_data <- processed_data()
+        imputed_data <- imputed_data()
+        normalised_data <- normalised_data()
+        dep <- dep()
+        save(filtered_data, imputed_data, normalised_data, dep, file = file)
+      }
+      }
   )
   
   ### === Cluster Download ==== ####
@@ -2671,17 +2688,33 @@ server <- function(input, output,session){
            "Results" = get_results_proteins(dep_pr()),
            "Original_matrix"= unimputed_table_pr(),
            "Imputed_matrix" = imputed_table_pr(),
-           "Full_dataset" = get_df_wide(dep_pr()))
+           "Full_dataset" = get_df_wide(dep_pr()),
+           "RData")
   })
   
   output$downloadData_pr <- downloadHandler(
-    filename = function() { paste(input$dataset_pr, ".csv", sep = "") }, ## use = instead of <-
+    filename = function() { 
+      if(input$dataset_pr != "RData"){
+        paste(input$dataset_pr, ".csv", sep = "") 
+      } else {
+        "RData_output_protein.RData"
+      }
+      }, 
     content = function(file) {
-      write.table(datasetInput_pr(),
-                  file,
-                  col.names = TRUE,
-                  row.names = FALSE,
-                  sep =",") }
+      if(input$dataset_pr != "RData"){
+        write.table(datasetInput_pr(),
+                    file,
+                    col.names = TRUE,
+                    row.names = FALSE,
+                    sep =",") 
+      } else {
+        filtered_data_pr <- processed_data_pr()
+        imputed_data_pr <- imputed_data_pr()
+        normalised_data_pr <- normalised_data_pr()
+        dep_pr <- dep_pr()
+        save(filtered_data_pr, imputed_data_pr, normalised_data_pr, dep_pr, file = file)
+      }
+      }
   )
   
   ### === Cluster Download ==== ####
@@ -4310,22 +4343,39 @@ server <- function(input, output,session){
     if(length(unique(exp_design_input()$condition)) <= 2){
       switch(input$dataset_nr,
              "Results" = get_results_phospho(dep_nr(), FALSE),
-             "Full_dataset" = get_df_wide(dep_nr()))
+             "Full_dataset" = get_df_wide(dep_nr()),
+             "RData")
     } else {
       switch(input$dataset_nr,
              "Results" = get_results_phospho(dep_nr(), TRUE),
-             "Full_dataset" = get_df_wide(dep_nr()))
+             "Full_dataset" = get_df_wide(dep_nr()),
+             "RData")
     }
   })
   
   output$downloadData_nr <- downloadHandler(
-    filename = function() { paste(input$dataset_nr, ".csv", sep = "") }, ## use = instead of <-
+    filename = function() { 
+      if(input$dataset_nr != "Rdata"){
+        paste(input$dataset_nr, ".csv", sep = "") 
+      } else {
+        "RData_output_phospho_corrected.RData"
+      }
+      
+      }, 
     content = function(file) {
-      write.table(datasetInput_nr(),
-                  file,
-                  col.names = TRUE,
-                  row.names = FALSE,
-                  sep =",") }
+      if(input$dataset_nr != "RData"){
+        write.table(datasetInput_nr(),
+                    file,
+                    col.names = TRUE,
+                    row.names = FALSE,
+                    sep =",")
+      } else {
+        imputed_data_nr <- imputed_data_nr()
+        normalised_data_nr <- normalised_data_nr()
+        dep_nr <- dep_nr()
+        save(imputed_data_nr, normalised_data_nr, dep_nr, file = file)
+      }
+      }
   )
   
   ### === Cluster Download ==== ####
