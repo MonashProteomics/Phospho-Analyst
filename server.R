@@ -138,7 +138,8 @@ server <- function(input, output,session){
                      c("Results","Original_matrix",
                        "Imputed_matrix",
                        "Full_dataset",
-                       "Phosphomatics_input"))
+                       "Phosphomatics_input",
+                       "RData"))
     }
   })
   
@@ -1909,7 +1910,8 @@ server <- function(input, output,session){
                      "Download data table" ,
                      c("Results","Original_matrix",
                        "Imputed_matrix",
-                       "Full_dataset"))
+                       "Full_dataset",
+                       "RData"))
     }
   })
   
@@ -3576,7 +3578,8 @@ server <- function(input, output,session){
                      "Choose a dataset to save" ,
                      c("Results","Original_matrix",
                        "Imputed_matrix",
-                       "Full_dataset"))
+                       "Full_dataset",
+                       "RData"))
     }
   })
   
