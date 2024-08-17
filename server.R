@@ -973,13 +973,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents <- DT::renderDataTable({
-    withProgress(message = 'Result table calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Result table calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     df<- data_result() %>% dplyr::select(-dplyr::starts_with("mean"),-rank) # drop mean abundance columns
     # print(colnames(df))
     return(df)
@@ -1132,13 +1132,13 @@ server <- function(input, output,session){
   })
   
   output$volcano <- renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Volcano Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_rows_selected) & is.null(input$protein_brush)){
       volcano_input()
     }
@@ -1214,13 +1214,13 @@ server <- function(input, output,session){
   })
   
   output$abundance_rank <- renderPlot({
-    withProgress(message = 'Abundance Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Abundance Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_rows_selected) & is.null(input$protein_brush_rank)){
       abundance_rank_input()
     }
@@ -1293,13 +1293,13 @@ server <- function(input, output,session){
   })
   
   output$abundance_comp <- renderPlot({
-    withProgress(message = 'Abundance Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Abundance Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_rows_selected) & is.null(input$protein_brush_comp)){
       abundance_comp_input()
     }
@@ -2323,13 +2323,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents_pr <- DT::renderDataTable({
-    withProgress(message = 'Result table calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Result table calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     df<- data_result_pr()
     return(df)
   },
@@ -2428,13 +2428,13 @@ server <- function(input, output,session){
                                segment.size = 0.5)
     
     output$volcano_pr <- renderPlot({
-      withProgress(message = 'Volcano Plot calculations are in progress',
-                   detail = 'Please wait for a while', value = 0, {
-                     for (i in 1:15) {
-                       incProgress(1/15)
-                       Sys.sleep(0.25)
-                     }
-                   })
+      # withProgress(message = 'Volcano Plot calculations are in progress',
+      #              detail = 'Please wait for a while', value = 0, {
+      #                for (i in 1:15) {
+      #                  incProgress(1/15)
+      #                  Sys.sleep(0.25)
+      #                }
+      #              })
       p
     })
     return(p)
@@ -2483,13 +2483,13 @@ server <- function(input, output,session){
   })
   
   output$volcano_pr <- renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Volcano Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_pr_rows_selected)){
       volcano_input_pr()
     }
@@ -3956,13 +3956,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents_nr <- DT::renderDataTable({
-    withProgress(message = 'Result table calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Result table calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     df<- data_result_nr()
     return(df)
   },
@@ -4057,13 +4057,13 @@ server <- function(input, output,session){
                                segment.size = 0.5)
     
     output$volcano_nr <- renderPlot({
-      withProgress(message = 'Volcano Plot calculations are in progress',
-                   detail = 'Please wait for a while', value = 0, {
-                     for (i in 1:15) {
-                       incProgress(1/15)
-                       Sys.sleep(0.25)
-                     }
-                   })
+      # withProgress(message = 'Volcano Plot calculations are in progress',
+      #              detail = 'Please wait for a while', value = 0, {
+      #                for (i in 1:15) {
+      #                  incProgress(1/15)
+      #                  Sys.sleep(0.25)
+      #                }
+      #              })
       p
     })
     return(p)
@@ -4113,13 +4113,13 @@ server <- function(input, output,session){
   })
   
   output$volcano_nr <- renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Volcano Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_nr_rows_selected)){
       volcano_input_nr()
     }
@@ -5110,13 +5110,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents_dm <- DT::renderDataTable({
-    withProgress(message = 'Result table calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Result table calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     df<- data_result_dm()
     return(df)
   },
@@ -5215,13 +5215,13 @@ server <- function(input, output,session){
                                segment.size = 0.5)
 
     output$volcano_dm <- renderPlot({
-      withProgress(message = 'Volcano Plot calculations are in progress',
-                   detail = 'Please wait for a while', value = 0, {
-                     for (i in 1:15) {
-                       incProgress(1/15)
-                       Sys.sleep(0.25)
-                     }
-                   })
+      # withProgress(message = 'Volcano Plot calculations are in progress',
+      #              detail = 'Please wait for a while', value = 0, {
+      #                for (i in 1:15) {
+      #                  incProgress(1/15)
+      #                  Sys.sleep(0.25)
+      #                }
+      #              })
       p
     })
     return(p)
@@ -5271,13 +5271,13 @@ server <- function(input, output,session){
   })
   
   output$volcano_dm <- renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Volcano Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush_dm)){
       volcano_input_dm()
     }
@@ -5353,13 +5353,13 @@ server <- function(input, output,session){
   })
   
   output$abundance_rank_dm <- renderPlot({
-    withProgress(message = 'Abundance Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Abundance Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush_rank_dm)){
       abundance_rank_input_dm()
     }
@@ -5432,13 +5432,13 @@ server <- function(input, output,session){
   })
   
   output$abundance_comp_dm <- renderPlot({
-    withProgress(message = 'Abundance Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Abundance Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_dm_rows_selected) & is.null(input$protein_brush_comp_dm)){
       abundance_comp_input_dm()
     }
@@ -6263,13 +6263,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents_dm_pr <- DT::renderDataTable({
-    withProgress(message = 'Result table calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Result table calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     df<- data_result_dm_pr()
     return(df)
   },
@@ -6365,13 +6365,13 @@ server <- function(input, output,session){
                                segment.size = 0.5)
     
     output$volcano_dm_pr <- renderPlot({
-      withProgress(message = 'Volcano Plot calculations are in progress',
-                   detail = 'Please wait for a while', value = 0, {
-                     for (i in 1:15) {
-                       incProgress(1/15)
-                       Sys.sleep(0.25)
-                     }
-                   })
+      # withProgress(message = 'Volcano Plot calculations are in progress',
+      #              detail = 'Please wait for a while', value = 0, {
+      #                for (i in 1:15) {
+      #                  incProgress(1/15)
+      #                  Sys.sleep(0.25)
+      #                }
+      #              })
       p
     })
     return(p)
@@ -6420,13 +6420,13 @@ server <- function(input, output,session){
   })
   
   output$volcano_dm_pr <- renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Volcano Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_dm_pr_rows_selected) & is.null(input$protein_brush_dm_pr)){
       volcano_input_dm_pr()
     }
@@ -7702,13 +7702,13 @@ server <- function(input, output,session){
   
   #### Data table
   output$contents_dm_nr <- DT::renderDataTable({
-    withProgress(message = 'Result table calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Result table calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     df<- data_result_dm_nr()
     return(df)
   },
@@ -7807,13 +7807,13 @@ server <- function(input, output,session){
                                segment.size = 0.5)
     
     output$volcano_dm_nr <- renderPlot({
-      withProgress(message = 'Volcano Plot calculations are in progress',
-                   detail = 'Please wait for a while', value = 0, {
-                     for (i in 1:15) {
-                       incProgress(1/15)
-                       Sys.sleep(0.25)
-                     }
-                   })
+      # withProgress(message = 'Volcano Plot calculations are in progress',
+      #              detail = 'Please wait for a while', value = 0, {
+      #                for (i in 1:15) {
+      #                  incProgress(1/15)
+      #                  Sys.sleep(0.25)
+      #                }
+      #              })
       p
     })
     return(p)
@@ -7863,13 +7863,13 @@ server <- function(input, output,session){
   })
   
   output$volcano_dm_nr <- renderPlot({
-    withProgress(message = 'Volcano Plot calculations are in progress',
-                 detail = 'Please wait for a while', value = 0, {
-                   for (i in 1:15) {
-                     incProgress(1/15)
-                     Sys.sleep(0.25)
-                   }
-                 })
+    # withProgress(message = 'Volcano Plot calculations are in progress',
+    #              detail = 'Please wait for a while', value = 0, {
+    #                for (i in 1:15) {
+    #                  incProgress(1/15)
+    #                  Sys.sleep(0.25)
+    #                }
+    #              })
     if(is.null(input$contents_dm_nr_rows_selected) & is.null(input$protein_brush_dm_nr)){
       volcano_input_dm_nr()
     }
