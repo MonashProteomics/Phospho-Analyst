@@ -234,7 +234,8 @@ server <- function(input, output,session){
     }
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
-      hot_col("label", readOnly = T) 
+      hot_col("label", readOnly = T) %>% 
+      hot_cols(columnSorting = T)
   })
   
   # Outputs the template table
@@ -354,7 +355,8 @@ server <- function(input, output,session){
     
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
-      hot_col("label", readOnly = T) 
+      hot_col("label", readOnly = T) %>% 
+      hot_cols(columnSorting = T)
     
   })
   
