@@ -62,7 +62,8 @@ ui <- function(request){
                                             
                                             shinyWidgets::prettyRadioButtons("imputation",
                                                                p("Imputation type", style = 'color:#2E3440'),
-                                                               choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],
+                                                               # choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],
+                                                               choices = c("No imputation" = "no_imputation","Perseus-type"="man", MsCoreUtils::imputeMethods())[1:10],
                                                                selected = "man"),
                                             
                                             shinyWidgets::prettyRadioButtons("fdr_correction",

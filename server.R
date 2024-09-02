@@ -622,7 +622,12 @@ server <- function(input, output,session){
   })
   
   imputed_data<-reactive({
-    DEP::impute(processed_data(),input$imputation)
+    # DEP::impute(processed_data(),input$imputation)
+    if (input$imputation == "no_imputation"){
+      processed_data()
+    } else {
+      DEP::impute(processed_data(),input$imputation)
+    }
   })
   
   normalised_data<-reactive({
@@ -662,6 +667,7 @@ server <- function(input, output,session){
     }
     
     if(length(unique(exp_design_input()$condition)) <= 2){
+      diff_all_rej <- diff_all_rej[!is.na(rowData(diff_all_rej)$significant),] # for 'no imputation' 
       return(diff_all_rej)
       
     }
@@ -703,6 +709,7 @@ server <- function(input, output,session){
       # add anova p.value and adjusted p.value to row data
       rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
       anova_diff_rej <- add_rejections_anova(anova_diff,alpha = input$p, lfc= input$lfc)
+      anova_diff_rej <- anova_diff_rej[!is.na(rowData(anova_diff_rej)$significant),] # for 'no imputation' 
       return(anova_diff_rej)
     }
     
@@ -915,7 +922,7 @@ server <- function(input, output,session){
   })
   
   correlation_input<-reactive({
-    plot_cor(dep(),significant = FALSE)
+    plot_cor_new(dep(),significant = FALSE)
   })
   
   cvs_input<-reactive({
