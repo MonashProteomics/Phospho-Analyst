@@ -142,7 +142,7 @@ test_match_lfq_column_design_phospho<-function(unique_data, lfq_columns, exp_des
   raw <- unique_data[, lfq_columns]
   
   expdesign <- mutate(exp_design, condition = make.names(condition)) %>%
-    unite(ID, condition, replicate, remove = FALSE)
+    tidyr::unite(ID, condition, replicate, remove = FALSE)
   rownames(expdesign) <- expdesign$ID
   
   matched <- match(make.names(delete_prefix(expdesign$label)),
