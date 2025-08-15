@@ -452,11 +452,11 @@ server <- function(input, output,session){
     }
     
     if("TRUE" %in% grepl('+',phospho_data()$Reverse)){
-      filtered_data<-dplyr::filter(phospho_data(),Reverse!="+")
+      filtered_data<-dplyr::filter(phospho_data(),is.na(Reverse) | Reverse!="+")
     }
     else{filtered_data<-phospho_data()}
     if("TRUE" %in% grepl('+',filtered_data$Potential.contaminant)){
-      filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
+      filtered_data<-dplyr::filter(filtered_data,is.na(Potential.contaminant) | Potential.contaminant!="+")
     }
     
     filtered_data<-ids_test(filtered_data)
@@ -474,7 +474,8 @@ server <- function(input, output,session){
     # get the intensity columns need to be dropped
     drop_cols <- setdiff(intensity, intensity_cols)
     # drop columns
-    data_new <- subset(filtered_data, select = -drop_cols)
+    # data_new <- subset(filtered_data, select = -drop_cols)
+    data_new <- filtered_data %>% dplyr::select(-all_of(drop_cols))
     
     # expand site table
     data_ex <- data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
@@ -562,7 +563,7 @@ server <- function(input, output,session){
     temp<-assay(processed_data())
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) 
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) 
     #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
@@ -589,7 +590,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
@@ -840,7 +841,7 @@ server <- function(input, output,session){
     # plot_imputation(processed_data(),
     #                 diff_all())
     plot_imputation_new(labels = c("original", "imputed"), 
-                        processed_data(),diff_all())
+                        processed_data(),imputed_data())
   })
   
   p_hist_input <- reactive({
@@ -3583,7 +3584,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
@@ -4808,7 +4809,7 @@ server <- function(input, output,session){
     temp<-assay(processed_data_dm())
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) 
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) 
     #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
@@ -4826,7 +4827,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
@@ -7430,7 +7431,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
