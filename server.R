@@ -4447,7 +4447,8 @@ server <- function(input, output,session){
     # get the intensity columns need to be dropped
     drop_cols <- setdiff(intensity, intensity_cols)
     # drop columns
-    data_new <- subset(peptide_data, select = -drop_cols)
+    # data_new <- subset(peptide_data, select = -drop_cols)
+    data_new <- peptide_data %>% dplyr::select(-all_of(drop_cols))
     
     # add required columns
     peptide.sequence <- data_new$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
