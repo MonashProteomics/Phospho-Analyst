@@ -1664,8 +1664,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (phosphosite)=====#####
   output$downloadReport <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -2694,8 +2694,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (proteinGroup)=====##### 
   output$downloadReport_pr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(proteinGroup)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(proteinGroup)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -3204,8 +3204,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (Comparison)=====##### 
   output$downloadReport_comp <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(Comparison)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(Comparison)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -4330,8 +4330,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (phosphosite_corrected)=====#####
   output$downloadReport_nr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite-corrected)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite-corrected)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -5788,8 +5788,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo phosphosite)=====#####
   output$downloadReport_dm <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -6630,8 +6630,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo protein group)=====#####
   output$downloadReport_dm_pr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(proteinGroup)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(proteinGroup)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -7141,8 +7141,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo Comparison)=====##### 
   output$downloadReport_comp_dm <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(Comparison)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(Comparison)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -8073,8 +8073,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo phosphosite_corrected)=====#####
   output$downloadReport_dm_nr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite-corrected)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite-corrected)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which

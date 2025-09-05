@@ -21,11 +21,16 @@ params:
   cvs_input: NA
   local_prob: NA
 output: 
-  pdf_document:
-    fig_caption: yes
+  html_document:
+    theme: flatly
+    code_folding: none
+    toc: true
+    toc_float:
+      smooth_scroll: false
+    toc_depth: 6
 ---
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(opts.label="kill_prefix") # Remove line number and Comment "##" from printing
+knitr::opts_chunk$set(opts.label="kill_prefix", fig.pos = "!H", out.extra = "") # Remove line number and Comment "##" from printing
 ```
 
 ## Method details
