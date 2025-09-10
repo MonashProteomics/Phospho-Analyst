@@ -48,7 +48,7 @@ Statistical analysis was performed using an in-house generated R script based on
 
 ## Results
 
-#### MaxQuant result output contains `r nrow(params$data)` phosphosites of which _`r nrow(params$dep())`_ phosphosites were reproducibly quantified.
+#### MaxQuant result output contains `r nrow(params$data())` phosphosites of which _`r nrow(params$dep())`_ phosphosites were reproducibly quantified.
 
 #### `r params$num_signif` phosphosites differ significantly between samples.
 

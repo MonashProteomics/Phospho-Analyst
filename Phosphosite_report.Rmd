@@ -51,7 +51,7 @@ Statistical analysis was performed using an in-house generated R script based on
 
 ## Results
 
-#### MaxQuant result output contains `r nrow(params$data)` phosphosites of which _`r nrow(params$dep())`_ phosphosites were reproducibly quantified.
+#### MaxQuant result output contains `r nrow(params$data())` phosphosites of which _`r nrow(params$dep())`_ phosphosites were reproducibly quantified.
 
 #### `r params$num_signif` phosphosites differ significantly between samples.
 
@@ -115,7 +115,7 @@ A heatmap for phosphosites with missing value in each dataset. Each row represen
 
 
 ```{r missing_value_heatmap, echo=FALSE, fig.height= 7, message=FALSE, results='hide',warning=FALSE, tidy=TRUE}
-if(!any(is.na(assay(params$data)))){
+if(!any(is.na(assay(params$data())))){
   print("No missing values in dataset")
 } else {
   params$missval_input()
