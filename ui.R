@@ -31,6 +31,7 @@ ui <- function(request){
                                    fileInput('file1',
                                              p('Upload MaxQuant Phospho (STY)Sites.txt', style = 'color:#2E3440'),
                                              accept=c('text/csv',
+                                                      ".tsv",
                                                       'text/comma-separated-values,text/plain',
                                                       '.csv')),
                                    tags$hr(),
@@ -61,7 +62,8 @@ ui <- function(request){
                                             
                                             shinyWidgets::prettyRadioButtons("imputation",
                                                                p("Imputation type", style = 'color:#2E3440'),
-                                                               choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],
+                                                               # choices = c("Perseus-type"="man", MsCoreUtils::imputeMethods())[1:9],
+                                                               choices = c("No imputation" = "no_imputation","Perseus-type"="man", MsCoreUtils::imputeMethods())[1:10],
                                                                selected = "man"),
                                             
                                             shinyWidgets::prettyRadioButtons("fdr_correction",
@@ -81,6 +83,7 @@ ui <- function(request){
                                             fileInput('file2',
                                                       p('Upload MaxQuant ProteinGroup.txt', style = 'color:#2E3440'),
                                                       accept=c('text/csv',
+                                                               ".tsv",
                                                                'text/comma-separated-values,text/plain',
                                                                '.csv')),
                                             tags$hr(),
@@ -484,8 +487,16 @@ ui <- function(request){
                                                                 #          plotOutput("detect", height = 600)
                                                                 # ),
                                                                 tabPanel(tooltips_ui("Missing values - Heatmap"),
-                                                                         shinycssloaders::withSpinner(plotOutput("missval", height = 600), color = "#bec8da"),
-                                                                         save_plot_left_ui("missing-values")
+                                                                         fluidRow(
+                                                                           column(12,
+                                                                                  column(8),
+                                                                                  column(4,
+                                                                                         checkboxInput("full_missval","Show full dataset",value = FALSE))),
+                                                                           column(12,
+                                                                                  shinycssloaders::withSpinner(plotOutput("missval", height = 560), color = "#bec8da"),
+                                                                                  save_plot_left_ui("missing-values")
+                                                                           )
+                                                                         )
                                                                 ),
                                                                 tabPanel(tooltips_ui("Imputation"),
                                                                          shinycssloaders::withSpinner(plotOutput("imputation", height = 600), color = "#bec8da"),

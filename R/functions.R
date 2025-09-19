@@ -26,21 +26,21 @@ plot_cvs<-function(se) {
     dplyr::group_by(rowname,condition) %>%
     dplyr::summarise(cvs=coef_variation(Intensity)) %>%
     dplyr::group_by(condition)%>%
-    dplyr::mutate(condition_median=median(cvs))
+    dplyr::mutate(condition_median=median(cvs, na.rm = TRUE))
   
   p1 <-  ggplot(cvs_group, aes(cvs, color=condition, fill=condition)) +
-    geom_histogram(alpha=.5, bins= 20, show.legend = FALSE) +
+    geom_histogram(alpha=.5, bins= 20, show.legend = FALSE, na.rm = TRUE) +
     facet_wrap(~condition) +
     geom_vline(aes(xintercept=condition_median, group=condition),color='grey40',
-               linetype="dashed") +
+               linetype="dashed", na.rm = TRUE) +
     labs(title= 'Sample Coefficient of Variation', x="Coefficient of Variation", y="Count") +
     theme_DEP2() +
     theme(plot.title = element_text(hjust = 0.5,face = "bold")) 
   
-  p1 +geom_text(aes(x=max(cvs_group$cvs)-0.6,
-                    y=max(ggplot_build(p1)$data[[1]]$ymax*1.1), 
+  p1 +geom_text(aes(x=max(cvs_group$cvs, na.rm = TRUE)-0.6,
+                    y=max(ggplot_build(p1)$data[[1]]$ymax*1.1, na.rm = TRUE), 
                     label=paste0("Median =",round(condition_median,2)*100,"%",by="")),
-                show.legend = FALSE, size=4)
+                show.legend = FALSE, size=4, na.rm = TRUE)
   
 }
 
@@ -553,7 +553,7 @@ get_results_phospho <- function(dep, apply_anova = FALSE) {
     pattern <- paste(condition,"[[:digit:]]",sep = '_')
     intensity_df[paste0('mean',sep = "_",condition)] <- rowMeans(
       as.matrix(intensity_df %>% 
-                  select(grep(pattern, colnames(intensity_df)))), na.rm = TRUE)
+                  dplyr::select(grep(pattern, colnames(intensity_df)))), na.rm = TRUE)
   }
   
   mean_df <- intensity_df %>%
@@ -940,7 +940,8 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
   
   # get row data
   phospho_df <- rowData(phospho_imp)   %>% data.frame() %>% dplyr::select('Protein')
-  protein_df <- rowData(protein_imp)   %>% data.frame() %>% dplyr::select('Majority.protein.IDs')
+  # protein_df <- rowData(protein_imp)   %>% data.frame() %>% dplyr::select('Majority.protein.IDs')
+  protein_df <- rowData(protein_imp)   %>% data.frame() %>% dplyr::select('Protein.IDs')
   
   # merge phospho data with its intensity values
   phospho_df_1 <- merge(phospho_df, phospho_intensity,by='row.names',all=TRUE)
@@ -962,26 +963,66 @@ phospho_correction <- function(phospho_imp, protein_imp,exp_design,exp_design_pr
                   dplyr::select(grep(pattern, colnames(protein_df_2)))), na.rm = TRUE)
   }
   
+  # protein_median <- protein_df_2 %>% 
+  #   # select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
+  #   dplyr::select("Protein.IDs",grep("median", colnames(protein_df_2)))
+  # 
+  # # join two raw data 
+  # phospho_protein <- phospho_df_1 %>% 
+  #   # left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
+  #   left_join(., protein_median, by = c("Protein" = "Protein.IDs")) %>% 
+  #   data.frame (row.names = 1) %>% 
+  #   dplyr::select(-'Protein')
+  # 
+  # # use each phosphosite intensity value to divide median protein intensity of a same group
+  # df_corrected <- row.names(phospho_protein) %>% data.frame()
+  # 
+  # for (i in 1: length(conditions)) {
+  #   condition <- conditions[i]
+  #   one_group <- colnames(phospho_protein %>% dplyr::select(dplyr::starts_with(condition)))           
+  #   df <- phospho_protein[one_group]                
+  #   median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
+  #   
+  #   # division get factor
+  #   df_factor <- df/phospho_protein[,median_col]
+  #   df_factor[is.na(df_factor)] <- 1
+  #   
+  #   # correct phosphosite data by using factor
+  #   df_corrected <- cbind(df_corrected, df*df_factor)
+  # }
+  protein_df_2$median_pr <- rowMedians(as.matrix(protein_df_1[, -c(1,2)]), na.rm = T)
+  
+  
   protein_median <- protein_df_2 %>% 
-    select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
+    # select("Majority.protein.IDs",grep("median", colnames(protein_df_2)))
+    dplyr::select("Protein.IDs",grep("median", colnames(protein_df_2)))
+  
+  # calculate factor
+  for (i in 1: length(conditions_pr)){
+    condition <- conditions_pr[i]
+    protein_median[paste0("fac_", condition)] <- protein_median$median_pr/protein_median[paste0("median_", condition)]
+  }
   
   # join two raw data 
   phospho_protein <- phospho_df_1 %>% 
-    left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
-    data.frame (row.names = 1) %>% 
+    # left_join(., protein_median, by = c("Protein" = "Majority.protein.IDs")) %>% 
+    left_join(., protein_median, by = c("Protein" = "Protein.IDs")) %>% 
+    data.frame (row.names = 1) %>%
     dplyr::select(-'Protein')
   
   # use each phosphosite intensity value to divide median protein intensity of a same group
   df_corrected <- row.names(phospho_protein) %>% data.frame()
-  
   for (i in 1: length(conditions)) {
     condition <- conditions[i]
     one_group <- colnames(phospho_protein %>% dplyr::select(dplyr::starts_with(condition)))           
     df <- phospho_protein[one_group]                
-    median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
+    # median_col <- grep(paste0('median',sep = "_",condition), colnames(phospho_protein)) 
+    fac_col <- grep(paste0('fac',sep = "_",condition), colnames(phospho_protein)) 
+    
     
     # division get factor
-    df_factor <- df/phospho_protein[,median_col]
+    # df_factor <- df/phospho_protein[,median_col]
+    df_factor <- phospho_protein[,fac_col]
     df_factor[is.na(df_factor)] <- 1
     
     # correct phosphosite data by using factor
@@ -1009,17 +1050,45 @@ limma_norm_function <- function(imputed_data){
 }
 
 #### ===== generate input data for Phosphomatics ===== #####
-phosphomatics_input <- function(phospho_data_input, exp_design) {
-  # get all intensity columns
-  intensity_total <- grep("^Intensity[.]", colnames(phospho_data_input)) 
-  # get the multiplicity intensity columns
-  intensity_mult <- grep("^Intensity.+___\\d", colnames(phospho_data_input))
-  # get the main intensity columns
-  intensity_ints <- setdiff(intensity_total, intensity_mult)
+phosphomatics_input <- function(phospho_data_input, exp_design_input) {
+  if (any(grep("PTM.Quantity", colnames(phospho_data_input)))){ # output from spectronaut
+    
+    phospho_data_input <- phospho_data_input %>% filter(PTM.ModificationTitle == "Phospho (STY)")
+    
+    # get intensity columns
+    intensity_ints <- grep("PTM.Quantity", colnames(phospho_data_input)) 
+    # change intensity column names to be same as MaxQuant one
+    colnames(phospho_data_input)[intensity_ints] <- colnames(phospho_data_input)[intensity_ints] %>%
+      sub("^.*?\\.\\.","",.) %>%
+      gsub(".PTM.Quantity","",.) %>%
+      gsub(".raw","",.)
+    colnames(phospho_data_input)[intensity_ints] <- paste0("Intensity.", colnames(phospho_data_input)[intensity_ints])
+    
+    # if included, replace "Filtered" with NA (some spectronaut's output)
+    phospho_data_input <- replace(phospho_data_input, phospho_data_input == "Filtered", NA) 
+    # ensure all intensity columns are numeric type
+    phospho_data_input[,intensity_ints] <- sapply(phospho_data_input[,intensity_ints],as.numeric)
+    
+    # change inconsistency column names
+    colnames(phospho_data_input)[names(phospho_data_input) == "PTM.SiteLocation"] <- "Position"
+    colnames(phospho_data_input)[names(phospho_data_input) == "PTM.ProteinId"] <- "Protein"
+    colnames(phospho_data_input)[names(phospho_data_input) == "PTM.SiteAA" ] <- "Amino.acid"
+  
+    
+  } else {
+    # get all intensity columns
+    intensity_total <- grep("^Intensity[.]", colnames(phospho_data_input)) 
+    # get the multiplicity intensity columns
+    intensity_mult <- grep("^Intensity.+___\\d", colnames(phospho_data_input))
+    # get the main intensity columns
+    intensity_ints <- setdiff(intensity_total, intensity_mult)
+  }
+  
   intensity_main <- colnames( phospho_data_input[,intensity_ints])
   intensity_main <- stringr::str_sort(intensity_main, numeric = TRUE) # sort the intensity columns
+  
   # select required columns
-  phosphomatics_input <- phospho_data_input %>% select('Protein', 'Position', 'Amino.acid', c(intensity_main))
+  phosphomatics_input <- phospho_data_input %>% dplyr::select('Protein', 'Position', 'Amino.acid', c(intensity_main))
   # ensure the format of intensities are correct
   phosphomatics_input[,intensity_main] <- sapply(phosphomatics_input[,intensity_main],as.numeric)
   # create column names
@@ -1320,8 +1389,153 @@ plot_pca_new <- function(dep, x = 1, y = 2, indicate = c("condition", "replicate
     return(p)
   } else {
     df <- pca_df %>%
-      select(rowname, paste0("PC", c(x, y)), match(indicate, colnames(pca_df)))
+      dplyr::select(rowname, paste0("PC", c(x, y)), match(indicate, colnames(pca_df)))
     colnames(df)[1] <- "sample"
+    return(df)
+  }
+}
+
+# modified from DEP's plot_cor
+# https://github.com/arnesmits/DEP/blob/b425d8d0db67b15df4b8bcf87729ef0bf5800256/R/plot_functions_explore.R
+plot_cor_new <- function(dep, significant = TRUE, lower = -1, upper = 1,
+                         pal = "PRGn", pal_rev = FALSE, indicate = NULL,
+                         font_size = 12, plot = TRUE, ...) {
+  # Show error if inputs are not the required classes
+  assertthat::assert_that(inherits(dep, "SummarizedExperiment"),
+                          is.logical(significant),
+                          length(significant) == 1,
+                          is.numeric(lower),
+                          length(lower) == 1,
+                          is.numeric(upper),
+                          length(upper) == 1,
+                          is.character(pal),
+                          length(pal) == 1,
+                          is.logical(pal_rev),
+                          length(pal_rev) == 1,
+                          is.numeric(font_size),
+                          length(font_size) == 1,
+                          is.logical(plot),
+                          length(plot) == 1)
+  
+  # Check for valid lower and upper values
+  if(!(lower >= -1  & upper >= -1 & lower <= 1 & upper <= 1)) {
+    stop("'lower' and/or 'upper' arguments are not valid
+         Run plot_pca() with 'lower' and 'upper' between -1 and 1",
+         call. = FALSE)
+  }
+  
+  # Check for valid pal
+  pals <- RColorBrewer::brewer.pal.info %>%
+    rownames_to_column() %>%
+    filter(category != "qual")
+  if(!pal %in% pals$rowname) {
+    stop("'", pal,"' is not a valid color panel",
+         " (qualitative panels also not allowed)\n",
+         "Run plot_pca() with one of the following 'pal' options: ",
+         paste(pals$rowname, collapse = "', '"), "'",
+         call. = FALSE)
+  }
+  # if(any(is.na(assay(dep)))) {
+  #   stop("Missing values in '", deparse(substitute(dep)), "'. Use plot_dist() instead")
+  # } # comment to allow missing values
+  
+  # Heatmap annotation
+  if(!is.null(indicate)) {
+    assertthat::assert_that(is.character(indicate))
+    
+    col_data <- colData(dep) %>%
+      as.data.frame()
+    columns <- colnames(col_data)
+    if(any(!indicate %in% columns)) {
+      stop("'",
+           paste0(indicate, collapse = "' and/or '"),
+           "' column(s) is/are not present in ",
+           deparse(substitute(dep)),
+           ".\nValid columns are: '",
+           paste(columns, collapse = "', '"),
+           "'.",
+           call. = FALSE)
+    }
+    
+    # Get annotation
+    anno <- colData(dep) %>%
+      data.frame() %>%
+      select(indicate)
+    
+    # Annotation color
+    names <- colnames(anno)
+    anno_col <- vector(mode="list", length=length(names))
+    names(anno_col) <- names
+    for(i in names) {
+      var = anno[[i]] %>% unique() %>% sort()
+      if(length(var) == 1)
+        cols <- c("black")
+      if(length(var) == 2)
+        cols <- c("orangered", "cornflowerblue")
+      if(length(var) <= 7 & length(var) > 2)
+        cols <- RColorBrewer::brewer.pal(length(var), "Pastel1")
+      # if(length(var) >= 7)
+      #   cols <- RColorBrewer::brewer.pal(length(var), "Set3")
+      if(length(var) <= 12 & length(var) > 7)
+        cols <- RColorBrewer::brewer.pal(length(var), "Set3")
+      if(length(var) > 12)
+        # cols <- c(RColorBrewer::brewer.pal(12, "Set3"),
+        #           RColorBrewer::brewer.pal(8, "Set2"),
+        #           RColorBrewer::brewer.pal(9, "Set1"),
+        #           RColorBrewer::brewer.pal(8, "Pastel2"),
+        #           RColorBrewer::brewer.pal(9, "Pastel1"))[1:length(var)]
+        cols <- scales::hue_pal()(length(var))
+      names(cols) <- var
+      anno_col[[i]] <-  cols
+    }
+    
+    # HeatmapAnnotation object
+    ha1 = HeatmapAnnotation(df = anno,
+                            col = anno_col,
+                            show_annotation_name = TRUE)
+  } else {
+    ha1 <- NULL
+  }
+  
+  # Filter for significant proteins
+  if(significant) {
+    
+    # Check for significant column
+    if(!"significant" %in% colnames(rowData(dep, use.names = FALSE))) {
+      stop("'significant' column is not present in '",
+           deparse(substitute(dep)),
+           "'\nRun add_rejections() to obtain the required column",
+           call. = FALSE)
+    }
+    dep <- dep[rowData(dep, use.names = FALSE)$significant, ]
+  }
+  
+  # Calculate correlation matrix
+  cor_mat <- cor(assay(dep),use = "complete.obs") # handle dep with missing values
+  
+  # Plot heatmap
+  ht1 = Heatmap(cor_mat,
+                col = circlize::colorRamp2(
+                  seq(lower, upper, ((upper-lower)/7)),
+                  if(pal_rev) {
+                    rev(RColorBrewer::brewer.pal(8, pal))
+                  } else {
+                    RColorBrewer::brewer.pal(8, pal)
+                  }),
+                heatmap_legend_param = list(
+                  color_bar = "continuous",
+                  legend_direction = "horizontal",
+                  legend_width = unit(5, "cm"),
+                  title_position = "topcenter"),
+                name = "Pearson correlation",
+                column_names_gp = gpar(fontsize = font_size),
+                row_names_gp = gpar(fontsize = font_size),
+                top_annotation = ha1,
+                ...)
+  if(plot) {
+    draw(ht1, heatmap_legend_side = "top")
+  } else {
+    df <- as.data.frame(cor_mat)
     return(df)
   }
 }

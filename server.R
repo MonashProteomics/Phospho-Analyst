@@ -138,7 +138,8 @@ server <- function(input, output,session){
                      c("Results","Original_matrix",
                        "Imputed_matrix",
                        "Full_dataset",
-                       "Phosphomatics_input"))
+                       "Phosphomatics_input",
+                       "RData"))
     }
   })
   
@@ -193,7 +194,7 @@ server <- function(input, output,session){
                           fill= TRUE, # to fill any missing data
                           sep = "\t"
     )
-    validate(phospho_input_test(temp_data))
+    # validate(phospho_input_test(temp_data))
     return(temp_data)
   })
   
@@ -206,7 +207,7 @@ server <- function(input, output,session){
                            fill= TRUE, # to fill any missing data
                            sep = "\t"
     )
-    validate(maxquant_input_test(temp_data1))
+    # validate(maxquant_input_test(temp_data1))
     return(temp_data1)
   })
   
@@ -451,56 +452,112 @@ server <- function(input, output,session){
       phospho_data <- reactive({phospho_data_input()})
     }
     
-    if("TRUE" %in% grepl('+',phospho_data()$Reverse)){
-      filtered_data<-dplyr::filter(phospho_data(),is.na(Reverse) | Reverse!="+")
+    if (any(grep("PTM.Quantity", colnames(phospho_data())))){ # output from spectronaut
+      # filtered out reverse proteins
+      if (any(grepl("^REV__|^REFSEQ",phospho_data()$PTM.ProteinId))){
+        filtered_data <- phospho_data() %>% dplyr::filter(!grepl("^REV__|^REFSEQ", PTM.ProteinId))
+      } else {
+        filtered_data <- phospho_data()
+      }
+      # switch button to remove or not remove contaminants
+      if (any(grepl("^CON__|^Cont_",filtered_data$PTM.ProteinId))){
+        filtered_data <- filtered_data %>% dplyr::filter(!grepl("^CON__|^Cont_", PTM.ProteinId))
+      } else {
+        filtered_data <- filtered_data
+      }
+      
+      filtered_data <- filtered_data %>% filter(PTM.ModificationTitle == "Phospho (STY)")
+      
+      # get intensity columns
+      intensity_cols <- grep("PTM.Quantity", colnames(filtered_data)) 
+      
+      # change intensity column names to be same as MaxQuant one
+      colnames(filtered_data)[intensity_cols] <- colnames(filtered_data)[intensity_cols] %>%
+        sub("^.*?\\.\\.","",.) %>%
+        gsub(".PTM.Quantity","",.) %>%
+        gsub(".raw","",.)
+      
+      colnames(filtered_data)[intensity_cols] <- paste0("Intensity.", colnames(filtered_data)[intensity_cols])
+      
+      # if included, replace "Filtered" with NA (some spectronaut's output)
+      filtered_data <- replace(filtered_data, filtered_data == "Filtered", NA) 
+      # ensure all intensity columns are numeric type
+      filtered_data[,intensity_cols] <- sapply(filtered_data[,intensity_cols],as.numeric)
+      filtered_data[,grep("PTM.SiteProbability", colnames(filtered_data))] <- sapply(filtered_data[,grep("PTM.SiteProbability", colnames(filtered_data))],as.numeric)
+    
+      # generate same columns as MaxQuant dataset
+      data_pre <- filtered_data %>% dplyr::mutate(Residue.Both = paste(PTM.SiteAA, PTM.SiteLocation, sep = ""))
+      data_pre$name = data_pre$PTM.CollapseKey
+      data_pre$ID = data_pre$PTM.CollapseKey
+      data_pre$peptide.sequence <- data_pre$PTM.FlankingRegion
+      data_pre$Localization.prob <- rowMeans(data_pre[,grep("PTM.SiteProbability", colnames(data_pre))],na.rm = T)
+      
+      # change inconsistency column names
+      colnames(data_pre)[names(data_pre) == "PTM.CollapseKey"] <- "Phosphosite"
+      colnames(data_pre)[names(data_pre) == "PTM.ProteinId"] <- "Protein"
+      colnames(data_pre)[names(data_pre) == "PTM.Multiplicity" ] <- "Multiplicity"
+      colnames(data_pre)[names(data_pre) == "PTM.SiteAA" ] <- "Amino.acid"
+      
+      # convert uniprot to gene name by using "UniProt.ws" package
+      data_pre <- convert_uniprot(data_pre, "Protein")
+      data_pre$Gene.names <- dplyr::if_else(data_pre$Gene.names == "", data_pre$Protein,data_pre$Gene.names)
+      
+    } else { # MaxQuant data
+      if("TRUE" %in% grepl('+',phospho_data()$Reverse)){
+        # filtered_data<-dplyr::filter(phospho_data(),Reverse!="+")
+        filtered_data<-dplyr::filter(phospho_data(),is.na(Reverse) | Reverse!="+")
+      }
+      else{filtered_data<-phospho_data()}
+      if("TRUE" %in% grepl('+',filtered_data$Potential.contaminant)){
+        # filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
+        filtered_data<-dplyr::filter(filtered_data,is.na(Potential.contaminant) | Potential.contaminant!="+")
+      }
+      
+      filtered_data<-ids_test(filtered_data)
+      
+      ## Expand Site table
+      # get all intensity columns
+      intensity <- grep("^Intensity.+|Intensity", colnames(filtered_data)) 
+      # get the required intensity columns
+      intensity_cols <- grep("^Intensity.+___\\d", colnames(filtered_data))
+      intensity_names <- colnames( filtered_data[,intensity_cols])
+      
+      # ensure all intensity columns are numeric type
+      filtered_data[,intensity_cols] <- sapply(filtered_data[,intensity_cols],as.numeric)
+      
+      # get the intensity columns need to be dropped
+      drop_cols <- setdiff(intensity, intensity_cols)
+      # drop columns
+      # data_new <- subset(filtered_data, select = -drop_cols)
+      data_new <- filtered_data %>% dplyr::select(-all_of(drop_cols))
+      
+      # expand site table
+      data_ex <- data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
+                                                  names_to = c('.value','Multiplicity'),
+                                                  names_pattern = '(.*)___(.)',
+                                                  values_drop_na = TRUE)
+      
+      data_ex <- data_ex %>% dplyr::filter(Localization.prob >= input$local_prob)
+      peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
+      data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
+      data_pre$Residue.Both <- map2(data_pre$Positions.within.proteins, data_pre$Amino.acid,create_Residue.Both_func) %>% unlist()
+      # data_pre <- data_pre %>%
+      #   mutate(Residue.Both = paste(Amino.acid,Position,sep = ''))
+      
+      data_pre$Gene.names <- data_pre$Gene.names %>% toupper()
+      data_pre$Gene.names <- data_pre$Gene.names %>%  gsub(';.*','',.) # only keep the first gene name
+      
+      # create unique name and ID columns for the data
+      data_pre <- data_pre %>%
+        mutate(name = paste(Gene.names,Position, Multiplicity,sep = '_'))
+      # data_pre <- data_pre %>% 
+      #   mutate(name = paste(Protein,Positions.within.proteins, Multiplicity,sep = '_'))
+      
+      data_pre <- data_pre %>% 
+        mutate(ID = paste(id,Multiplicity, sep = '_'))
     }
-    else{filtered_data<-phospho_data()}
-    if("TRUE" %in% grepl('+',filtered_data$Potential.contaminant)){
-      filtered_data<-dplyr::filter(filtered_data,is.na(Potential.contaminant) | Potential.contaminant!="+")
-    }
-    
-    filtered_data<-ids_test(filtered_data)
-    
-    ## Expand Site table
-    # get all intensity columns
-    intensity <- grep("^Intensity.+|Intensity", colnames(filtered_data)) 
-    # get the required intensity columns
-    intensity_cols <- grep("^Intensity.+___\\d", colnames(filtered_data))
-    intensity_names <- colnames( filtered_data[,intensity_cols])
-    
-    # ensure all intensity columns are numeric type
-    filtered_data[,intensity_cols] <- sapply(filtered_data[,intensity_cols],as.numeric)
-    
-    # get the intensity columns need to be dropped
-    drop_cols <- setdiff(intensity, intensity_cols)
-    # drop columns
-    # data_new <- subset(filtered_data, select = -drop_cols)
-    data_new <- filtered_data %>% dplyr::select(-all_of(drop_cols))
-    
-    # expand site table
-    data_ex <- data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
-                                                names_to = c('.value','Multiplicity'),
-                                                names_pattern = '(.*)___(.)',
-                                                values_drop_na = TRUE)
-    
-    data_ex <- data_ex %>% dplyr::filter(Localization.prob >= input$local_prob)
-    peptide.sequence <- data_ex$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
-    data_pre <- dplyr::mutate(data_ex,peptide.sequence, .after = "Phospho..STY..Score.diffs")
-    data_pre$Residue.Both <- map2(data_pre$Positions.within.proteins, data_pre$Amino.acid,create_Residue.Both_func) %>% unlist()
-    # data_pre <- data_pre %>%
-    #   mutate(Residue.Both = paste(Amino.acid,Position,sep = ''))
-    
     data_pre$Gene.names <- data_pre$Gene.names %>% toupper()
-    data_pre$Gene.names <- data_pre$Gene.names %>%  gsub(';.*','',.) # only keep the first gene name
     
-    # create unique name and ID columns for the data
-    data_pre <- data_pre %>%
-      mutate(name = paste(Gene.names,Position, Multiplicity,sep = '_'))
-    # data_pre <- data_pre %>% 
-    #   mutate(name = paste(Protein,Positions.within.proteins, Multiplicity,sep = '_'))
-    
-    data_pre <- data_pre %>% 
-      mutate(ID = paste(id,Multiplicity, sep = '_'))
     return(data_pre)
   })
   
@@ -557,6 +614,7 @@ server <- function(input, output,session){
     condition_list <- exp_df$condition
     
     data_filtered <- filter_missval_new(data_se,condition_list,exp_df)
+    return(data_filtered)
   })
   
   unimputed_table<-reactive({
@@ -569,7 +627,12 @@ server <- function(input, output,session){
   })
   
   imputed_data<-reactive({
-    DEP::impute(processed_data(),input$imputation)
+    # DEP::impute(processed_data(),input$imputation)
+    if (input$imputation == "no_imputation"){
+      processed_data()
+    } else {
+      DEP::impute(processed_data(),input$imputation)
+    }
   })
   
   normalised_data<-reactive({
@@ -609,6 +672,7 @@ server <- function(input, output,session){
     }
     
     if(length(unique(exp_design_input()$condition)) <= 2){
+      diff_all_rej <- diff_all_rej[!is.na(rowData(diff_all_rej)$significant),] # for 'no imputation' 
       return(diff_all_rej)
       
     }
@@ -650,6 +714,7 @@ server <- function(input, output,session){
       # add anova p.value and adjusted p.value to row data
       rowData(anova_diff) <- merge(rowData(anova_diff), anova, by = 'name', sort = FALSE)
       anova_diff_rej <- add_rejections_anova(anova_diff,alpha = input$p, lfc= input$lfc)
+      anova_diff_rej <- anova_diff_rej[!is.na(rowData(anova_diff_rej)$significant),] # for 'no imputation' 
       return(anova_diff_rej)
     }
     
@@ -829,8 +894,11 @@ server <- function(input, output,session){
                            processed_data(),normalised_data())
   })
   
+  # missval_input <- reactive({
+  #   plot_missval(processed_data())
+  # })
   missval_input <- reactive({
-    plot_missval(processed_data())
+    plot_missval_new(processed_data(),full_dataset = input$full_missval) # TRUE or FALSE
   })
   
   detect_input <- reactive({
@@ -859,7 +927,7 @@ server <- function(input, output,session){
   })
   
   correlation_input<-reactive({
-    plot_cor(dep(),significant = FALSE)
+    plot_cor_new(dep(),significant = FALSE)
   })
   
   cvs_input<-reactive({
@@ -1522,25 +1590,42 @@ server <- function(input, output,session){
              "Original_matrix"= unimputed_table(),
              "Imputed_matrix" = imputed_table(),
              "Full_dataset" = get_df_wide(dep()),
-             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()))
+             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()),
+             "RData")
     } else {
       switch(input$dataset,
              "Results" = get_results_phospho(dep(), TRUE),
              "Original_matrix"= unimputed_table(),
              "Imputed_matrix" = imputed_table(),
              "Full_dataset" = get_df_wide(dep()),
-             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()))
+             "Phosphomatics_input" = phosphomatics_input(phospho_data_input(), exp_design_input()),
+             "RData")
     }
   })
   
   output$downloadData <- downloadHandler(
-    filename = function() { paste(input$dataset, ".csv", sep = "") }, 
+    filename = function() { 
+      if(input$dataset != "RData"){
+        paste(input$dataset, ".csv", sep = "") 
+      } else {
+        "RData_output_phospho.RData"
+      }
+      }, 
     content = function(file) {
-      write.table(datasetInput(),
-                  file,
-                  col.names = TRUE,
-                  row.names = FALSE,
-                  sep =",") }
+      if (input$dataset != "RData"){
+        write.table(datasetInput(),
+                    file,
+                    col.names = TRUE,
+                    row.names = FALSE,
+                    sep =",")
+      } else {
+        filtered_data <- processed_data()
+        imputed_data <- imputed_data()
+        normalised_data <- normalised_data()
+        dep <- dep()
+        save(filtered_data, imputed_data, normalised_data, dep, file = file)
+      }
+      }
   )
   
   ### === Cluster Download ==== ####
@@ -1837,7 +1922,8 @@ server <- function(input, output,session){
                      "Download data table" ,
                      c("Results","Original_matrix",
                        "Imputed_matrix",
-                       "Full_dataset"))
+                       "Full_dataset",
+                       "RData"))
     }
   })
   
@@ -2042,22 +2128,60 @@ server <- function(input, output,session){
       protein_data <- reactive({protein_data_input()})
     }
     
-    if("TRUE" %in% grepl('+',protein_data()$Reverse)){
-      filtered_data<-dplyr::filter(protein_data(),Reverse!="+")
-    }
-    else{filtered_data<-protein_data()}
-    if("TRUE" %in% grepl('+',filtered_data$Potential.contaminant)){
-      filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
-    }
-    if("TRUE" %in% grepl('+',filtered_data$Only.identified.by.site)){
-      filtered_data<-dplyr::filter(filtered_data,Only.identified.by.site!="+") 
-    }
-    if(input$single_peptide_pr==TRUE){
-      filtered_data <-filtered_data
-    }
-    else{filtered_data<-dplyr::filter(filtered_data,as.numeric(Razor...unique.peptides)>=2)}
+    if (any(grep("PG.Quantity", colnames(protein_data())))){ # output from spectronaut
+      # filtered out reverse proteins
+      if (any(grepl("^REV__|^REFSEQ",protein_data()$PG.ProteinAccessions))){
+        filtered_data <- protein_data %>% dplyr::filter(!grepl("^REV__|^REFSEQ", PG.ProteinAccessions))
+      } else {
+        filtered_data <- protein_data()
+      }
+      # filtered out contaminants
+      if (any(grepl("^CON__|^Cont_",filtered_data$PG.ProteinAccessions))){
+        filtered_data <- filtered_data %>% dplyr::filter(!grepl("^CON__|^Cont_", PG.ProteinAccessions))
+      } else {
+        filtered_data<-filtered_data 
+      }
+      
+      intensity_cols<-grep("PG.Quantity", colnames(filtered_data))
+      
+      # change intensity column names to be same as MaxQuant one
+      colnames(filtered_data)[intensity_cols] <- colnames(filtered_data)[intensity_cols] %>%
+        sub("^.*?\\.\\.","",.) %>%
+        gsub(".PG.Quantity","",.) %>%
+        gsub(".raw","",.)
+      
+      colnames(filtered_data)[intensity_cols] <- paste0("LFQ.intensity.", colnames(filtered_data)[intensity_cols])
+      colnames(filtered_data)[intensity_cols]
+      
+      #TODO confirme about this, replace "NaN" with NA (some spectronaut's output)
+      filtered_data <- replace(filtered_data, filtered_data == "NaN", NA) 
+      # ensure all intensity columns are numeric type
+      filtered_data[,intensity_cols] <- sapply(filtered_data[,intensity_cols],as.numeric)
+      
+      # change inconsisitency column names
+      colnames(filtered_data)[names(filtered_data)=="PG.Genes"] <- "Gene.names"
+      colnames(filtered_data)[names(filtered_data)=="PG.ProteinAccessions"] <- "Protein.IDs"
+      colnames(filtered_data)[names(filtered_data)=="PG.ProteinDescriptions"] <- "Protein.names"
     
-    filtered_data<-ids_test(filtered_data)
+    
+    } else { # MaxQuant data
+      if("TRUE" %in% grepl('+',protein_data()$Reverse)){
+        filtered_data<-dplyr::filter(protein_data(),Reverse!="+")
+      }
+      else{filtered_data<-protein_data()}
+      if("TRUE" %in% grepl('+',filtered_data$Potential.contaminant)){
+        filtered_data<-dplyr::filter(filtered_data,Potential.contaminant!="+")
+      }
+      if("TRUE" %in% grepl('+',filtered_data$Only.identified.by.site)){
+        filtered_data<-dplyr::filter(filtered_data,Only.identified.by.site!="+") 
+      }
+      if(input$single_peptide_pr==TRUE){
+        filtered_data <-filtered_data
+      }
+      else{filtered_data<-dplyr::filter(filtered_data,as.numeric(Razor...unique.peptides)>=2)}
+      
+      filtered_data<-ids_test(filtered_data)
+    }
     filtered_data$Gene.names <- filtered_data$Gene.names %>% toupper()
     return(filtered_data)
   })
@@ -2094,19 +2218,25 @@ server <- function(input, output,session){
     test_match_lfq_column_design(data_unique,lfq_columns, exp_design())
     data_se<-DEP:::make_se(data_unique,lfq_columns,exp_design())
     
-    # Check number of replicates
-    if(max(exp_design()$replicate)<3){
-      threshold<-0
-    } else  if(max(exp_design()$replicate)==3){
-      threshold<-1
-    } else if(max(exp_design()$replicate)<6 ){
-      threshold<-2
-    } else if (max(exp_design()$replicate)>=6){
-      threshold<-trunc(max(exp_design()$replicate)/2)
-    }
+    # # Check number of replicates
+    # if(max(exp_design()$replicate)<3){
+    #   threshold<-0
+    # } else  if(max(exp_design()$replicate)==3){
+    #   threshold<-1
+    # } else if(max(exp_design()$replicate)<6 ){
+    #   threshold<-2
+    # } else if (max(exp_design()$replicate)>=6){
+    #   threshold<-trunc(max(exp_design()$replicate)/2)
+    # }
+    # filter missing values per condition
+    exp_df <- exp_design() %>% dplyr::count(condition)
+    exp_df <- exp_df %>% dplyr::mutate(thr = lapply(exp_df$n, threshold_detect)) # function:threshold_detect
+    condition_list <- exp_df$condition
     
+    data_filtered <- filter_missval_new(data_se,condition_list,exp_df)
+    return(data_filtered)
     
-    filter_missval(data_se,thr = threshold)
+    # filter_missval(data_se,thr = threshold)
   })
   
   unimputed_table_pr<-reactive({
@@ -2572,17 +2702,33 @@ server <- function(input, output,session){
            "Results" = get_results_proteins(dep_pr()),
            "Original_matrix"= unimputed_table_pr(),
            "Imputed_matrix" = imputed_table_pr(),
-           "Full_dataset" = get_df_wide(dep_pr()))
+           "Full_dataset" = get_df_wide(dep_pr()),
+           "RData")
   })
   
   output$downloadData_pr <- downloadHandler(
-    filename = function() { paste(input$dataset_pr, ".csv", sep = "") }, ## use = instead of <-
+    filename = function() { 
+      if(input$dataset_pr != "RData"){
+        paste(input$dataset_pr, ".csv", sep = "") 
+      } else {
+        "RData_output_protein.RData"
+      }
+      }, 
     content = function(file) {
-      write.table(datasetInput_pr(),
-                  file,
-                  col.names = TRUE,
-                  row.names = FALSE,
-                  sep =",") }
+      if(input$dataset_pr != "RData"){
+        write.table(datasetInput_pr(),
+                    file,
+                    col.names = TRUE,
+                    row.names = FALSE,
+                    sep =",") 
+      } else {
+        filtered_data_pr <- processed_data_pr()
+        imputed_data_pr <- imputed_data_pr()
+        normalised_data_pr <- normalised_data_pr()
+        dep_pr <- dep_pr()
+        save(filtered_data_pr, imputed_data_pr, normalised_data_pr, dep_pr, file = file)
+      }
+      }
   )
   
   ### === Cluster Download ==== ####
@@ -2865,7 +3011,7 @@ server <- function(input, output,session){
       phospho_intensity <- assay(dep())  %>% as.data.frame()
       phospho_df <- merge(phospho_row, phospho_intensity, by = 0) # Merge data according to row names
       
-      col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',
+      col_selected <- c(colnames(phospho_intensity),'Phosphosite','Gene.names',"Protein ID",
                           paste(input$volcano_comp, "_log2 fold change", sep = ""),
                           paste(input$volcano_comp, "_p.val", sep = ""))
         
@@ -2902,8 +3048,11 @@ server <- function(input, output,session){
   })
   combined_df <- reactive({
     if (!is.null(phospho_df()) & !is.null(protein_df())){
+      # phospho_df <- phospho_df()
+      # protein_df <- protein_df()
       df <- phospho_df() %>%
-        left_join(., protein_df(), by = "Gene.names")
+        # left_join(., protein_df(), by = "Gene.names")
+        left_join(., protein_df(), by = "Protein ID")
       # df$protein_diff[is.na(df$protein_diff)] <- 0
       df$normalized_diff <- df$phospho_diff - df$protein_diff
       # get index of the p.val
@@ -2918,6 +3067,7 @@ server <- function(input, output,session){
         mutate(n_p_value_desc = case_when(normalized_diff > 1 & p_values < 0.05 ~ 'Up',
                                           normalized_diff < -1 & p_values < 0.05 ~ 'Down',
                                           TRUE ~ 'Not Sig'))
+      # save(phospho_df,protein_df,df, file = "comp_df.RData")
       return(df)
       # cat(head(df)) # test
     }
@@ -2926,8 +3076,8 @@ server <- function(input, output,session){
   # gene names for selection input
   gene_names <- reactive({
     if (!is.null(phospho_df_long()) & !is.null(protein_df_long())){
-      gene_names <- phospho_df_long() %>% select('Gene.names') %>% unique()
-      gene_names_pr <- protein_df_long() %>% select('Gene.names') %>% unique()
+      gene_names <- phospho_df_long() %>% dplyr::select('Gene.names') %>% unique()
+      gene_names_pr <- protein_df_long() %>% dplyr::select('Gene.names') %>% unique()
       gene_names_list <- Reduce(intersect, list(gene_names,gene_names_pr))
       
       return(gene_names_list)
@@ -2938,18 +3088,21 @@ server <- function(input, output,session){
   phospho_df_long <- reactive({
     if (!is.null(phospho_df()) & !is.null(protein_df())){
       combined_df <- phospho_df() %>%
-        inner_join(., protein_df(), by = "Gene.names")
+        # inner_join(., protein_df(), by = "Gene.names")
+        inner_join(., protein_df(), by = "Protein ID")
       exp_design <- exp_design_input()
       # phospho_cols <- colnames(combined_df %>% select(dplyr::ends_with(".x")))
       
-      phospho_cols <- colnames(combined_df %>% select(1:ncol(phospho_df())))
+      phospho_cols <- colnames(combined_df %>% dplyr::select(1:ncol(phospho_df())))
       phospho_cols_1 <- exp_design$label
       
       
       phospho_df_11 <- subset(combined_df, select = phospho_cols)
-      names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names','phospho_diff',"p.val")
+      # names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names','phospho_diff',"p.val")
+      names(phospho_df_11) <- c(phospho_cols_1,'phospho_id','Gene.names',"Protein ID",'phospho_diff',"p.val")
       phospho_df_22 <- phospho_df_11 %>% rownames_to_column() %>%
-        gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+        # gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names", -"phospho_diff")
+        gather(label, intensity, -rowname,-"p.val",-"phospho_id", -"Gene.names",  -"Protein ID", -"phospho_diff")
       phospho_df_33 <- phospho_df_22 %>%
         left_join(., exp_design, by = "label")
       
@@ -2968,16 +3121,19 @@ server <- function(input, output,session){
   protein_df_long <- reactive({
     if (!is.null(phospho_df()) & !is.null(protein_df())){
       combined_df <- phospho_df() %>%
-        inner_join(., protein_df(), by = "Gene.names")
+        # inner_join(., protein_df(), by = "Gene.names")
+        inner_join(., protein_df(), by = "Protein ID")
       exp_design <- exp_design_input_1()
       # protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
-      protein_cols <- colnames(combined_df %>% select((ncol(phospho_df())+1):ncol(combined_df)))
+      protein_cols <- colnames(combined_df %>% dplyr::select((ncol(phospho_df())+1):ncol(combined_df)))
       protein_cols_1 <- exp_design$label
       
-      protein_df_11 <- subset(combined_df, select = c(protein_cols,'Gene.names'))
-      names(protein_df_11) <- c(protein_cols_1,"protein_id",'protein_diff','p.val','Gene.names')
+      # protein_df_11 <- subset(combined_df, select = c(protein_cols,'Gene.names'))
+      protein_df_11 <- subset(combined_df, select = c(protein_cols,'Protein ID'))
+      # names(protein_df_11) <- c(protein_cols_1,"protein_id",'protein_diff','p.val','Gene.names')
+      names(protein_df_11) <- c(protein_cols_1,'Gene.names','protein_diff','p.val',"Protein ID")
       protein_df_22 <- protein_df_11 %>% rownames_to_column() %>%
-        gather(label, intensity, -rowname,-"p.val", -"protein_id", -"Gene.names",-"protein_diff")
+        gather(label, intensity, -rowname,-"p.val", -"Protein ID", -"Gene.names",-"protein_diff")
       protein_df_33 <- protein_df_22 %>%
         left_join(., exp_design, by = "label")
       
@@ -3023,7 +3179,7 @@ server <- function(input, output,session){
         theme_DEP2()
       
       p2 <- protein_df %>% 
-        select(-'rowname') %>%
+        dplyr::select(-'rowname') %>%
         unique() %>%
         ggplot(aes(x = condition, y = intensity)) +
         geom_point(aes(color = factor(replicate)),
@@ -3061,12 +3217,12 @@ server <- function(input, output,session){
       for (i in 1:length(conditions)) {
         condition <- conditions[i]
         pattern <- paste(condition,"[[:digit:]]",sep = '_')
-        phospho_df_1[paste0('mean',sep = "_",condition)] <- rowMeans(phospho_df_1 %>% select(grep(pattern, colnames(phospho_df_1))), na.rm = TRUE)
+        phospho_df_1[paste0('mean',sep = "_",condition)] <- rowMeans(phospho_df_1 %>% dplyr::select(grep(pattern, colnames(phospho_df_1))), na.rm = TRUE)
       }
       
       phospho_df_2 <- phospho_df_1 %>% 
         # dplyr::filter(Gene.names %in% input$selected_gene) %>% 
-        select(Gene.names,phospho_id, grep('mean', colnames(phospho_df_1))) %>%
+        dplyr::select(Gene.names,phospho_id, grep('mean', colnames(phospho_df_1))) %>%
         pivot_longer(names_to = "group", values_to = "mean_intensity", cols = starts_with('mean'))
       
       phospho_df_2 %>% ggplot(aes(x = phospho_id, y = group)) +
@@ -3082,12 +3238,12 @@ server <- function(input, output,session){
   scatter_plot <- reactive({
     if(!is.null(input$volcano_comp) & !is.null(combined_df())){
       df <- combined_df()
-      df %>% filter(!is.na(protein_diff))  %>% 
+      df %>% dplyr::filter(!is.na(protein_diff))  %>% 
         ggplot(aes(x=phospho_diff, y=protein_diff)) + 
         geom_point(size = 2, alpha = 0.8) +
         geom_text_repel( 
           data=df %>% 
-            filter(phospho_diff > 5 | phospho_diff < -5|protein_diff>2| protein_diff < -2), # Filter data first
+            dplyr::filter(phospho_diff > 5 | phospho_diff < -5|protein_diff>2| protein_diff < -2), # Filter data first
             # filter(abs(phospho_diff) > 5 | abs(protein_diff)>2), # Filter data first
           aes(label=phospho_id),
           nudge_x = 0.5, nudge_y = 0,
@@ -3434,7 +3590,8 @@ server <- function(input, output,session){
                      "Choose a dataset to save" ,
                      c("Results","Original_matrix",
                        "Imputed_matrix",
-                       "Full_dataset"))
+                       "Full_dataset",
+                       "RData"))
     }
   })
   
@@ -4201,22 +4358,39 @@ server <- function(input, output,session){
     if(length(unique(exp_design_input()$condition)) <= 2){
       switch(input$dataset_nr,
              "Results" = get_results_phospho(dep_nr(), FALSE),
-             "Full_dataset" = get_df_wide(dep_nr()))
+             "Full_dataset" = get_df_wide(dep_nr()),
+             "RData")
     } else {
       switch(input$dataset_nr,
              "Results" = get_results_phospho(dep_nr(), TRUE),
-             "Full_dataset" = get_df_wide(dep_nr()))
+             "Full_dataset" = get_df_wide(dep_nr()),
+             "RData")
     }
   })
   
   output$downloadData_nr <- downloadHandler(
-    filename = function() { paste(input$dataset_nr, ".csv", sep = "") }, ## use = instead of <-
+    filename = function() { 
+      if(input$dataset_nr != "RData"){
+        paste(input$dataset_nr, ".csv", sep = "") 
+      } else {
+        "RData_output_phospho_corrected.RData"
+      }
+      
+      }, 
     content = function(file) {
-      write.table(datasetInput_nr(),
-                  file,
-                  col.names = TRUE,
-                  row.names = FALSE,
-                  sep =",") }
+      if(input$dataset_nr != "RData"){
+        write.table(datasetInput_nr(),
+                    file,
+                    col.names = TRUE,
+                    row.names = FALSE,
+                    sep =",")
+      } else {
+        imputed_data_nr <- imputed_data_nr()
+        normalised_data_nr <- normalised_data_nr()
+        dep_nr <- dep_nr()
+        save(imputed_data_nr, normalised_data_nr, dep_nr, file = file)
+      }
+      }
   )
   
   ### === Cluster Download ==== ####
@@ -4432,50 +4606,99 @@ server <- function(input, output,session){
   data_attendance<-reactive({
     peptide_data <- phospho_data_input()
     
-    ## Expand Site table
-    # get all intensity columns
-    intensity <- grep("^Intensity.+|Intensity", colnames(peptide_data)) 
-    # get the required intensity columns
-    intensity_cols <- grep("^Intensity.+___\\d", colnames(peptide_data))
-    intensity_names <- colnames( peptide_data[,intensity_cols])
-    # ensure all intensity columns are numeric type
-    peptide_data[,intensity_cols] <- sapply(peptide_data[,intensity_cols],as.numeric)
+    if (any(grep("PTM.Quantity", colnames(peptide_data)))){ # output from spectronaut
+      
+      filtered_data <- peptide_data %>% filter(PTM.ModificationTitle == "Phospho (STY)")
+      # get intensity columns
+      intensity_cols <- grep("PTM.Quantity", colnames(filtered_data)) 
+      
+      # change intensity column names to be same as MaxQuant one
+      colnames(filtered_data)[intensity_cols] <- colnames(filtered_data)[intensity_cols] %>%
+        sub("^.*?\\.\\.","",.) %>%
+        gsub(".PTM.Quantity","",.) %>%
+        gsub(".raw","",.)
+      
+      colnames(filtered_data)[intensity_cols] <- paste0("Intensity.", colnames(filtered_data)[intensity_cols])
+      
+      # if included, replace "Filtered" with NA (some spectronaut's output)
+      filtered_data <- replace(filtered_data, filtered_data == "Filtered", NA) 
+      # ensure all intensity columns are numeric type
+      filtered_data[,intensity_cols] <- sapply(filtered_data[,intensity_cols],as.numeric)
+      filtered_data[,grep("PTM.SiteProbability", colnames(filtered_data))] <- sapply(filtered_data[,grep("PTM.SiteProbability", colnames(filtered_data))],as.numeric)
+      
+      # generate same columns as MaxQuant dataset
+      data_pre <- filtered_data %>% dplyr::mutate(Residue.Both = paste(PTM.SiteAA, PTM.SiteLocation, sep = "_"))
+      data_pre$name = data_pre$PTM.CollapseKey
+      data_pre$ID = data_pre$PTM.CollapseKey
+      data_pre$peptide.sequence <- data_pre$PTM.FlankingRegion
+      data_pre$Localization.prob <- rowMeans(data_pre[,grep("PTM.SiteProbability", colnames(data_pre))],na.rm = T)
+      data_pre$Reverse <- dplyr::if_else(grepl("^REV__|^REFSEQ",data_pre$PTM.ProteinId),"+","")
+      data_pre$Potential.contaminant <- dplyr::if_else(grepl("^CON__|^Cont_", data_pre$PTM.ProteinId), "+", "")
+      
+      # change inconsistency column names
+      colnames(data_pre)[names(data_pre) == "PTM.CollapseKey"] <- "Phosphosite"
+      colnames(data_pre)[names(data_pre) == "PTM.ProteinId"] <- "Protein"
+      colnames(data_pre)[names(data_pre) == "PTM.Multiplicity" ] <- "Multiplicity"
+      colnames(data_pre)[names(data_pre) == "PTM.SiteAA" ] <- "Amino.acid"
+      
+    } else { # MaxQuant
+      ## Expand Site table
+      # get all intensity columns
+      intensity <- grep("^Intensity.+|Intensity", colnames(peptide_data)) 
+      # get the required intensity columns
+      intensity_cols <- grep("^Intensity.+___\\d", colnames(peptide_data))
+      intensity_names <- colnames( peptide_data[,intensity_cols])
+      # ensure all intensity columns are numeric type
+      peptide_data[,intensity_cols] <- sapply(peptide_data[,intensity_cols],as.numeric)
+      
+      # # replace NA to 0
+      peptide_data <- peptide_data %>% dplyr::mutate_if(is.numeric,~tidyr::replace_na(.,0))
+      
+      # get the intensity columns need to be dropped
+      drop_cols <- setdiff(intensity, intensity_cols)
+      # drop columns
+      # data_new <- subset(peptide_data, select = -drop_cols)
+      data_new <- peptide_data %>% dplyr::select(-all_of(drop_cols))
+      
+      # add required columns
+      peptide.sequence <- data_new$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
+      data_new <- dplyr::mutate(data_new,peptide.sequence, .after = "Phospho..STY..Score.diffs")
+      
+      data_new$Gene.names <- data_new$Gene.names %>% toupper()
+      data_new$Gene.names <- data_new$Gene.names %>%  gsub(';.*','',.) # only keep the first gene name
+      
+      data_new <- data_new %>% dplyr::select("peptide.sequence", "Protein", "Amino.acid",
+                                      "Localization.prob",all_of(intensity_names),"Gene.names","Protein.names","Position","Reverse", "Potential.contaminant")
+      
+      # expand site table
+      data_ex <- data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
+                                                  names_to = c('.value','Multiplicity'),
+                                                  names_pattern = '(.*)___(.)',
+                                                  values_drop_na = TRUE)
+      
+      # create Phosphosite name
+      data_pre <- data_ex %>%
+        mutate(Phosphosite = paste(Gene.names,Position, Multiplicity,sep = '_'))
+    }
     
-    # replace NA to 0
-    peptide_data <- peptide_data %>% dplyr::mutate_if(is.numeric,~tidyr::replace_na(.,0))
     
-    # get the intensity columns need to be dropped
-    drop_cols <- setdiff(intensity, intensity_cols)
-    # drop columns
-    # data_new <- subset(peptide_data, select = -drop_cols)
-    data_new <- peptide_data %>% dplyr::select(-all_of(drop_cols))
-    
-    # add required columns
-    peptide.sequence <- data_new$Phospho..STY..Probabilities %>% gsub("[^[A-Z]+","",.)
-    data_new <- dplyr::mutate(data_new,peptide.sequence, .after = "Phospho..STY..Score.diffs")
-    
-    data_new$Gene.names <- data_new$Gene.names %>% toupper()
-    data_new$Gene.names <- data_new$Gene.names %>%  gsub(';.*','',.) # only keep the first gene name
-    
-    data_new <- data_new %>% select("peptide.sequence", "Protein", "Amino.acid",
-                                    "Localization.prob",all_of(intensity_names),"Gene.names","Protein.names","Position","Reverse", "Potential.contaminant")
-    
-    # expand site table
-    data_ex <- data_new %>% tidyr::pivot_longer(cols = contains(intensity_names),
-                                                names_to = c('.value','Multiplicity'),
-                                                names_pattern = '(.*)___(.)',
-                                                values_drop_na = TRUE)
-    
-    # create Phosphosite name
-    data_ex <- data_ex %>%
-      mutate(Phosphosite = paste(Gene.names,Position, Multiplicity,sep = '_'))
     
     # new intensity column names
-    intensity_names_new <- colnames(data_ex[,grep("^Intensity.", colnames(data_ex))])
+    intensity_names_new <- colnames(data_pre[,grep("^Intensity.", colnames(data_pre))])
     
     # select result table columns
-    df <- data_ex  %>% select("peptide.sequence", "Phosphosite", "Protein", "Amino.acid",
-                              "Localization.prob",all_of(intensity_names_new),"Gene.names","Protein.names","Reverse", "Potential.contaminant")
+    # df <- data_pre  %>% select("peptide.sequence", "Phosphosite", "Protein", "Amino.acid",
+    #                           "Localization.prob",all_of(intensity_names_new),"Gene.names","Protein.names","Reverse", "Potential.contaminant")
+    needed_cols <- c("peptide.sequence", "Phosphosite", "Protein", "Amino.acid",
+                     "Localization.prob",intensity_names_new,"Gene.names","Protein.names","Reverse", "Potential.contaminant")
+    
+    df <- data_pre[, colnames(data_pre) %in% needed_cols]
+    
+    # reorder
+    must_order <- c("peptide.sequence", "Phosphosite", "Protein", "Amino.acid","Localization.prob",intensity_names_new)
+    new_order <- c(must_order, setdiff(colnames(df),must_order))
+    df <- df[,new_order]
+    
     df$Phosphosite <- make.unique(df$Phosphosite)
     colnames(df) <- colnames(df)  %>% gsub("Intensity.", "", .) 
     intensity_names_new <- intensity_names_new %>% gsub("Intensity.", "", .) 
@@ -4498,12 +4721,13 @@ server <- function(input, output,session){
     # remove intensity columns not in experimental design file.
     df <- df[!is.na(names(df))]
     # filter if all intensity are 0
+    df <- df %>% dplyr::mutate_if(is.numeric,~tidyr::replace_na(.,0))
     df <- df[rowSums(df[,grep("^LFQ_", colnames(df))]) != 0,]
     
     for (i in 1:length(conditions)) {
       condition <- conditions[i]
       pattern <- paste(condition,"[[:digit:]]",sep = "_")
-      df[paste0("#Occurences",sep = "_",condition)] <- rowSums(df %>% select(grep(pattern, colnames(df))) != 0)
+      df[paste0("#Occurences",sep = "_",condition)] <- rowSums(df %>% dplyr::select(grep(pattern, colnames(df))) != 0)
       
       # change column order
       df <- dplyr::relocate(df, paste0("#Occurences",sep = "_",condition), .before = paste("LFQ_intensity", conditions[1],"1",sep = "_"), .after = NULL)
@@ -6871,7 +7095,7 @@ server <- function(input, output,session){
   gene_names_dm <- reactive({
     if (!is.null(phospho_df_long_dm())){
       gene_names_list <- phospho_df_long_dm() %>%
-        select('Gene.names') %>%
+        dplyr::select('Gene.names') %>%
         unique()
       return(gene_names_list)
     }
@@ -6884,7 +7108,7 @@ server <- function(input, output,session){
         inner_join(., protein_df_dm(), by = "Gene.names")
       exp_design <- exp_design_demo()
       # phospho_cols <- colnames(combined_df %>% select(dplyr::ends_with(".x")))
-      phospho_cols <- colnames(combined_df %>% select(1:ncol(phospho_df_dm())))
+      phospho_cols <- colnames(combined_df %>% dplyr::select(1:ncol(phospho_df_dm())))
       phospho_cols_1 <- exp_design$label
       
       phospho_df_11 <- subset(combined_df, select = phospho_cols)
@@ -6912,7 +7136,7 @@ server <- function(input, output,session){
         inner_join(., protein_df_dm(), by = "Gene.names")
       exp_design <- exp_design_demo_1()
       # protein_cols <- colnames(combined_df %>% select(dplyr::ends_with(".y")))
-      protein_cols <- colnames(combined_df %>% select((ncol(phospho_df_dm())+1):ncol(combined_df)))
+      protein_cols <- colnames(combined_df %>% dplyr::select((ncol(phospho_df_dm())+1):ncol(combined_df)))
       protein_cols_1 <- exp_design$label
       
       
@@ -6964,7 +7188,7 @@ server <- function(input, output,session){
         theme_DEP2()
       
       p2 <- protein_df %>%
-        select(-'rowname') %>%
+        dplyr::select(-'rowname') %>%
         unique() %>%
         ggplot(aes(x = condition, y = intensity)) +
         geom_point(aes(color = factor(replicate)),
@@ -7003,12 +7227,12 @@ server <- function(input, output,session){
       for (i in 1:length(conditions)) {
         condition <- conditions[i]
         pattern <- paste(condition,"[[:digit:]]",sep = '_')
-        phospho_df_1[paste0('mean',sep = "_",condition)] <- rowMeans(phospho_df_1 %>% select(grep(pattern, colnames(phospho_df_1))), na.rm = TRUE)
+        phospho_df_1[paste0('mean',sep = "_",condition)] <- rowMeans(phospho_df_1 %>% dplyr::select(grep(pattern, colnames(phospho_df_1))), na.rm = TRUE)
       }
       
       phospho_df_2 <- phospho_df_1 %>%
         # dplyr::filter(Gene.names %in% input$selected_gene) %>%
-        select(Gene.names,phospho_id, grep('mean', colnames(phospho_df_1))) %>%
+        dplyr::select(Gene.names,phospho_id, grep('mean', colnames(phospho_df_1))) %>%
         pivot_longer(names_to = "group", values_to = "mean_intensity", cols = starts_with('mean'))
       
       phospho_df_2 %>% ggplot(aes(x = phospho_id, y = group)) +
@@ -8388,4 +8612,5 @@ server <- function(input, output,session){
   })
   
   save_plot_server("upset_dm", upset_plot_input_dm)
+  
 }
