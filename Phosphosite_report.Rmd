@@ -24,11 +24,16 @@ params:
   local_prob: NA
   
 output: 
-  pdf_document:
-    fig_caption: yes
+  html_document:
+    theme: flatly
+    code_folding: none
+    toc: true
+    toc_float:
+      smooth_scroll: false
+    toc_depth: 6
 ---
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(opts.label="kill_prefix") # Remove line number and Comment "##" from printing
+knitr::opts_chunk$set(opts.label="kill_prefix", fig.pos = "!H", out.extra = "") # Remove line number and Comment "##" from printing
 ```
 
 ## Method details
@@ -46,7 +51,7 @@ Statistical analysis was performed using an in-house generated R script based on
 
 ## Results
 
-#### MaxQuant result output contains `r nrow(params$data)` phosphosites of which _`r nrow(params$dep())`_ phosphosites were reproducibly quantified.
+#### MaxQuant result output contains `r nrow(params$data())` phosphosites of which _`r nrow(params$dep())`_ phosphosites were reproducibly quantified.
 
 #### `r params$num_signif` phosphosites differ significantly between samples.
 
@@ -110,7 +115,11 @@ A heatmap for phosphosites with missing value in each dataset. Each row represen
 
 
 ```{r missing_value_heatmap, echo=FALSE, fig.height= 7, message=FALSE, results='hide',warning=FALSE, tidy=TRUE}
-params$missval_input()
+if(!any(is.na(assay(params$data())))){
+  print("No missing values in dataset")
+} else {
+  params$missval_input()
+}
 ```
 \pagebreak
 

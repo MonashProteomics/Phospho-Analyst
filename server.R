@@ -235,7 +235,8 @@ server <- function(input, output,session){
     }
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
-      hot_col("label", readOnly = T) 
+      hot_col("label", readOnly = T) %>% 
+      hot_cols(columnSorting = T)
   })
   
   # Outputs the template table
@@ -355,7 +356,8 @@ server <- function(input, output,session){
     
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')
     rhandsontable(tempTable) %>% 
-      hot_col("label", readOnly = T) 
+      hot_col("label", readOnly = T) %>% 
+      hot_cols(columnSorting = T)
     
   })
   
@@ -619,7 +621,7 @@ server <- function(input, output,session){
     temp<-assay(processed_data())
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) 
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) 
     #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
@@ -651,7 +653,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
@@ -907,7 +909,7 @@ server <- function(input, output,session){
     # plot_imputation(processed_data(),
     #                 diff_all())
     plot_imputation_new(labels = c("original", "imputed"), 
-                        processed_data(),diff_all())
+                        processed_data(),imputed_data())
   })
   
   p_hist_input <- reactive({
@@ -1747,8 +1749,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (phosphosite)=====#####
   output$downloadReport <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -2838,8 +2840,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (proteinGroup)=====##### 
   output$downloadReport_pr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(proteinGroup)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(proteinGroup)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -3358,8 +3360,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (Comparison)=====##### 
   output$downloadReport_comp <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(Comparison)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(Comparison)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -3739,7 +3741,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
@@ -4502,8 +4504,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (phosphosite_corrected)=====#####
   output$downloadReport_nr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite-corrected)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite-corrected)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -5032,7 +5034,7 @@ server <- function(input, output,session){
     temp<-assay(processed_data_dm())
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"original_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) 
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) 
     #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
@@ -5050,7 +5052,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
@@ -6010,8 +6012,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo phosphosite)=====#####
   output$downloadReport_dm <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -6852,8 +6854,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo protein group)=====#####
   output$downloadReport_dm_pr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(proteinGroup)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(proteinGroup)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -7363,8 +7365,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo Comparison)=====##### 
   output$downloadReport_comp_dm <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(Comparison)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(Comparison)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
@@ -7654,7 +7656,7 @@ server <- function(input, output,session){
     #tibble::rownames_to_column(temp,var = "ProteinID")
     temp1<-2^(temp)
     colnames(temp1)<-paste(colnames(temp1),"imputed_intensity",sep="_")
-    temp1<-cbind(ProteinID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
+    temp1<-cbind(PhosphoID=rownames(temp1),temp1) #temp1$ProteinID<-rownames(temp1)
     return(as.data.frame(temp1))
   })
   
@@ -8295,8 +8297,8 @@ server <- function(input, output,session){
   
   #####===== Download Report (demo phosphosite_corrected)=====#####
   output$downloadReport_dm_nr <- downloadHandler(
-    # For PDF output, change this to "report.pdf"
-    filename = "Phospho-Analyst(phosphosite-corrected)report.pdf",
+    # HTML report
+    filename = "Phospho-Analyst(phosphosite-corrected)report.html",
     content = function(file) {
       # Copy the report file to a temporary directory before processing it, in
       # case we don't have write permissions to the current working dir (which
