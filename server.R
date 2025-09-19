@@ -351,7 +351,7 @@ server <- function(input, output,session){
                        header = TRUE,
                        fill= TRUE, # to fill any missing data
                        sep = "\t")
-      tempTable =  get_exp_design(df)
+      tempTable =  get_exp_design_pr(df)
     }
     
     tempTable$label[grepl("^[[:digit:]]", tempTable$label)] <- paste("X",tempTable$label,sep = '')

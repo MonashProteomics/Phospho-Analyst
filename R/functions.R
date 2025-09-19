@@ -901,10 +901,18 @@ add_rejections_anova <- function(diff, alpha = 0.05, lfc = 1) {
 
 # get editable experiment design (phosphosite) function
 get_exp_design <- function(df){
-  intensity_cols <- grep("Intensity[.]", colnames(df))
-  intensity_names <- colnames( df[,intensity_cols])
-  intensity_names <- intensity_names %>% gsub("Intensity[.]", "", .) %>% gsub("___\\d", "", .) %>% unique()
-  intensity_names <- stringr::str_sort(intensity_names, numeric = TRUE) # sort the intensity columns
+  if (any(grep("PTM.Quantity", colnames(df)))){ # output from spectronaut
+    intensity_cols <- grep("PTM.Quantity", colnames(df)) 
+    intensity_names <- colnames( df[,intensity_cols]) %>% 
+      sub("^X\\.[0-9]+\\.+", "",.) %>% 
+      sub(".raw.*$","",.) %>% 
+      sub(".PTM.Quantity.*$","",.)
+  } else { # MaxQuant data
+    intensity_cols <- grep("Intensity[.]", colnames(df))
+    intensity_names <- colnames( df[,intensity_cols])
+    intensity_names <- intensity_names %>% gsub("Intensity[.]", "", .) %>% gsub("___\\d", "", .) %>% unique()
+    intensity_names <- stringr::str_sort(intensity_names, numeric = TRUE) # sort the intensity columns
+  }
   df <- data.frame(label = intensity_names) %>% 
     add_column(condition = "", replicate = "")
   # change the replicate to numeric
@@ -914,10 +922,19 @@ get_exp_design <- function(df){
 
 # get editable experiment design (proteinGroup) function
 get_exp_design_pr <- function(df){
-  intensity_cols <- grep("LFQ.intensity[.]", colnames(df))
-  intensity_names <- colnames( df[,intensity_cols])
-  intensity_names <- intensity_names %>% gsub("LFQ.intensity[.]", "", .) %>% unique()
-  intensity_names <- stringr::str_sort(intensity_names, numeric = TRUE) # sort the intensity columns
+  if (any(grep("PG.Quantity", colnames(df)))){ # output from spectronaut
+    intensity_cols <-grep("PG.Quantity", colnames(df))
+    intensity_names <- colnames(df[,intensity_cols]) %>% 
+      sub("^X\\.[0-9]+\\.+", "",.) %>% 
+      sub(".htrms","",.)  %>% 
+      sub(".raw.*$","",.) %>% 
+      sub(".PG.Quantity.*$","",.)
+  } else { # MaxQuant data
+    intensity_cols <- grep("LFQ.intensity[.]", colnames(df))
+    intensity_names <- colnames( df[,intensity_cols])
+    intensity_names <- intensity_names %>% gsub("LFQ.intensity[.]", "", .) %>% unique()
+    intensity_names <- stringr::str_sort(intensity_names, numeric = TRUE) # sort the intensity columns
+  }
   df <- data.frame(label = intensity_names) %>% 
     add_column(condition = "", replicate = "")
   # change the replicate to numeric
