@@ -1,4 +1,4 @@
-VERSION <- "v1.0.3(dev)"
+VERSION <- "v1.0.6"
 
 library("SummarizedExperiment")
 library("tidyverse")
