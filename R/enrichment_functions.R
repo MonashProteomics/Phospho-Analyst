@@ -80,13 +80,13 @@ test_gsea_mod <- function(dep,
   OUT <- df_background %>%
     mutate(bg_IN = as.numeric(gsub("/.*", "", Overlap)),
            bg_OUT = n - bg_IN) %>%
-    select(Term, bg_IN, bg_OUT)
+    dplyr::select(Term, bg_IN, bg_OUT)
   
   if(contrasts) {
     # Get gene symbols
     df <- row_data %>%
       as.data.frame() %>%
-      select(name, ends_with("_significant")) %>%
+      dplyr::select(name, dplyr::ends_with("_significant")) %>%
       mutate(name = gsub("[.].*", "", name))
     
     # Run enrichR for every contrast
@@ -111,12 +111,12 @@ test_gsea_mod <- function(dep,
         
         # Background correction
         cat("Background correction... ")
-        contrast_enrich <- contrast_enrich %>%
-          mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
-                 OUT = n - IN) %>%
-          select(-n) %>%
-          left_join(OUT, by = "Term") %>%
-          mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
+         contrast_enrich <- contrast_enrich %>%
+           mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
+             OUT = n - IN) %>%
+           dplyr::select(-n) %>%
+           left_join(OUT, by = "Term") %>%
+           mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
         cat("Done.")
         
         df_enrich <- rbind(df_enrich, contrast_enrich) %>%
@@ -129,8 +129,8 @@ test_gsea_mod <- function(dep,
     # Get gene symbols
     significant <- row_data %>%
       as.data.frame() %>%
-      select(name, significant) %>%
-      filter(significant) %>%
+      dplyr::select(name, significant) %>%
+      dplyr::filter(significant) %>%
       mutate(name = gsub("[.].*", "", name))
     
     # Run enrichR
@@ -149,12 +149,12 @@ test_gsea_mod <- function(dep,
     
     # Background correction
     cat("Background correction... ")
-    df_enrich <- df_enrich %>%
-      mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
-             OUT = n - IN) %>%
-      select(-n) %>%
-      left_join(OUT, by = "Term") %>%
-      mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
+        df_enrich <- df_enrich %>%
+          mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
+            OUT = n - IN) %>%
+          dplyr::select(-n) %>%
+          left_join(OUT, by = "Term") %>%
+          mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
     cat("Done.")
   }
   
@@ -206,13 +206,13 @@ test_gsea_mod_phospho <- function(dep,
   OUT <- df_background %>%
     mutate(bg_IN = as.numeric(gsub("/.*", "", Overlap)),
            bg_OUT = n - bg_IN) %>%
-    select(Term, bg_IN, bg_OUT)
+    dplyr::select(Term, bg_IN, bg_OUT)
   
   if(contrasts) {
     # Get gene symbols
     df <- row_data %>%
       as.data.frame() %>%
-      select(name, ends_with("_significant")) %>%
+      dplyr::select(name, dplyr::ends_with("_significant")) %>%
       mutate(name = gsub("[_].*", "", name))
     
     # Run enrichR for every contrast
@@ -237,12 +237,12 @@ test_gsea_mod_phospho <- function(dep,
         
         # Background correction
         cat("Background correction... ")
-        contrast_enrich <- contrast_enrich %>%
-          mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
-                 OUT = n - IN) %>%
-          select(-n) %>%
-          left_join(OUT, by = "Term") %>%
-          mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
+         contrast_enrich <- contrast_enrich %>%
+           mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
+             OUT = n - IN) %>%
+           dplyr::select(-n) %>%
+           left_join(OUT, by = "Term") %>%
+           mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
         cat("Done.")
         
         df_enrich <- rbind(df_enrich, contrast_enrich) %>%
@@ -255,8 +255,8 @@ test_gsea_mod_phospho <- function(dep,
     # Get gene symbols
     significant <- row_data %>%
       as.data.frame() %>%
-      select(name, significant) %>%
-      filter(significant) %>%
+      dplyr::select(name, significant) %>%
+      dplyr::filter(significant) %>%
       mutate(name = gsub("[_].*", "", name))
     
     # Run enrichR
@@ -275,12 +275,12 @@ test_gsea_mod_phospho <- function(dep,
     
     # Background correction
     cat("Background correction... ")
-    df_enrich <- df_enrich %>%
-      mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
-             OUT = n - IN) %>%
-      select(-n) %>%
-      left_join(OUT, by = "Term") %>%
-      mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
+        df_enrich <- df_enrich %>%
+          mutate(IN = as.numeric(gsub("/.*", "", Overlap)),
+            OUT = n - IN) %>%
+          dplyr::select(-n) %>%
+          left_join(OUT, by = "Term") %>%
+          mutate(log_odds = log2((IN * bg_OUT) / (OUT * bg_IN)))
     cat("Done.")
   }
   

@@ -29,13 +29,16 @@ packages = c("tidyverse",
              "SummarizedExperiment",
              "DEP",
              "ComplexHeatmap",
-             "limma")
+             "limma",
+             "shiny.info") #remotes::install_github("Appsilon/shiny.info")
+
 
 
 bio_packages = c("SummarizedExperiment",
                  "DEP",
                  "ComplexHeatmap",
-                 "limma")
+                 "limma",
+                 "UniProt.ws") #BiocManager::install("UniProt.ws")
 
 # use this function to check if each package is on the local machine
 # if any are not, the missing package(s) will be installed
