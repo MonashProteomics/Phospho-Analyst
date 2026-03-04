@@ -1000,12 +1000,27 @@ server <- function(input, output,session){
     # Create result table using KSEA.Scores() function
     KSEA_result <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5) 
     
-    # Generate a summary bar plot using the KSEA.Barplot() function
-    plot_KSEA <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, 
-                                       m.cutoff= input$m.cutoff, p.cutoff= input$p.cutoff, export=FALSE)
+    # # Generate a summary bar plot using the KSEA.Barplot() function
+    # plot_KSEA <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, 
+    #                                    m.cutoff= input$m.cutoff, p.cutoff= input$p.cutoff, export=FALSE)
     
-    KSEA_list<-list("KSEA_result"=KSEA_result, "plot_KSEA"=plot_KSEA)
+    # KSEA_list<-list("KSEA_result"=KSEA_result, "plot_KSEA"=plot_KSEA)
+    KSEA_list<-list("KSEA_result"=KSEA_result, "KSData"=KSData,"PX" = PX)
     return(KSEA_list)
+  })
+  
+  KSEA_plot_input <- reactive({
+    req(KSEA_input())
+    function() {
+      KSEAapp::KSEA.Barplot(
+        KSEA_input()$KSData, KSEA_input()$PX,
+        NetworKIN = TRUE,
+        NetworKIN.cutoff = 5,
+        m.cutoff = input$m.cutoff,
+        p.cutoff = input$p.cutoff,
+        export = FALSE
+      )
+    }
   })
   
   
@@ -1579,7 +1594,8 @@ server <- function(input, output,session){
   
   output$KSEA_enrichment<-renderPlot({
     Sys.sleep(2)
-    KSEA_input()$plot_KSEA
+    # KSEA_input()$plot_KSEA
+    KSEA_plot_input()()
   })
   
   ##### Download Functions
@@ -1734,6 +1750,22 @@ server <- function(input, output,session){
                   row.names = FALSE,
                   sep =",") }
   )
+  
+  go_plot_input <-reactive({ 
+    p <- go_input()[[2]]
+    return(p)
+  })
+  
+  go_cntrst <- reactive({
+    input$contrast
+  })
+  
+  KSEA_cntrst <- reactive({
+    input$contrast_1
+  })
+
+  save_plot_server("enrichment_plot", go_plot_input , go_cntrst)
+  save_plot_server("KSEA_plot", KSEA_plot_input(), KSEA_cntrst)
   
   # ###### ==== DOWNLOAD PATHWAY TABLE ==== ####
   # output$downloadPA <- downloadHandler(
@@ -4074,10 +4106,25 @@ server <- function(input, output,session){
     KSEA_result_nr <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5)
     
     # Generate a summary bar plot using the KSEA.Barplot() function
-    plot_KSEA_nr <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_nr, p.cutoff= input$p.cutoff_nr, export=FALSE)
+    # plot_KSEA_nr <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_nr, p.cutoff= input$p.cutoff_nr, export=FALSE)
     
-    KSEA_list_nr<-list("KSEA_result"=KSEA_result_nr, "plot_KSEA"=plot_KSEA_nr)
+    # KSEA_list_nr<-list("KSEA_result"=KSEA_result_nr, "plot_KSEA"=plot_KSEA_nr)
+    KSEA_list_nr<-list("KSEA_result"=KSEA_result_nr, "KSData"=KSData,"PX" = PX)
     return(KSEA_list_nr)
+  })
+  
+  KSEA_plot_input_nr <- reactive({
+    req(KSEA_input_nr())
+    function() {
+      KSEAapp::KSEA.Barplot(
+        KSEA_input_nr()$KSData, KSEA_input_nr()$PX,
+        NetworKIN = TRUE,
+        NetworKIN.cutoff = 5,
+        m.cutoff = input$m.cutoff_nr,
+        p.cutoff = input$p.cutoff_nr,
+        export = FALSE
+      )
+    }
   })
   
   #### Interactive UI (Normalized page)
@@ -4350,7 +4397,8 @@ server <- function(input, output,session){
   
   output$KSEA_enrichment_nr<-renderPlot({
     Sys.sleep(2)
-    KSEA_input_nr()$plot_KSEA
+    # KSEA_input_nr()$plot_KSEA
+    KSEA_plot_input_nr()()
   })
   
   ##### Download Functions
@@ -4501,6 +4549,22 @@ server <- function(input, output,session){
                   row.names = FALSE,
                   sep =",") }
   )
+  
+  go_plot_input_nr <-reactive({ 
+    p <- go_input_nr()[[2]]
+    return(p)
+  })
+  
+  go_cntrst_nr <- reactive({
+    input$contrast_nr
+  })
+  
+  KSEA_cntrst_nr <- reactive({
+    input$contrast_1_nr
+  })
+  
+  save_plot_server("enrichment_plot_nr", go_plot_input_nr , go_cntrst_nr)
+  save_plot_server("KSEA_plot_nr", KSEA_plot_input_nr(), KSEA_cntrst_nr)
   
   #####===== Download Report (phosphosite_corrected)=====#####
   output$downloadReport_nr <- downloadHandler(
@@ -5288,10 +5352,24 @@ server <- function(input, output,session){
     # Create result table using KSEA.Scores() function
     KSEA_result_dm <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5) 
     # Generate a summary bar plot using the KSEA.Barplot() function
-    plot_KSEA_dm <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_dm, p.cutoff= input$p.cutoff_dm, export=FALSE)
+    # plot_KSEA_dm <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_dm, p.cutoff= input$p.cutoff_dm, export=FALSE)
     
-    KSEA_list_dm<-list("KSEA_result"=KSEA_result_dm, "plot_KSEA"=plot_KSEA_dm)
+    KSEA_list_dm<-list("KSEA_result"=KSEA_result_dm, "KSData"=KSData,"PX" = PX)
     return(KSEA_list_dm)
+  })
+  
+  KSEA_plot_input_dm <- reactive({
+    req(KSEA_input_dm())
+    function() {
+      KSEAapp::KSEA.Barplot(
+        KSEA_input_dm()$KSData, KSEA_input_dm()$PX,
+        NetworKIN = TRUE,
+        NetworKIN.cutoff = 5,
+        m.cutoff = input$m.cutoff_dm,
+        p.cutoff = input$p.cutoff_dm,
+        export = FALSE
+      )
+    }
   })
   
   # pathway_input_dm<-eventReactive(input$pathway_analysis_dm,{
@@ -5877,7 +5955,8 @@ server <- function(input, output,session){
   })
   
   output$KSEA_enrichment_dm<-renderPlot({
-    KSEA_input_dm()$plot_KSEA
+    # KSEA_input_dm()$plot_KSEA
+    KSEA_plot_input_dm()()
   })
   
   ##### Download Functions
@@ -6008,7 +6087,21 @@ server <- function(input, output,session){
                   sep =",") }
   )
   
+  go_plot_input_dm <-reactive({ 
+    p <- go_input_dm()[[2]]
+    return(p)
+  })
   
+  go_cntrst_dm <- reactive({
+    input$contrast_dm
+  })
+  
+  KSEA_cntrst_dm <- reactive({
+    input$contrast_1_dm
+  })
+  
+  save_plot_server("enrichment_plot_dm", go_plot_input_dm , go_cntrst_dm)
+  save_plot_server("KSEA_plot_dm", KSEA_plot_input_dm(), KSEA_cntrst_dm)
   
   #####===== Download Report (demo phosphosite)=====#####
   output$downloadReport_dm <- downloadHandler(
@@ -7892,10 +7985,24 @@ server <- function(input, output,session){
     KSEA_result_dm_nr <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5)
     
     # Generate a summary bar plot using the KSEA.Barplot() function
-    plot_KSEA_dm_nr <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_dm_nr, p.cutoff= input$p.cutoff_dm_nr, export=FALSE)
+    # plot_KSEA_dm_nr <- KSEAapp::KSEA.Barplot(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5, m.cutoff= input$m.cutoff_dm_nr, p.cutoff= input$p.cutoff_dm_nr, export=FALSE)
     
-    KSEA_list_dm_nr <- list("KSEA_result"=KSEA_result_dm_nr, "plot_KSEA"=plot_KSEA_dm_nr)
+    KSEA_list_dm_nr <- list("KSEA_result"=KSEA_result_dm_nr, "KSData"=KSData,"PX" = PX)
     return(KSEA_list_dm_nr)
+  })
+  
+  KSEA_plot_input_dm_nr <- reactive({
+    req(KSEA_input_dm_nr())
+    function() {
+      KSEAapp::KSEA.Barplot(
+        KSEA_input_dm_nr()$KSData, KSEA_input_dm_nr()$PX,
+        NetworKIN = TRUE,
+        NetworKIN.cutoff = 5,
+        m.cutoff = input$m.cutoff_dm_nr,
+        p.cutoff = input$p.cutoff_dm_nr,
+        export = FALSE
+      )
+    }
   })
   
   #### Interactive UI (Normalized page)
@@ -8168,7 +8275,8 @@ server <- function(input, output,session){
   
   output$KSEA_enrichment_dm_nr<-renderPlot({
     Sys.sleep(2)
-    KSEA_input_dm_nr()
+    # KSEA_input_dm_nr()
+    KSEA_plot_input_dm_nr()()
   })
   
   ##### Download Functions
@@ -8294,6 +8402,22 @@ server <- function(input, output,session){
                   row.names = FALSE,
                   sep =",") }
   )
+  
+  go_plot_input_dm_nr <-reactive({ 
+    p <- go_input_dm_nr()[[2]]
+    return(p)
+  })
+  
+  go_cntrst_dm_nr <- reactive({
+    input$contrast_dm_nr
+  })
+  
+  KSEA_cntrst_dm_nr <- reactive({
+    input$contrast_1_dm_nr
+  })
+  
+  save_plot_server("enrichment_plot_dm_nr", go_plot_input_dm_nr , go_cntrst_dm_nr)
+  save_plot_server("KSEA_plot_dm_nr", KSEA_plot_input_dm_nr(), KSEA_cntrst_dm_nr)
   
   #####===== Download Report (demo phosphosite_corrected)=====#####
   output$downloadReport_dm_nr <- downloadHandler(

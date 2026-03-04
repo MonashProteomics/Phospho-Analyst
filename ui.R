@@ -529,7 +529,8 @@ ui <- function(request){
                                                                            column(12,
                                                                                   box(width = 12,uiOutput("spinner_go"),height = 400)
                                                                            ),
-                                                                           column(12,downloadButton('downloadGO', 'Download Table'))
+                                                                           column(9,downloadButton('downloadGO', 'Download Table')),
+                                                                           column(3,save_plot_right_ui("enrichment_plot"))
                                                                          )
                                                                 ),
                                                                 tabPanel(tooltips_ui("Kinase-Substrate enrichment"),
@@ -549,7 +550,8 @@ ui <- function(request){
                                                                                column(12,
                                                                                       box(width = 12,uiOutput("spinner_ksea"),height = 400)
                                                                                ),
-                                                                               column(12,downloadButton('downloadKSEA', 'Download Table'))
+                                                                               column(9,downloadButton('downloadKSEA', 'Download Table')),
+                                                                               column(3,save_plot_right_ui("KSEA_plot"))
                                                                            )
                                                                          )
                                                                 )
@@ -1088,7 +1090,8 @@ ui <- function(request){
                                                                            column(12,
                                                                                   box(width = 12,uiOutput("spinner_go_nr"),height = 400)
                                                                            ),
-                                                                           column(12,downloadButton('downloadGO_nr', 'Download Table'))
+                                                                           column(9,downloadButton('downloadGO_nr', 'Download Table')),
+                                                                           column(3,save_plot_right_ui("enrichment_plot_nr"))
                                                                          )
                                                                          
                                                                 ),
@@ -1109,7 +1112,8 @@ ui <- function(request){
                                                                                column(12,
                                                                                       box(width = 12,uiOutput("spinner_ksea_nr"),height = 400)
                                                                                ),
-                                                                               column(12,downloadButton('downloadKSEA_nr', 'Download Table'))
+                                                                               column(9,downloadButton('downloadKSEA_nr', 'Download Table')),
+                                                                               column(3,save_plot_right_ui("KSEA_plot_nr"))
                                                                            )
                                                                          )
                                                                 )
@@ -1433,7 +1437,8 @@ ui <- function(request){
                                                                  column(12,
                                                                         box(width = 12,uiOutput("spinner_go_dm"),height = 400)
                                                                  ),
-                                                                 column(12,downloadButton('downloadGO_dm', 'Download Table'))
+                                                                 column(9,downloadButton('downloadGO_dm', 'Download Table')),
+                                                                 column(3,save_plot_right_ui("enrichment_plot_dm"))
                                                                ) 
                                                       ),
                                                       tabPanel(tooltips_ui("Kinase-Substrate enrichment"),
@@ -1453,7 +1458,8 @@ ui <- function(request){
                                                                      column(12,
                                                                             box(width = 12,uiOutput("spinner_ksea_dm"),height = 400)
                                                                      ),
-                                                                     column(12,downloadButton('downloadKSEA_dm', 'Download Table'))
+                                                                     column(9,downloadButton('downloadKSEA_dm', 'Download Table')),
+                                                                     column(3,save_plot_right_ui("KSEA_plot_dm"))
                                                                  )
                                                                ) 
                                                       )
@@ -2006,7 +2012,8 @@ ui <- function(request){
                                                           column(12,
                                                                  box(width = 12,uiOutput("spinner_go_dm_nr"),height = 400)
                                                           ),
-                                                          column(12,downloadButton('downloadGO_dm_nr', 'Download Table'))
+                                                          column(9,downloadButton('downloadGO_dm_nr', 'Download Table')),
+                                                          column(3,save_plot_right_ui("enrichment_plot_dm_nr"))
                                                         )
                                                ),
                                                tabPanel(tooltips_ui("Kinase-Substrate enrichment"),
@@ -2026,7 +2033,8 @@ ui <- function(request){
                                                               column(12,
                                                                      box(width = 12,uiOutput("spinner_ksea_dm_nr"),height = 400)
                                                               ),
-                                                              column(12,downloadButton('downloadKSEA_dm_nr', 'Download Table'))
+                                                              column(9,downloadButton('downloadKSEA_dm_nr', 'Download Table')),
+                                                              column(3,save_plot_right_ui("KSEA_plot_dm_nr"))
                                                           )
                                                         )
                                                )
