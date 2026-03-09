@@ -995,7 +995,10 @@ server <- function(input, output,session){
     column_names <- c('Protein','Gene','Peptide','Residue.Both','p','FC')
     PX <- result_df %>% dplyr::select (col_selected)
     names(PX) <- column_names
-    KSData <- KSEAapp::KSData 
+    KSData <- KSEAapp::KSData
+    
+    # current is LFC, convert to FC
+    PX$FC <- 2^(PX$FC)
     
     # Create result table using KSEA.Scores() function
     KSEA_result <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5) 
@@ -4102,6 +4105,9 @@ server <- function(input, output,session){
     names(PX) <- column_names
     KSData <- KSEAapp::KSData 
     
+    # current is LFC, convert to FC
+    PX$FC <- 2^(PX$FC)
+    
     # Create result table using KSEA.Scores() function
     KSEA_result_nr <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5)
     
@@ -5348,6 +5354,9 @@ server <- function(input, output,session){
     PX <- result_df %>% dplyr::select (col_selected)
     names(PX) <- column_names
     KSData <- KSEAapp::KSData 
+    
+    # current is LFC, convert to FC
+    PX$FC <- 2^(PX$FC)
     
     # Create result table using KSEA.Scores() function
     KSEA_result_dm <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5) 
@@ -7980,6 +7989,9 @@ server <- function(input, output,session){
     PX <- result_df %>% dplyr::select (col_selected)
     names(PX) <- column_names
     KSData <- KSEAapp::KSData 
+    
+    # current is LFC, convert to FC
+    PX$FC <- 2^(PX$FC)
     
     # Create result table using KSEA.Scores() function
     KSEA_result_dm_nr <- KSEA.Scores(KSData, PX, NetworKIN=TRUE, NetworKIN.cutoff=5)
